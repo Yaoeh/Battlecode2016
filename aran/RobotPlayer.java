@@ -1,7 +1,7 @@
 package aran;
 import battlecode.common.*;
 
-public strictfp class RobotPlayer {
+public strictfp class RobotPlayer implements GlobalConstants {
     static RobotController rc;
     static Utility ut= new Utility();
     /**
@@ -14,7 +14,7 @@ public strictfp class RobotPlayer {
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
         RobotPlayer.rc = rc;
-
+    	
         // Here, we've separated the controls into a different method for each RobotType.
         // You can add the missing ones or rewrite this into your own control structure.
         switch (rc.getType()) {
@@ -35,13 +35,13 @@ public strictfp class RobotPlayer {
 
     static void runArchon() throws GameActionException {
         System.out.println("I'm an archon!");
-
+        
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
-
+            	ut.refresh(rc, archProfil);
                 // Generate a random direction
                 Direction dir = randomDirection();
 
@@ -51,12 +51,17 @@ public strictfp class RobotPlayer {
                 }
 
                 // Move randomly
-                ut.move(rc);
+                if (rc.getRoundNum()%percentageUntilDangerOverride== 0){ //jiggle so get out of stuck
+                	tryMove(randomDirection());
+                }else{
+                	MapLocation myLoc= rc.getLocation();
+                	Vector2D currentVec= new Vector2D(myLoc);
+                	ut.move(rc, new Vector2D[] {
+        	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
+        	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, 3),
+                	});
+                }
 
-                // Broadcast archon's location for other robots on the team to know
-                MapLocation myLocation = rc.getLocation();
-                rc.broadcast(0,(int)myLocation.x);
-                rc.broadcast(1,(int)myLocation.y);
 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -70,31 +75,23 @@ public strictfp class RobotPlayer {
 
 	static void runGardener() throws GameActionException {
         System.out.println("I'm a gardener!");
-
+        
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
-
-                // Listen for home archon's location
-                int xPos = rc.readBroadcast(0);
-                int yPos = rc.readBroadcast(1);
-                MapLocation archonLoc = new MapLocation(xPos,yPos);
-
-                // Generate a random direction
-                Direction dir = randomDirection();
-
-                // Randomly attempt to build a soldier or lumberjack in this direction
-                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-                    rc.buildRobot(RobotType.LUMBERJACK, dir);
+            	ut.refresh(rc, garProfil);
+                if (rc.getRoundNum()%percentageUntilDangerOverride== 0){
+                	tryMove(randomDirection());
+                }else{
+                	MapLocation myLoc= rc.getLocation();
+                	Vector2D currentVec= new Vector2D(myLoc);
+                	ut.move(rc, new Vector2D[] {
+        	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
+        	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, 3),
+                	});
                 }
-
-                // Move randomly
-                ut.move(rc);
-
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
@@ -106,31 +103,25 @@ public strictfp class RobotPlayer {
     }
 
     static void runSoldier() throws GameActionException {
-        System.out.println("I'm an soldier!");
-        Team enemy = rc.getTeam().opponent();
-
+        System.out.println("I'm an soldier!");        
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
-                MapLocation myLocation = rc.getLocation();
-
-                // See if there are any nearby enemy robots
-                RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
-
-                // If there are some...
-                if (robots.length > 0) {
-                    // And we have enough bullets, and haven't attacked yet this turn...
-                    if (rc.canFireSingleShot()) {
-                        // ...Then fire a bullet in the direction of the enemy.
-                        rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
-                    }
+            	ut.refresh(rc, soldProfil);
+            	ut.tryfireSingleShot(rc);
+                if (rc.getRoundNum()%percentageUntilDangerOverride== 0){
+                	tryMove(randomDirection());
+                }else{
+                	MapLocation myLoc= rc.getLocation();
+                	Vector2D currentVec= new Vector2D(myLoc);
+                	ut.move(rc, new Vector2D[] {
+        	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
+        	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, 3),
+                	});
                 }
-
-                // Move randomly
-                ut.move(rc);
-
+            	
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
@@ -144,13 +135,13 @@ public strictfp class RobotPlayer {
     static void runLumberjack() throws GameActionException {
         System.out.println("I'm a lumberjack!");
         Team enemy = rc.getTeam().opponent();
-
+        
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
-
+            	ut.refresh(rc, lumbProfil);
                 // See if there are any enemy robots within striking range (distance 1 from lumberjack's radius)
                 RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
 
@@ -169,8 +160,16 @@ public strictfp class RobotPlayer {
 
                         tryMove(toEnemy);
                     } else {
-                        // Move Randomly
-                        ut.move(rc);
+                        if (rc.getRoundNum()%percentageUntilDangerOverride== 0){
+                        	tryMove(randomDirection());
+                        }else{
+                        	MapLocation myLoc= rc.getLocation();
+                        	Vector2D currentVec= new Vector2D(myLoc);
+                        	ut.move(rc, new Vector2D[] {
+                	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
+                	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, 3),
+                        	});
+                        }
                     }
                 }
 
