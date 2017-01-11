@@ -12,9 +12,9 @@ public interface GlobalConstants {
 	int treeIndex= 3;
 	
 	int[] garProfil= {0, 10, 10, 0};
-	int[] archProfil= {0, 0, 0, 30};
+	int[] archProfil= {0, 0, 0, 10};
 	int[] soldProfil= {0, 0, 0, 10};
 	int[] lumbProfil= {0, 0, 0, 5};
 
-	
+	int senseRadiusDivisor= 1;
 }

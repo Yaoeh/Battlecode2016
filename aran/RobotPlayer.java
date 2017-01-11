@@ -61,10 +61,13 @@ public strictfp class RobotPlayer implements GlobalConstants {
            	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
            	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
            	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
                 	});
                 }
 
-
+                //ut.tryShakeTree(rc);
+                
                 Clock.yield();
 
             } catch (Exception e) {
@@ -89,9 +92,11 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+          	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
            	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
            	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
                 	});
                 }
                 
@@ -102,6 +107,9 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
                     rc.buildRobot(RobotType.LUMBERJACK, dir);
                 }
+                
+                //ut.tryShakeTree(rc);
+   
                 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -128,11 +136,15 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+          	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
            	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
            	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
                 	});
                 }
+                
+                //ut.tryShakeTree(rc);
                 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -178,9 +190,11 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         	MapLocation myLoc= rc.getLocation();
                         	Vector2D currentVec= new Vector2D(myLoc);
                         	ut.move(rc, new Vector2D[] {
-                	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-                	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-                	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                  	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                   	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                   	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                   	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                   	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
                         	});
                         }
                     }

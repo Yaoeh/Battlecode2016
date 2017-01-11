@@ -21,6 +21,9 @@ class Vector2D
     	  x= maploc.x;
     	  y= maploc.y;
       }
+      MapLocation getMapLoc(){
+    	  return new MapLocation((float) x, (float) y);
+      }
       Vector2D(double rad){
     	  x= Math.cos(rad);
     	  y= Math.sin(rad);
