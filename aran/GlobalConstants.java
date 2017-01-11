@@ -1,19 +1,20 @@
 package aran;
 
-import java.util.Dictionary;
-
-import battlecode.common.RobotType;
-
 public interface GlobalConstants {
 	public int stepsUntilJiggle= 5; //jiggle so moving in a direction they don't get stuck
 	public float percentageUntilDangerOverride= 0.8f;
 	public float treeGardenMultiplier= 2;
 	
-	enum infoIndex {bullets, friends, enemies, trees};
+	//enum infoIndex {bullets, friends, enemies, trees}; //enums apparently illegal
+	int bulletIndex= 0;
+	int friendIndex= 1;
+	int enemyIndex= 2;
+	int treeIndex= 3;
+	
 	int[] garProfil= {0, 10, 10, 0};
-	int[] archProfil= {0, 10, 10, Integer.MAX_VALUE};
-	int[] soldProfil= {0, 2, 0, 10};
-	int[] lumbProfil= {0, 10, 0, 5};
+	int[] archProfil= {0, 0, 0, 30};
+	int[] soldProfil= {0, 0, 0, 10};
+	int[] lumbProfil= {0, 0, 0, 5};
 
 	
 }

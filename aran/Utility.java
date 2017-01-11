@@ -5,7 +5,7 @@ import battlecode.common.*;
 
 public class Utility implements GlobalConstants{
 	public static Random randall = new Random();
-	int[] sensedInfo= new int[4]; //0: bullets, 1: friends, 2: enemies, 3: trees
+	int[] sensedInfo= {0,0,0,0}; //0: bullets, 1: friends, 2: enemies, 3: trees
 	BulletInfo[] nearbyBullets;
 	RobotInfo[] nearbyFriends;
 	RobotInfo[] nearbyEnemies;
@@ -17,7 +17,7 @@ public class Utility implements GlobalConstants{
 	
 	public void refresh(RobotController rc, int[] profile){ //Refresh based on profile
 		for (int i = 0; i < sensedInfo.length; i++){
-			if (rc.getRoundNum()- sensedInfo[i] > profile[i]){
+			if (rc.getRoundNum()- sensedInfo[i] > profile[i]){ //if the information is too old
 				updateSense(rc, i);
 			}
 		}
@@ -38,22 +38,22 @@ public class Utility implements GlobalConstants{
 	
 	public void senseBullets(RobotController rc){ //Updates the freshness of the information?
 		nearbyBullets= rc.senseNearbyBullets();
-		sensedInfo[infoIndex.bullets.ordinal()]= rc.getRoundNum();
-	}
-	
-	public void senseEnemies(RobotController rc){
-		nearbyEnemies= rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-		sensedInfo[infoIndex.enemies.ordinal()]= rc.getRoundNum();
+		sensedInfo[bulletIndex]= rc.getRoundNum();
 	}
 	
 	public void senseFriends(RobotController rc){
 		nearbyFriends= rc.senseNearbyRobots(-1, rc.getTeam());
-		sensedInfo[infoIndex.friends.ordinal()]= rc.getRoundNum();
+		sensedInfo[friendIndex]= rc.getRoundNum();
+	}
+	
+	public void senseEnemies(RobotController rc){
+		nearbyEnemies= rc.senseNearbyRobots(-1 , rc.getTeam().opponent());
+		sensedInfo[enemyIndex]= rc.getRoundNum();
 	}
 	
 	public void senseTrees(RobotController rc){
 		nearbyTrees= rc.senseNearbyTrees();
-		sensedInfo[infoIndex.trees.ordinal()]= rc.getRoundNum();
+		sensedInfo[treeIndex]= rc.getRoundNum();
 	}
 		
 	public void tryfireSingleShot(RobotController rc) throws GameActionException{

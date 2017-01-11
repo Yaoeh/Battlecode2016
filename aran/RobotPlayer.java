@@ -42,6 +42,7 @@ public strictfp class RobotPlayer implements GlobalConstants {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	ut.refresh(rc, archProfil);
+            	//System.out.println("I'm retarded!");
                 // Generate a random direction
                 Direction dir = randomDirection();
 
@@ -51,19 +52,19 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 }
 
                 // Move randomly
-                if (rc.getRoundNum()%percentageUntilDangerOverride== 0){ //jiggle so get out of stuck
+                if (rc.getRoundNum()%stepsUntilJiggle== 0){ //jiggle so get out of stuck
                 	tryMove(randomDirection());
                 }else{
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-        	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
-        	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, 3),
+           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
                 	});
                 }
 
 
-                // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
             } catch (Exception e) {
@@ -82,16 +83,26 @@ public strictfp class RobotPlayer implements GlobalConstants {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	ut.refresh(rc, garProfil);
-                if (rc.getRoundNum()%percentageUntilDangerOverride== 0){
+                if (rc.getRoundNum()%stepsUntilJiggle== 0){
                 	tryMove(randomDirection());
                 }else{
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-        	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
-        	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, 3),
+           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
                 	});
                 }
+                
+                Direction dir = randomDirection();
+                // Randomly attempt to build a soldier or lumberjack in this direction
+                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
+                    rc.buildRobot(RobotType.SOLDIER, dir);
+                } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
+                    rc.buildRobot(RobotType.LUMBERJACK, dir);
+                }
+                
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
@@ -111,17 +122,18 @@ public strictfp class RobotPlayer implements GlobalConstants {
             try {
             	ut.refresh(rc, soldProfil);
             	ut.tryfireSingleShot(rc);
-                if (rc.getRoundNum()%percentageUntilDangerOverride== 0){
+                if (rc.getRoundNum()%stepsUntilJiggle== 0){
                 	tryMove(randomDirection());
                 }else{
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-        	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
-        	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, 3),
+           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
                 	});
                 }
-            	
+                
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
@@ -160,14 +172,15 @@ public strictfp class RobotPlayer implements GlobalConstants {
 
                         tryMove(toEnemy);
                     } else {
-                        if (rc.getRoundNum()%percentageUntilDangerOverride== 0){
+                        if (rc.getRoundNum()%stepsUntilJiggle== 0){
                         	tryMove(randomDirection());
                         }else{
                         	MapLocation myLoc= rc.getLocation();
                         	Vector2D currentVec= new Vector2D(myLoc);
                         	ut.move(rc, new Vector2D[] {
-                	             ut.dodgeBulleteVector(rc, myLoc, currentVec, 3),
-                	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, 3),
+                	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
                         	});
                         }
                     }
