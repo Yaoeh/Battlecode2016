@@ -25,7 +25,6 @@ public class Utility implements GlobalConstants{
 		
 		if (broadcastRead!= 0){
 			goalsLoc.add(Broadcast.expandInt(broadcastRead));
-			broadcastRead= 0;
 		}
 	}
 	
@@ -168,7 +167,7 @@ public class Utility implements GlobalConstants{
         return (perpendicularDist <= rc.getType().bodyRadius);
     }
 	
-    public Vector2D dodgeBulleteVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered){
+    public Vector2D dodgeBulleteVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered, float multiplier){
 		if (nearbyBullets!= null){
 	    	for (int i = 0; i < clamp(maxConsidered,0,nearbyBullets.length); i++){
 				BulletInfo bi= nearbyBullets[i];
@@ -177,7 +176,7 @@ public class Utility implements GlobalConstants{
 					double rotated90Rad= bi.dir.radians + ((randall.nextInt(2)-1)* Math.PI); //move perpendicular to the line of fire
 					if (Math.abs(bi.location.distanceTo(rcLoc))!= 0){
 						double scale = rc.getType().sensorRadius/Math.abs(bi.location.distanceTo(rcLoc)); 
-						currentLoc.add(new Vector2D(rotated90Rad).normalize().scale(danger*scale));
+						currentLoc.add(new Vector2D(rotated90Rad).normalize().scale(danger*scale*multiplier));
 					}
 				}
 			}
@@ -185,7 +184,7 @@ public class Utility implements GlobalConstants{
 		return currentLoc;
     }
     
-    public Vector2D moveTowardsFriendVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered) throws GameActionException{
+    public Vector2D moveTowardsFriendVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered, float multiplier) throws GameActionException{
 		if (nearbyFriends!= null){
 	    	double charisma= 0;
 			double scale= 0;
@@ -202,7 +201,7 @@ public class Utility implements GlobalConstants{
 					scale*= -2;
 				}
 	
-				currentLoc.add(new Vector2D(ri.location).normalize().scale(charisma*scale));
+				currentLoc.add(new Vector2D(ri.location).normalize().scale(charisma*scale*multiplier));
 			}
 			
 			if (scale< 0){
@@ -215,7 +214,7 @@ public class Utility implements GlobalConstants{
 		return currentLoc;
     }
     
-    public Vector2D moveAwayFromEnemyVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered) throws GameActionException{
+    public Vector2D moveAwayFromEnemyVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered, float multiplier) throws GameActionException{
 		if (nearbyEnemies!= null){
 	    	double charisma= 0;
 			double scale= 0;
@@ -224,19 +223,17 @@ public class Utility implements GlobalConstants{
 				charisma= getCharisma(ri);
 				scale= - (rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius);
 	
-				currentLoc.add(new Vector2D(ri.location).normalize().scale(scale*charisma));
+				currentLoc.add(new Vector2D(ri.location).normalize().scale(scale*charisma*multiplier));
 				
 				//ADDITIONS
-//				if (ri.getType()== RobotType.ARCHON){//let everyone know where enemy archon is at
-//					if (broadcastRead== 0){
-//						rc.broadcast(0, Broadcast.condenseLocation(rc.getLocation()));
-//					}
-//				}
-				if (broadcastRead== 0){
-					BodyInfo badBoy = getMostDamageableBody(nearbyEnemies, rcLoc, 3);
-					if (badBoy!= null)
-						rc.broadcast(0, Broadcast.condenseLocation(rc.getLocation()));
+				if (ri.getType()== RobotType.ARCHON){//let everyone know where enemy archon is at
+					rc.broadcast(0, Broadcast.condenseLocation(rc.getLocation()));
 				}
+//				if (broadcastRead== 0){
+//					BodyInfo badBoy = getMostDamageableBody(nearbyEnemies, rcLoc, 3);
+//					if (badBoy!= null)
+//						rc.broadcast(0, Broadcast.condenseLocation(rc.getLocation()));
+//				}
 			}
 			
 			if (scale< 0){
@@ -249,7 +246,7 @@ public class Utility implements GlobalConstants{
 		return currentLoc;
     }
     
-    public Vector2D moveTowardsTreeVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered) throws GameActionException{
+    public Vector2D moveTowardsTreeVector(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered, float multiplier) throws GameActionException{
 		if (nearbyTrees!= null){
 	    	double charisma= 0;
 			double scale= 0;
@@ -259,7 +256,7 @@ public class Utility implements GlobalConstants{
 				if (ti.team== rc.getTeam().opponent()){ //if enemy tree
 					
 				}else{
-					currentLoc.add(new Vector2D(ti.location).normalize().scale(charisma*scale));
+					currentLoc.add(new Vector2D(ti.location).normalize().scale(charisma*scale*multiplier));
 				}
 			}
 			
@@ -272,7 +269,7 @@ public class Utility implements GlobalConstants{
 		return currentLoc;
     }
     
-    public Vector2D moveTowardsGoal(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered) throws GameActionException{
+    public Vector2D moveTowardsGoal(RobotController rc, MapLocation rcLoc, Vector2D currentLoc, int maxConsidered, float multiplier) throws GameActionException{
 		if (goalsLoc!= null){
 	    	double charisma= 0;
 			double scale= 0;
@@ -283,15 +280,13 @@ public class Utility implements GlobalConstants{
 				if (ti.team== rc.getTeam().opponent()){ //if enemy tree
 					
 				}else{
-					additionVec= new Vector2D(ti.location).normalize().scale(charisma*scale);
-					currentLoc.add(additionVec);
+					currentLoc.add(new Vector2D(ti.location).normalize().scale(charisma*scale*multiplier));
 				}
-			}
-			
-			if (scale< 0){
-				rc.setIndicatorLine(rcLoc, additionVec.getMapLoc(), 255, 0, 0);
-			}else{
-				rc.setIndicatorLine(rcLoc, additionVec.getMapLoc(), 0, 255, 0);
+				if (scale< 0){
+					rc.setIndicatorLine(rcLoc, currentLoc.getMapLoc(), 255, 0, 0);
+				}else{
+					rc.setIndicatorLine(rcLoc, currentLoc.getMapLoc(), 0, 255, 0);
+				}
 			}
 		}
 		return currentLoc;

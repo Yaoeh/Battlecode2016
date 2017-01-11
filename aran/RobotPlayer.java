@@ -58,11 +58,11 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
+           	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE,0.5f),
+           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
                 	});
                 }
 
@@ -92,21 +92,22 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-          	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
+          	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
                 	});
                 }
                 
                 Direction dir = randomDirection();
                 // Randomly attempt to build a soldier or lumberjack in this direction
-                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
+                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < 0.1) {
                     rc.buildRobot(RobotType.SOLDIER, dir);
-                } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-                    rc.buildRobot(RobotType.LUMBERJACK, dir);
-                }
+                } 
+//                else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
+//                    rc.buildRobot(RobotType.LUMBERJACK, dir);
+//                }
                 
                 //ut.tryShakeTree(rc);
    
@@ -136,11 +137,11 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 	MapLocation myLoc= rc.getLocation();
                 	Vector2D currentVec= new Vector2D(myLoc);
                 	ut.move(rc, new Vector2D[] {
-          	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
+          	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             //ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             //ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+           	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
                 	});
                 }
                 
@@ -190,11 +191,11 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         	MapLocation myLoc= rc.getLocation();
                         	Vector2D currentVec= new Vector2D(myLoc);
                         	ut.move(rc, new Vector2D[] {
-                  	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-                   	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-                   	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-                   	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE),
-                   	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE),
+                  	             ut.dodgeBulleteVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+                   	             ut.moveAwayFromEnemyVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+                   	             ut.moveTowardsFriendVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+                   	             ut.moveTowardsTreeVector(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
+                   	             ut.moveTowardsGoal(rc, myLoc, currentVec, Integer.MAX_VALUE,1),
                         	});
                         }
                     }
