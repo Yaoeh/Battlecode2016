@@ -1,20 +1,30 @@
 package aran;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import battlecode.common.RobotType;
+
 public interface GlobalConstants {
 	public int stepsUntilJiggle= 5; //jiggle so moving in a direction they don't get stuck
 	public float percentageUntilDangerOverride= 0.8f;
 	public float treeGardenMultiplier= 2;
 	
-	//enum infoIndex {bullets, friends, enemies, trees}; //enums apparently illegal
+
 	int bulletIndex= 0;
 	int friendIndex= 1;
 	int enemyIndex= 2;
 	int treeIndex= 3;
 	
-	int[] garProfil= {0, 10, 10, 0};
+	//enum infoIndex {bullets, friends, enemies, trees}; //enums apparently illegal
+	int[] garProfil= {0, 0, 0, 0};
 	int[] archProfil= {0, 0, 0, 10};
 	int[] soldProfil= {0, 0, 0, 10};
 	int[] lumbProfil= {0, 0, 0, 5};
-
-	int senseRadiusDivisor= 1;
+	int[] scoutProfil= {0,5,0,5};
+	
+	HashSet<RobotType> noIgnore= new HashSet<RobotType>();
+	HashSet<RobotType> ignoreScout= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT));
+	HashSet<RobotType> ignoreArchon= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON));
+	HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
 }

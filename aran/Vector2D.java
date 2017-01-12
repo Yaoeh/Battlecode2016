@@ -18,8 +18,8 @@ class Vector2D
           y = _y;      
       };
       Vector2D(MapLocation maploc){
-    	  x= maploc.x;
-    	  y= maploc.y;
+    	  this.x= maploc.x;
+    	  this.y= maploc.y;
       }
       MapLocation getMapLoc(){
     	  return new MapLocation((float) x, (float) y);
@@ -29,18 +29,23 @@ class Vector2D
     	  y= Math.sin(rad);
       }
       
-      double length()
+	double length()
       {
             return Math.sqrt(x*x+y*y);      
       };
     
       Vector2D add(Vector2D v)
       {
-          return new Vector2D(x+v.x,y+v.y);      
+          //return new Vector2D(x+v.x,y+v.y);      
+    	  x+= v.x;
+    	  y+= v.y;
+    	  return this;
       }; 
       Vector2D minus(Vector2D v)
       {
-          return new Vector2D(x-v.x,y-v.y);      
+          x-= v.x;
+          y-= v.y;
+          return this;
       };  
       Vector2D normalize()
       {
@@ -77,12 +82,14 @@ class Vector2D
            x = cx+(dx)*cos-(dy)*sin;
            y = cy+(dy)*cos+(dx)*sin;      
       };
-      Vector2D normal()
-      { 
-           return new Vector2D(x,-y);      
-      };
+//      Vector2D normal()
+//      { 
+//           return new Vector2D(x,-y);      
+//      };
 
-      
+      public String toStr(){
+    	  return "{"+ String.valueOf(x)+ " , " + String.valueOf(y)+ "}";
+      }
       
       // the dot product implemented as class function
       static double dot(Vector2D v1, Vector2D v2)
