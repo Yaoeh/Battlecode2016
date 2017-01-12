@@ -21,33 +21,35 @@ public strictfp class RobotPlayer implements GlobalConstants {
             case ARCHON:
                 runArchon();
                 break;
-//            case GARDENER:
-//                runGardener();
-//                break;
-//            case SOLDIER:
-//                runSoldier();
-//                break;
-//            case LUMBERJACK:
-//                runLumberjack();
-//                break;
-//            case SCOUT:
-//            	runScout();
-//            	break;
+            case GARDENER:
+                runGardener();
+                break;
+            case SOLDIER:
+                runSoldier();
+                break;
+            case LUMBERJACK:
+                runLumberjack();
+                break;
+            case SCOUT:
+            	runScout();
+            	break;
         }
 	}
 
     
-    public static void notMoveGeneric(int[] profile) throws GameActionException{
+    public static void notMoveGeneric(int[] profile, float[] rads) throws GameActionException{
     	MapLocation rcLoc= rc.getLocation();
-    	ut.refresh(rc, profile, null); //sense after you shoot?
+    	ut.refresh(rc, profile, rads); //sense after you shoot?
     	
-//    	if (rcLoc.equals(ut.goalLocs.get(0))){ //remove goal after found
-//    		ut.goalLocs.remove(0);
+//    	if (rc.readBroadcast(0)+ targetRefreshRate < rc.getRoundNum()){
+//        	ut.goalLocs.set(0, new MapLocation(rc.readBroadcast(1), rc.readBroadcast(2)));
 //    	}
     	
-        if(ut.nearbyEnemies.length > 0 && !rc.hasAttacked()) {
-        		ut.tryfireSingleShot(rc, ut.getHighestPriorityBody(rc, ut.nearbyEnemies,rc.getLocation(), 3).getLocation());
-        }else if (ut.nearbyTrees!=null && ut.nearbyTrees.length > 0 && ! rc.hasAttacked()){
+    	if(rc.getType().canAttack() && ut.nearbyEnemies.length > 0 && !rc.hasAttacked()) {        	
+        	RobotInfo highPRobotInfo= (RobotInfo) ut.getHighestPriorityBody(rc, ut.nearbyEnemies,rc.getLocation(), 3);
+    		ut.tryfireSingleShot(rc, highPRobotInfo.getLocation());
+        	
+    	}else if (rc.canShake() && ut.nearbyTrees!=null && ut.nearbyTrees.length > 0 && ! rc.hasAttacked()){
         	if (ut.nearbyTrees[0].containedBullets> 0 && rc.canShake(ut.nearbyTrees[0].getLocation())){
         		rc.shake(ut.nearbyTrees[0].getLocation());
         	}
@@ -64,16 +66,16 @@ public strictfp class RobotPlayer implements GlobalConstants {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
             	MapLocation rcLoc= rc.getLocation();
-            	notMoveGeneric(scoutProfil);
+            	notMoveGeneric(scoutProfil, null);
             	//Danger, goal, enemy, friend, tree
             	if (!rc.hasMoved()){
                     Vector2D moveVec= new Vector2D(rcLoc);
-                    double danger= ut.dodgeBulleteVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
+                    double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
                     if (danger< percentageUntilDangerOverride){
                         ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
-                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
-                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreScout);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
+                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, (float) danger, ignoreArchon);
+                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreNone);
+                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 1);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -81,6 +83,7 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 Clock.yield();
 
             } catch (Exception e) {
+            	System.out.println("Scout Exception");
                 e.printStackTrace();
             }
         }
@@ -88,15 +91,16 @@ public strictfp class RobotPlayer implements GlobalConstants {
 
 	static void runArchon() throws GameActionException {
         System.out.println("I'm an archon!");
-        ut.setInitialEnemyArchonAsGoal(rc);
     	
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
+//            	if (rc.getRoundNum()% archonGoalRefreshRate== 0){
+//            		ut.broadCastGoal_v1(rc);
+//            	}
                 MapLocation rcLoc= rc.getLocation();        
-            	ut.refresh(rc, archProfil, null);
                 Direction dir = randomDirection();
 
                 // Randomly attempt to build a gardener in this direction
@@ -104,14 +108,14 @@ public strictfp class RobotPlayer implements GlobalConstants {
                     rc.hireGardener(dir);
                 }
                 //System.out.println("Current Loc: " + rc.getLocation());
-                notMoveGeneric(archProfil);
+                notMoveGeneric(archProfil, null);
             	if (!rc.hasMoved()){
                     Vector2D moveVec= new Vector2D(rcLoc);
-                    double danger= ut.dodgeBulleteVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
+                    double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
                     if (danger< percentageUntilDangerOverride){
-                        ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
-                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
-                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreScout);
+                        ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 1);
+                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10, ignoreNone);
+                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreNone);
                         ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
                     }
                     
@@ -136,27 +140,25 @@ public strictfp class RobotPlayer implements GlobalConstants {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
                 MapLocation rcLoc= rc.getLocation();        
-            	ut.refresh(rc, archProfil, null);
                 Direction dir = randomDirection();
    	            	
                 // Randomly attempt to build a soldier or lumberjack in this direction
-                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-                    rc.buildRobot(RobotType.LUMBERJACK, dir);
-                }else if (rc.canBuildRobot(RobotType.SCOUT, dir) && Math.random() < .01 && rc.isBuildReady()) {
+//                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
+//                    rc.buildRobot(RobotType.SOLDIER, dir);
+//                } else 
+                if (rc.canBuildRobot(RobotType.SCOUT, dir) && Math.random() < .01 && rc.isBuildReady()) {
                 	rc.buildRobot(RobotType.SCOUT, dir);
                 }
-            	notMoveGeneric(garProfil);
+            	notMoveGeneric(garProfil, null);
             	//Danger, goal, enemy, friend, tree
             	if (!rc.hasMoved()){
                     Vector2D moveVec= new Vector2D(rcLoc);
-                    double danger= ut.dodgeBulleteVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
+                    double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
                     if (danger< percentageUntilDangerOverride){
-                        ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
-                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
-                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreScout);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
+                        ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 1);
+                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 4, ignoreArchon);
+                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreNone);
+                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 2);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -172,24 +174,25 @@ public strictfp class RobotPlayer implements GlobalConstants {
     }
 
     static void runSoldier() throws GameActionException {
-        System.out.println("I'm an soldier!");        
+        System.out.println("I'm an soldier!"); 
+        
+        ut.setInitialEnemyArchonAsGoal(rc);
         // The code you want your robot to perform every round should be in this loop
         while (true) {
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
                 MapLocation rcLoc= rc.getLocation();        
-            	ut.refresh(rc, archProfil, null);
                 Direction dir = randomDirection();
-            	notMoveGeneric(soldProfil);
+            	notMoveGeneric(soldProfil, null);
             	//Danger, goal, enemy, friend, tree
             	if (!rc.hasMoved()){
                     Vector2D moveVec= new Vector2D(rcLoc);
-                    double danger= ut.dodgeBulleteVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
+                    double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 1);
                     if (danger< percentageUntilDangerOverride){
                         ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
-                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
-                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreScout);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
+                        ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 4, ignoreArchon);
+                        ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 6, ignoreAllExceptArchon);
+                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 2);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -205,7 +208,7 @@ public strictfp class RobotPlayer implements GlobalConstants {
 
     static void runLumberjack() throws GameActionException {
         System.out.println("I'm a lumberjack!");
-        Team enemy = rc.getTeam().opponent();
+        ut.setInitialEnemyArchonAsGoal(rc);
         
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -233,12 +236,12 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 	//Danger, goal, enemy, friend, tree
                 	if (!rc.hasMoved()){
                         Vector2D moveVec= new Vector2D(rcLoc);
-                        double danger= ut.dodgeBulleteVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
+                        double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 2);
                         if (danger< percentageUntilDangerOverride){
-                            ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
+                            ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 1);
                             ut.moveAwayFromEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
-                            ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreScout);
-                            ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
+                            ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 4, ignoreAllExceptArchon);
+                            ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 5);
                         }
                         
                         tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -255,6 +258,16 @@ public strictfp class RobotPlayer implements GlobalConstants {
         }
     }
 
+    
+    public static int getZeroEquivalent(float x){
+    	if (x== 0){
+    		return Integer.MAX_VALUE;
+    	}else{
+    		return (int) x;
+    	}
+    }
+
+    
     /**
      * Returns a random Direction
      * @return a random Direction

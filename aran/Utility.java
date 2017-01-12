@@ -17,6 +17,14 @@ public class Utility implements GlobalConstants{
 	boolean hasPurpose= false; //once you have a purpose, ignore standard procedure
 //	int broadcastRead= 0;
 	
+	public void broadCastGoal_v1(RobotController rc) throws GameActionException{
+		if (rc.getType()== RobotType.ARCHON){
+			rc.broadcast(1, (int) rc.getLocation().x);
+			rc.broadcast(2, (int) rc.getLocation().y);
+			rc.broadcast(3, rc.getRoundNum());
+		}
+	}
+	
 	public void setInitialEnemyArchonAsGoal(RobotController rc){
 		MapLocation[] initArchonLocs= rc.getInitialArchonLocations(rc.getTeam().opponent());
 		for (int i = 0; i< initArchonLocs.length; i++){
@@ -104,27 +112,34 @@ public class Utility implements GlobalConstants{
 	
 	public void tryfireSingleShot(RobotController rc, MapLocation target) throws GameActionException{
 
-        if (nearbyEnemies.length > 0) {
-            // And we have enough bullets, and haven't attacked yet this turn...
-            if (rc.canFireSingleShot()) {
-                // ...Then fire a bullet in the direction of the enemy.
-                //rc.fireSingleShot(rc.getLocation().directionTo(nearbyEnemies[0].location));
-            	if (nearbyFriends== null){
-            		senseFriends(rc, rc.getType().sensorRadius);
-            	}
-            	
-            	boolean shouldShoot= true;
-        		for (int i = 0; i < nearbyFriends.length; i++){
-        			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriends[i])){
-        				shouldShoot= false;
-        				break;
-        			}
-        		}
-        		
-        		if (shouldShoot)
-        			rc.fireSingleShot(rc.getLocation().directionTo(target));
-            }
+        // And we have enough bullets, and haven't attacked yet this turn...
+        if (rc.canFireSingleShot()) {
+            // ...Then fire a bullet in the direction of the enemy.
+            //rc.fireSingleShot(rc.getLocation().directionTo(nearbyEnemies[0].location));
+        	
+        	boolean shouldShoot= true;
+        	if (nearbyFriends!= null){
+	    		for (int i = 0; i < nearbyFriends.length; i++){
+	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriends[i])){
+	    				shouldShoot= false;
+	    				break;
+	    			}
+	    		}
+        	}
+        	if (nearbyTrees!= null){
+	    		for (int i = 0; i < nearbyTrees.length; i++){
+	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyTrees[i])){
+	    				shouldShoot= false;
+	    				break;
+	    			}
+	    		}
+        	}
+    		
+    		if (shouldShoot){
+    			rc.fireSingleShot(rc.getLocation().directionTo(target));
+    		}
         }
+    
 		
 	}
 	
@@ -223,17 +238,13 @@ public class Utility implements GlobalConstants{
         return (perpendicularDist <= rt.bodyRadius);
     }
 	
-    public double dodgeBulleteVector(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier){
+    public double moveAwayFromBulletsVector(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier){
     	double danger= 0;
     	if (nearbyBullets!= null){
 	    	for (int i = 0; i < clamp(maxConsidered,0,nearbyBullets.length); i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= getDanger(bi, rc);
-				if (willCollide(bi, rc.getLocation(), rc.getType())){
-					double rotated90Rad= bi.dir.radians + ((randall.nextInt(2)-1)* Math.PI); //move perpendicular to the line of fire
-					double scale = rc.getType().sensorRadius/Math.abs(bi.location.distanceTo(rcLoc)); 
-					moveVec.add(new Vector2D(rotated90Rad).normalize().scale(danger*scale*multiplier));
-				}
+				moveVec.add(new Vector2D(rcLoc.directionTo(rcLoc).radians).scale(danger*multiplier));
 			}
 		}
     	return danger;
@@ -253,7 +264,7 @@ public class Utility implements GlobalConstants{
 					scale= (rc.getLocation().distanceTo(ri.location)- (ri.getRadius()+rc.getType().bodyRadius)/ rc.getType().sensorRadius) / GameConstants.MAP_MAX_WIDTH;
 					
 					//if you're too close to your friend
-					if (ri.getLocation().distanceTo(rc.getLocation()) - rc.getType().bodyRadius - ri.getRadius() <= 0){ 
+					if (ri.getLocation().distanceTo(rc.getLocation()) - 2*rc.getType().bodyRadius <= 0){ 
 						scale*= -1;
 					}
 	
