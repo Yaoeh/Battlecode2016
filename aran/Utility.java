@@ -141,6 +141,7 @@ public class Utility implements GlobalConstants{
     		
     		if (shouldShoot){
     			rc.fireSingleShot(rc.getLocation().directionTo(target));
+    			rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 255);
     			rc.setIndicatorDot(target, 255, 255, 255);
     		}
         }
@@ -176,6 +177,24 @@ public class Utility implements GlobalConstants{
 				float largestPriority= getDamagePriority(priorityBody);
 				for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
 					float candidatePriority = getDamagePriority(bodies[i]) *getHitChance(rc, bodies[i]);
+					if (candidatePriority > largestPriority){
+						largestPriority= candidatePriority;
+						priorityBody= bodies[i];
+					}
+				}
+			}
+		}
+		return priorityBody;
+	}
+	
+	public TreeInfo getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered){
+		TreeInfo priorityBody= null;
+		if (bodies!= null){
+			if (bodies.length> 0){
+				priorityBody= bodies[0];
+				int largestPriority= (int) getTastiness(priorityBody,rc);
+				for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
+					int candidatePriority = (int) getTastiness(bodies[i],rc);
 					if (candidatePriority > largestPriority){
 						largestPriority= candidatePriority;
 						priorityBody= bodies[i];
@@ -357,12 +376,14 @@ public class Utility implements GlobalConstants{
     }
     	
 	public void tryShakeTree(RobotController rc) throws GameActionException{
-		BodyInfo closestBody= getClosestBody(nearbyTrees, rc.getLocation(), Integer.MAX_VALUE);
+		// getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered)
+		TreeInfo closestBody= getTastiestBody(rc, nearbyTrees, rc.getLocation(), Integer.MAX_VALUE);
 		if (closestBody!= null){
 	        MapLocation possibleTreeLoc= closestBody.getLocation();
 	        if (possibleTreeLoc!= null){
-		        if (rc.canShake(possibleTreeLoc)){
+		        if (rc.canShake(possibleTreeLoc) && closestBody.containedBullets> 0){
 		        	rc.shake(possibleTreeLoc);
+		        	rc.setIndicatorLine(rc.getLocation(), possibleTreeLoc, 255, 20, 147);
 		        }
 	        }
 		}

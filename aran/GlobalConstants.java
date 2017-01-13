@@ -23,7 +23,7 @@ public interface GlobalConstants {
 	int[] archProfil= {0, 3, 0, 10};
 	int[] soldProfil= {0, 3, 0, 10};
 	int[] lumbProfil= {0, 3, 0, 5};
-	int[] scoutProfil= {0,2,0,10};
+	int[] scoutProfil= {0,10,0,3};
 	
 	HashSet<RobotType> ignoreNone= new HashSet<RobotType>();
 	HashSet<RobotType> ignoreScout= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT));

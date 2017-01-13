@@ -44,10 +44,8 @@ public strictfp class RobotPlayer implements GlobalConstants {
         	RobotInfo highPRobotInfo= (RobotInfo) ut.getHighestPriorityBody(rc, ut.nearbyEnemies,rc.getLocation(), 3);
     		ut.tryfireSingleShot(rc, highPRobotInfo.getLocation());
         	
-    	}else if (rc.canShake() && ut.nearbyTrees!=null && ut.nearbyTrees.length > 0 && ! rc.hasAttacked()){
-        	if (ut.nearbyTrees[0].containedBullets> 0 && rc.canShake(ut.nearbyTrees[0].getLocation())){
-        		rc.shake(ut.nearbyTrees[0].getLocation());
-        	}
+    	}else if (rc.canShake() && ut.nearbyTrees!=null && ut.nearbyTrees.length > 0){
+    		ut.tryShakeTree(rc);
         }
     }
     
@@ -69,8 +67,8 @@ public strictfp class RobotPlayer implements GlobalConstants {
                     if (danger< percentageUntilDangerOverride){
                         ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
                         float friendScale= ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, 1.5f, ignoreNone);
-                        ut.moveTowardsEnemyVecFlipOnMoreFriend(rc, rcLoc, moveVec, Integer.MAX_VALUE, (float) 2, friendScale,ignoreNone);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
+                        ut.moveTowardsEnemyVecFlipOnMoreFriend(rc, rcLoc, moveVec, Integer.MAX_VALUE, -2, friendScale,ignoreNone);
+                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -137,11 +135,12 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 // Randomly attempt to build a soldier or lumberjack in this direction
                 if (rc.canBuildRobot(RobotType.SCOUT, dir) && Math.random() < .01 && rc.isBuildReady()) {
                 	rc.buildRobot(RobotType.SCOUT, dir);
-                }else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-                    rc.buildRobot(RobotType.LUMBERJACK, dir);
-                } else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01 && rc.isBuildReady()) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                }  
+                }
+//                else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
+//                    rc.buildRobot(RobotType.LUMBERJACK, dir);
+//                } else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01 && rc.isBuildReady()) {
+//                    rc.buildRobot(RobotType.SOLDIER, dir);
+//                }  
             	notMoveGeneric(garProfil, null);
             	//Danger, goal, enemy, friend, tree
             	if (!rc.hasMoved()){
