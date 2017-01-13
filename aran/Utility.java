@@ -225,7 +225,7 @@ public class Utility implements GlobalConstants{
 	}
 	
 	public double getTastiness(TreeInfo ti, RobotController rc){
-		return ti.health*ti.containedBullets;
+		return ti.containedBullets;
 	}
 	
 	public double getDanger(BulletInfo bi, RobotController rc){
