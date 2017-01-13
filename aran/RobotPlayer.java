@@ -1,4 +1,6 @@
 package aran;
+import java.util.HashSet;
+
 import battlecode.common.*;
 
 public strictfp class RobotPlayer implements GlobalConstants {
@@ -41,10 +43,10 @@ public strictfp class RobotPlayer implements GlobalConstants {
     	ut.refresh(rc, profile, rads); //sense after you shoot?
     	
     	if(rc.getType().canAttack() && ut.nearbyEnemies.length > 0 && !rc.hasAttacked()) {        	
-        	RobotInfo highPRobotInfo= (RobotInfo) ut.getHighestPriorityBody(rc, ut.nearbyEnemies,rc.getLocation(), 3);
+        	RobotInfo highPRobotInfo= (RobotInfo) ut.getHighestPriorityBody(rc, ut.nearbyEnemies,rc.getLocation(), Integer.MAX_VALUE);
     		ut.tryfireSingleShot(rc, highPRobotInfo.getLocation());
-        	
-    	}else if (rc.canShake() && ut.nearbyTrees!=null && ut.nearbyTrees.length > 0){
+    	}
+    	if (rc.canShake() && ut.nearbyTrees!=null && ut.nearbyTrees.length > 0){
     		ut.tryShakeTree(rc);
         }
     }
@@ -64,13 +66,10 @@ public strictfp class RobotPlayer implements GlobalConstants {
             	if (!rc.hasMoved()){
                     Vector2D moveVec= new Vector2D(rcLoc);
                     double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
-                    if (danger< percentageUntilDangerOverride){
-                        ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
-                        float friendScale= ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, 1.5f, ignoreNone);
-                        ut.moveTowardsEnemyVecFlipOnMoreFriend(rc, rcLoc, moveVec, Integer.MAX_VALUE, -2, friendScale,ignoreNone);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 10);
-                    }
-                    
+                    ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
+                    float friendScale= ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, 1.5f, ignoreNone);
+                    ut.moveTowardsEnemyVecFlipOnMoreFriend(rc, rcLoc, moveVec, Integer.MAX_VALUE, -2, friendScale,ignoreNone);
+                    ut.moveTowardsTreeVectorIgnoreOnNoBullet(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3);
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
             	}
                 Clock.yield();
@@ -107,7 +106,9 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 5);
                         float friendScale= ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, 0.25f, ignoreNone);
                         ut.moveTowardsEnemyVecFlipOnMoreFriend(rc, rcLoc, moveVec, Integer.MAX_VALUE, -2, friendScale,ignoreNone);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 1);
+                        
+//                        RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier
+                        ut.moveTowardsTreeVectorIgnoreOnNoBullet(rc, rcLoc, moveVec, 9, 1.5f);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -135,12 +136,11 @@ public strictfp class RobotPlayer implements GlobalConstants {
                 // Randomly attempt to build a soldier or lumberjack in this direction
                 if (rc.canBuildRobot(RobotType.SCOUT, dir) && Math.random() < .01 && rc.isBuildReady()) {
                 	rc.buildRobot(RobotType.SCOUT, dir);
-                }
-//                else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-//                    rc.buildRobot(RobotType.LUMBERJACK, dir);
-//                } else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01 && rc.isBuildReady()) {
-//                    rc.buildRobot(RobotType.SOLDIER, dir);
-//                }  
+                }else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
+                    rc.buildRobot(RobotType.LUMBERJACK, dir);
+                } else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01 && rc.isBuildReady()) {
+                    rc.buildRobot(RobotType.SOLDIER, dir);
+                }  
             	notMoveGeneric(garProfil, null);
             	//Danger, goal, enemy, friend, tree
             	if (!rc.hasMoved()){
@@ -150,7 +150,8 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 1);
                         ut.moveTowardsEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE,-4, ignoreArchon);
                         ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, 1.5f, ignoreNone);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 2);
+//                      RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier
+                        ut.moveTowardsTreeVectorFlipOnNoBullet(rc, rcLoc, moveVec, 3, 2);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -183,7 +184,7 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 5, 5);
                         float friendScale= ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, 1.5f, ignoreNone);
                         ut.moveTowardsEnemyVecFlipOnMoreFriend(rc, rcLoc, moveVec, Integer.MAX_VALUE, - 2, friendScale,ignoreNone);
-                        ut.moveTowardsTreeVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 1);
+                        ut.moveTowardsTreeVectorFlipOnNoBullet(rc, rcLoc, moveVec, Integer.MAX_VALUE, 1);
                     }
                     
                     tryMove(rcLoc.directionTo(moveVec.getMapLoc()));
@@ -208,19 +209,16 @@ public strictfp class RobotPlayer implements GlobalConstants {
             try {
             	//bullets, friends, enemies, trees
             	MapLocation rcLoc= rc.getLocation();
-            	notMoveGeneric(soldProfil, null);
+            	notMoveGeneric(lumbProfil, null);
             	//Danger, goal, enemy, friend, tree
-       
+            	if (rc.canChop(ut.nearbyTrees[0].getLocation())){
+            		rc.chop(ut.nearbyTrees[0].getLocation());
+            		rc.setIndicatorLine(rcLoc, ut.nearbyTrees[0].getLocation(), 0, 255, 255);
+            	}
                 
                 if(ut.nearbyEnemies.length > 0 && !rc.hasAttacked()) {
                     // Use strike() to hit all nearby robots!
                     rc.strike();
-                }else if (ut.nearbyTrees.length > 0 && ! rc.hasAttacked()){
-                	if (rc.canShake(ut.nearbyTrees[0].getLocation())){
-                		rc.shake(ut.nearbyTrees[0].getLocation());
-                	}else if (rc.canChop(ut.nearbyTrees[0].getLocation())){
-                		rc.chop(ut.nearbyTrees[0].getLocation());
-                	}
                 }
                 else {
                 	//Danger, goal, enemy, friend, tree
@@ -228,9 +226,9 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         Vector2D moveVec= new Vector2D(rcLoc);
                         double danger= ut.moveAwayFromBulletsVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 2);
                         if (danger< percentageUntilDangerOverride){
-                            ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 1);
-                            ut.moveTowardsEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
-                            ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 4,2, ignoreAllExceptArchon);
+                            //ut.moveVecTowardsGoal(rc, rcLoc, moveVec, 3, 1);
+                            //ut.moveTowardsEnemyVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 3, ignoreArchon);
+                            ut.moveTowardsFriendVector(rc, rcLoc, moveVec, Integer.MAX_VALUE, 20, 2, ignoreAllExceptArchon);
                             ut.moveTowardsTreeVector(rc, rcLoc, moveVec, 3, 5);
                         }
                         

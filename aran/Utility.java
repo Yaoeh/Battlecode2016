@@ -187,7 +187,7 @@ public class Utility implements GlobalConstants{
 		return priorityBody;
 	}
 	
-	public TreeInfo getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered){
+	public TreeInfo getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered) throws GameActionException{
 		TreeInfo priorityBody= null;
 		if (bodies!= null){
 			if (bodies.length> 0){
@@ -195,6 +195,7 @@ public class Utility implements GlobalConstants{
 				int largestPriority= (int) getTastiness(priorityBody,rc);
 				for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
 					int candidatePriority = (int) getTastiness(bodies[i],rc);
+					rc.setIndicatorDot(bodies[i].location, (int) clamp(candidatePriority,0,255) , 0, 0);
 					if (candidatePriority > largestPriority){
 						largestPriority= candidatePriority;
 						priorityBody= bodies[i];
@@ -225,7 +226,11 @@ public class Utility implements GlobalConstants{
 	}
 	
 	public double getTastiness(TreeInfo ti, RobotController rc){
-		return ti.containedBullets;
+		if (ti.containedBullets> 0){
+			return ti.containedBullets + ti.health/50;
+		}else{
+			return 0;
+		}
 	}
 	
 	public double getDanger(BulletInfo bi, RobotController rc){
@@ -349,12 +354,40 @@ public class Utility implements GlobalConstants{
 			for (int i = 0; i < clamp(maxConsidered,0,nearbyTrees.length); i++){
 				TreeInfo ti= nearbyTrees[i];
 				scale= getTastiness(ti, rc);
-				if (ti.team== rc.getTeam().opponent()){ //if enemy tree
-					
+				moveVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
+				rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
+			}
+
+		}
+    }
+    
+    public void moveTowardsTreeVectorFlipOnNoBullet(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier) throws GameActionException{		
+    	if (nearbyTrees!= null){;
+			double scale= 0;
+			for (int i = 0; i < clamp(maxConsidered,0,nearbyTrees.length); i++){
+				TreeInfo ti= nearbyTrees[i];
+				scale= getTastiness(ti, rc);
+				if (ti.containedBullets<= 0){
+					moveVec.minus(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
 				}else{
 					moveVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
-					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
 				}
+				rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
+			}
+
+		}
+    }
+    
+    public void moveTowardsTreeVectorIgnoreOnNoBullet(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier) throws GameActionException{		
+    	if (nearbyTrees!= null){;
+			double scale= 0;
+			for (int i = 0; i < clamp(maxConsidered,0,nearbyTrees.length); i++){
+				TreeInfo ti= nearbyTrees[i];
+				scale= getTastiness(ti, rc);
+				if (ti.containedBullets> 0){
+					moveVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
+				}
+				rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
 			}
 
 		}
