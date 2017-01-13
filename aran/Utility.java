@@ -25,6 +25,10 @@ public class Utility implements GlobalConstants{
 		}
 	}
 	
+    static Direction randomDirection() {
+        return new Direction((float)Math.random() * 2 * (float)Math.PI);
+    }
+    	
 	public void setInitialEnemyArchonAsGoal(RobotController rc){
 		MapLocation[] initArchonLocs= rc.getInitialArchonLocations(rc.getTeam().opponent());
 		for (int i = 0; i< initArchonLocs.length; i++){
@@ -137,6 +141,7 @@ public class Utility implements GlobalConstants{
     		
     		if (shouldShoot){
     			rc.fireSingleShot(rc.getLocation().directionTo(target));
+    			rc.setIndicatorDot(target, 255, 255, 255);
     		}
         }
     
@@ -201,11 +206,7 @@ public class Utility implements GlobalConstants{
 	}
 	
 	public double getTastiness(TreeInfo ti, RobotController rc){
-		double multiplier= 1;
-		if (rc.getType()== RobotType.GARDENER){
-			multiplier= treeGardenMultiplier;
-		}
-		return ti.health*ti.containedBullets* multiplier;
+		return ti.health*ti.containedBullets;
 	}
 	
 	public double getDanger(BulletInfo bi, RobotController rc){
@@ -238,19 +239,22 @@ public class Utility implements GlobalConstants{
         return (perpendicularDist <= rt.bodyRadius);
     }
 	
-    public double moveAwayFromBulletsVector(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier){
+    public double moveAwayFromBulletsVector(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier) throws GameActionException{
     	double danger= 0;
     	if (nearbyBullets!= null){
 	    	for (int i = 0; i < clamp(maxConsidered,0,nearbyBullets.length); i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= getDanger(bi, rc);
 				moveVec.add(new Vector2D(rcLoc.directionTo(rcLoc).radians).scale(danger*multiplier));
+				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
 			}
 		}
     	return danger;
     }
     
-    public void moveTowardsFriendVector(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    public float moveTowardsFriendVector(RobotController rc, MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier, float bodyRadiusMultiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    	float friendScale= 0;
+    	float friends= 0;
     	if (nearbyFriends!= null){
 	    	double charisma= 0;
 			double scale= 0;
@@ -262,20 +266,23 @@ public class Utility implements GlobalConstants{
 					
 					//Scale up until you are too close; should always be between 0 and 1
 					scale= (rc.getLocation().distanceTo(ri.location)- (ri.getRadius()+rc.getType().bodyRadius)/ rc.getType().sensorRadius) / GameConstants.MAP_MAX_WIDTH;
+					friendScale+= charisma*scale*multiplier;
 					
 					//if you're too close to your friend
-					if (ri.getLocation().distanceTo(rc.getLocation()) - 2*rc.getType().bodyRadius <= 0){ 
+					if (ri.getLocation().distanceTo(rc.getLocation()) - bodyRadiusMultiplier*rc.getType().bodyRadius <= 0){ 
 						scale*= -1;
 					}
 	
 					moveVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
+					rc.setIndicatorLine(rcLoc, ri.location, 0, 0, 255);
+					friends+= 1;
 				}
 			}
 		}
-
+    	return friendScale/friends;
     }
     
-    public void moveAwayFromEnemyVector(RobotController rc,  MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    public void moveTowardsEnemyVector(RobotController rc,  MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
     	if (nearbyEnemies!= null){
 	    	double charisma= 0;
 			double scale= 0;
@@ -283,19 +290,36 @@ public class Utility implements GlobalConstants{
 				RobotInfo ri= nearbyEnemies[i];
 				if (!ignoreType.contains(ri.getType())){
 					charisma= getCharisma(ri);
-					scale= - (rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius)/ GameConstants.MAP_MAX_HEIGHT;
+					scale= rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius/ GameConstants.MAP_MAX_HEIGHT;
 					moveVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
+					rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
 				}
-				
-				//ADDITIONS
-//				if (ri.getType()== RobotType.ARCHON){//let everyone know where enemy archon is at
-//					rc.broadcast(0, Broadcast.condenseLocation(rc.getLocation()));
-//				}
-//				if (rc.getRoundNum()%50 == 0){
-//					BodyInfo badBoy = getHighestPriorityBody(nearbyEnemies, rcLoc, 3);
-//					if (badBoy!= null)
-//						rc.broadcast(0, Broadcast.condenseLocation(rc.getLocation()));
-//				}
+			}
+		}
+    }
+    public void moveTowardsEnemyVecFlipOnMoreFriend(RobotController rc,  MapLocation rcLoc, Vector2D moveVec, int maxConsidered, float multiplier, float friendScale, HashSet<RobotType> ignoreType) throws GameActionException{
+    	boolean flipped= false;
+    	if (nearbyEnemies!= null){
+	    	double charisma= 0;
+			double scale= 0;
+			for (int i = 0; i <  clamp(maxConsidered, 0,nearbyEnemies.length); i++){
+				RobotInfo ri= nearbyEnemies[i];
+				if (!ignoreType.contains(ri.getType())){
+					charisma= getCharisma(ri);
+					scale= rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius/ GameConstants.MAP_MAX_HEIGHT;
+					
+					if (friendScale > scale){
+						scale*= -1;
+						flipped= true;
+					}
+					
+					moveVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
+					if (!flipped){
+						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
+					}else{
+						rc.setIndicatorLine(rcLoc, ri.location, 0, 255, 0);
+					}
+				}
 			}
 		}
     }
@@ -310,6 +334,7 @@ public class Utility implements GlobalConstants{
 					
 				}else{
 					moveVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
+					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
 				}
 			}
 
@@ -324,6 +349,7 @@ public class Utility implements GlobalConstants{
 	    		float distance= 0;
 				distance= rc.getLocation().distanceTo(goalLocs.get(i));
 				moveVec.add(new Vector2D(rcLoc.directionTo(goalLocs.get(i)).radians).scale(distance/GameConstants.MAP_MAX_HEIGHT*multiplier)); //.normalize().scale(distance*multiplier));
+				rc.setIndicatorLine(rcLoc, goalLocs.get(i), 255, 210, 0);
     		}
 		}else{
 			System.out.println("Goals Loc Array is null");
