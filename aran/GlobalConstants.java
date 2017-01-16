@@ -18,7 +18,7 @@ public interface GlobalConstants {
 	int enemyIndex= 2;
 	int treeIndex= 3;
 	
-	//enum infoIndex {bullets, friends, enemies, trees}; //enums apparently illegal
+	//enum infoIndex {friends, enemies, trees, bullets}; //enums apparently illegal
 	int[] garProfil= {0, 3, 0, 0};
 	int[] archProfil= {0, 3, 0, 10};
 	int[] soldProfil= {0, 3, 0, 10};
@@ -28,5 +28,6 @@ public interface GlobalConstants {
 	HashSet<RobotType> ignoreNone= new HashSet<RobotType>();
 	HashSet<RobotType> ignoreScout= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT));
 	HashSet<RobotType> ignoreArchon= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON));
+	HashSet<RobotType> ignoreArchonGardener= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER));
 	HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
 }

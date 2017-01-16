@@ -28,8 +28,7 @@ class Vector2D
     	  x= Math.cos(rad);
     	  y= Math.sin(rad);
       }
-      
-	double length()
+      double length()
       {
             return Math.sqrt(x*x+y*y);      
       };
