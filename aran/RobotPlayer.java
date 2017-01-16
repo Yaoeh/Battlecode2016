@@ -241,7 +241,7 @@ public strictfp class RobotPlayer implements GlobalConstants {
     static void runSoldier() throws GameActionException {
        // System.out.println("I'm an soldier!");
         Team enemy = rc.getTeam().opponent();
-
+        ut.setInitialEnemyArchonAsGoal(rc);
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
@@ -260,9 +260,35 @@ public strictfp class RobotPlayer implements GlobalConstants {
                         rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
                     }
                 }
+            	MapLocation rcLoc= rc.getLocation();
 
-                // Move randomly
-                tryMove(randomDirection());
+            	if (!rc.hasMoved()){
+            		
+            		if (rc.getRoundNum()%stepsUntilJiggle== 0){
+            			tryMove(randomDirection());
+            		}else{
+	            		
+	                    Vector2D moveVec= new Vector2D(rcLoc);
+	                    Vector2D dangerVec= ut.moveAwayFromBulletsVector(rc, rcLoc, Integer.MAX_VALUE, 100);
+	                    Vector2D friendVec= ut.moveTowardsFriendVector(rc, rcLoc, Integer.MAX_VALUE, 2, 2, ignoreArchonGardener);
+	                    Vector2D enemyVec= ut.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, -3, ignoreNone);    
+	                    Vector2D treeVec= ut.moveTowardsTreeVectorDisregardTastiness(rc, rcLoc, 1, 1);
+	                    Vector2D goalVec= ut.moveVecTowardsGoal(rc, rcLoc,1, 10);
+	                    if (dangerVec.length()> 0){
+	                    	MapLocation dangerDodge= new Vector2D(rcLoc).add(dangerVec).getMapLoc();
+	                    	if (rc.canMove(dangerDodge)){
+	                    		tryMove(rcLoc.directionTo(dangerDodge));
+	                    	}else{
+	                    		tryMove(randomDirection());
+	                    	}
+	                    }else{
+	                    	Vector2D tryMoveVec= new Vector2D(rcLoc).add(goalVec).add(enemyVec).add(treeVec).add(friendVec).add(dangerVec);
+	                    	if (rcLoc.directionTo(tryMoveVec.getMapLoc())!= null){
+	                    		tryMove(rcLoc.directionTo(tryMoveVec.getMapLoc()));
+	                    	}
+	                    }
+            		}
+            	}
 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
