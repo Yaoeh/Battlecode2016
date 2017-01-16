@@ -322,7 +322,7 @@ public class Utility implements GlobalConstants{
 	    	for (int i = 0; i < clamp(maxConsidered,0,nearbyBullets.length); i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= getDanger(bi, rc);
-				neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
+				neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
 				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
 			}
 		}
@@ -387,6 +387,22 @@ public class Utility implements GlobalConstants{
 				TreeInfo ti= nearbyTrees[i];
 				scale= getTastiness(ti, rc);
 				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
+				if (scale> 0)
+					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
+			}
+
+		}
+    	return neutralVec;
+    }
+    
+    public Vector2D moveTowardsTreeVectorDisregardTastiness(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier) throws GameActionException{		
+    	Vector2D neutralVec= new Vector2D(0,0);
+    	if (nearbyTrees!= null){;
+			double scale= 0;
+			for (int i = 0; i < clamp(maxConsidered,0,nearbyTrees.length); i++){
+				TreeInfo ti= nearbyTrees[i];
+				//scale= getTastiness(ti, rc);
+				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(multiplier));
 				if (scale> 0)
 					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
 			}
