@@ -32,23 +32,52 @@ public class Gardener extends RobotPlayer {
     }
     
     public static void runTreeGardener() throws GameActionException {
-        TreeInfo[] trees = rc.senseNearbyTrees(2, rc.getTeam());
-        if (trees.length > 0) {
-            // water trees
-            for (TreeInfo tree: trees) {
-                
+        // priority 1: water trees
+        TreeInfo[] trees = rc.senseNearbyTrees();
+        for (TreeInfo tree: trees) {
+            if (tree.getTeam() == rc.getTeam()) {
                 if (rc.canWater(tree.ID)) {
-                    System.out.println("Trying to water");
                     rc.water(tree.ID);
+                    Clock.yield();
                 }
             }
         }
-
-        for (SixAngle ra : Constants.SixAngle.values()) {
-            Direction d = new Direction(ra.getRadians());
-            if (rc.canPlantTree(d)) {
-                rc.plantTree(d);
-                Clock.yield();
+        
+        // priority 2: build trees
+        if (trees.length == 0) {
+            // no tree around. start a new cluster
+            for (SixAngle ra : Constants.SixAngle.values()) {
+                Direction d = new Direction(ra.getRadians());
+                if (rc.canPlantTree(d)) {
+                    rc.plantTree(d);
+                    Clock.yield();
+                }
+            }
+        } else {
+            if (rc.senseNearbyTrees(2).length == 0) {
+                // move towards cluster
+                for (TreeInfo tr: trees) {
+                    if (tr.team == rc.getTeam()) {
+                        for (SixAngle ra : Constants.SixAngle.values()) {
+                            if (rc.canMove(tr.location.add(new Direction(ra.getRadians()), 2))) {
+                                rc.move(tr.location.add(new Direction(ra.getRadians()), 2));
+                                if (rc.getLocation().distanceTo(tr.location.add(new Direction(ra.getRadians()), 2)) < 0.1) {
+                                    return;
+                                }
+                                Clock.yield();
+                            }
+                        }
+                    }
+                }
+            } else {
+                // continue planting trees in a circle
+                for (SixAngle ra : Constants.SixAngle.values()) {
+                    Direction d = new Direction(ra.getRadians());
+                    if (rc.canPlantTree(d)) {
+                        rc.plantTree(d);
+                        Clock.yield();
+                    }
+                }
             }
         }
     }
