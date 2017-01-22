@@ -85,4 +85,12 @@ public strictfp class RobotPlayer{
         }    	
     }
     
+    public static void broadcastPrint(RobotController rc, int channel, int message) throws GameActionException{
+    	System.out.println("\tChannel: " + channel + ": "+ message);
+    	rc.broadcast(channel, message);
+    }
+    public static void broadcastPrint(RobotController rc, int channel, int message, String descript) throws GameActionException{
+    	System.out.println("\t"+descript+ " Channel: " + channel + ": "+ message);
+    	rc.broadcast(channel, message);
+    }
 }

@@ -7,7 +7,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 
-public class Scout extends RobotPlayer implements InfoContributor {
+public class Scout extends RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
@@ -24,7 +24,7 @@ public class Scout extends RobotPlayer implements InfoContributor {
                     Vector2D goalVec= sensor.moveVecTowardsGoal(rc, rcLoc,1, 10);
 
                     Vector2D tryMoveVec= null;
-                    if (dangerVec.length()> Constants.percentageUntilDangerOverride){
+                    if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
                     	System.out.println("Danger vector: " + dangerVec.length());
                     	tryMoveVec= new Vector2D(rcLoc).add(treeVec).add(dangerVec); 
                     }else{
@@ -43,21 +43,21 @@ public class Scout extends RobotPlayer implements InfoContributor {
         }
     }
 
-	@Override
-	public void updateOwnInfo(RobotController rc) throws GameActionException {
-		Info trackedInfo= InformationNetwork.unitInfoMap.get(rc.getType());
-		int indexOffset= InformationNetwork.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
+
+	public static void updateOwnInfo(RobotController rc) throws GameActionException {
+		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
+		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
 		
-		for (int i = 0; i < trackedInfo.getChannelSize(); i++){
+		for (int i = 0; i < trackedInfo.reservedChannels.size(); i++){
 			InfoEnum currentInfo = trackedInfo.getInfoEnum(i);
 			
 	        switch (currentInfo) {
 		        case UPDATE_TIME:
-		        	rc.broadcast(indexOffset+ i, rc.getRoundNum());
+		        	broadcastPrint(rc, indexOffset+ i, rc.getRoundNum());
 		            break;
 
 		        case LOCATION:
-		        	rc.broadcast(indexOffset+i, InformationNetwork.condenseMapLocation(rc.getLocation()));
+		        	broadcastPrint(rc, indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
 		            break;
 	        }
 		}

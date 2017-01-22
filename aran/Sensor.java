@@ -213,7 +213,11 @@ public class Sensor {
 	    	for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyBullets.length); i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= Value.getDanger(bi, rc);
-				neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
+				if (Util.myRand.nextBoolean()){
+					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateRightDegrees(90).radians).scale(danger*multiplier));
+				}else{
+					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateLeftDegrees(90).radians).scale(danger*multiplier));
+				}
 				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
 			}
 		}

@@ -17,24 +17,24 @@ public class Constants implements GameConstants{
     static final int LUMBERJACK_MAX = 20;
     static final int SOLDIER_MAX = 20;
     static final int TANK_MAX = 20;
+    static final int GARDENER_MIN = 30;
     
-    
-	static final int stepsUntilJiggle= 5; //jiggle so moving in a direction they don't get stuck
-	static final float percentageUntilDangerOverride= 0.5f;
-	static final float treeGardenMultiplier= 2;
+    static final int ARCHON_UNIT_COUNT_UPDATE_MOD= 5;
+    static final int DEAD_TOLERANCE_ROUNDNUM= 3;
+	static final int STEPSUNTILJIGGLE= 5; //jiggle so moving in a direction they don't get stuck
+	static final float PERCENTAGE_UNTIL_DANGER_OVERRIDE= 0.5f;
 	
-	static final float archonGoalRefreshRate= 10;
-	static final float targetRefreshRate= 3;
-	
-
 	static final HashSet<RobotType> ignoreNone= new HashSet<RobotType>();
 	static final HashSet<RobotType> ignoreScout= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT));
 	static final HashSet<RobotType> ignoreArchon= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON));
 	static final HashSet<RobotType> ignoreArchonGardener= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER));
 	static final HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
     
+	public enum AddInfo{
+	    BLACKLIST, UNITCOUNT
+	}
 	public enum InfoEnum {
-	    LOCATION, STATUS, UPDATE_TIME, PRIORITY
+	    ID, LOCATION, STATUS, UPDATE_TIME, PRIORITY, ARCHON_COUNT, GARDENER_COUNT, LUMBERJACK_COUNT, SOLDIER_COUNT, TANK_COUNT, SCOUT_COUNT
 	}
 	
     /**
@@ -72,6 +72,9 @@ public class Constants implements GameConstants{
             return radians;
         }
     }
+    
+    
+    static final int[] ARCH_PROFIL= {0,0,0,0};
     
 	public enum SenseRefresh{
 		//0: bullets, 1: friends, 2: enemies, 3: trees

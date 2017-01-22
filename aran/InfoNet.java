@@ -13,10 +13,10 @@ import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-
+import aran.Constants.AddInfo;
 import aran.Constants.InfoEnum;
 
-public class InformationNetwork {
+public class InfoNet {
 	/*
 	//This is basically the communications class
 	//How it works:
@@ -58,27 +58,21 @@ public class InformationNetwork {
 		
 	call isInfoDefValid() in the test class to check if the set definition is legal
 		
-	*/	
-	public final static int ARCHON_COUNT_INDEX= 0;
-	public final static int GARDENER_COUNT_INDEX= 1;
-	public final static int SOLDIER_COUNT_INDEX= 2;
-	public final static int SCOUT_COUNT_INDEX= 3;
-	public final static int TANK_COUNT_INDEX= 4;
-	public final static int LUMBERJACK_COUNT_INDEX= 5;
+	*/
 	
-	public final static int STARTING_OFFSET= 6;
 	
 	public final static int NUM_ARCHONS_TRACKED= 3;
 	public final static int NUM_GARDENERS_TRACKED= 10;
 	public final static int NUM_SOLDIERS_TRACKED= 20;
-	public final static int NUM_SCOUTS_TRACKED= 5;
+	public final static int NUM_SCOUTS_TRACKED= 20;
 	public final static int NUM_TANKS_TRACKED= 3;
 	public final static int NUM_LUMBERJACKS_TRACKED= 5;
-	public final static int NUM_BLACKlIST_TRACKED= 10;
+	public final static int NUM_BLACKlIST_TRACKED= 50;
 	
 	public static ArrayList<InfoEnum> ARCH_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
+						InfoEnum.ID,
 						InfoEnum.LOCATION,
 						InfoEnum.STATUS,
 						InfoEnum.UPDATE_TIME
@@ -88,6 +82,7 @@ public class InformationNetwork {
 	public static ArrayList<InfoEnum> GENERIC_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
+						InfoEnum.ID,
 						InfoEnum.LOCATION,
 						InfoEnum.UPDATE_TIME
 					)
@@ -99,6 +94,19 @@ public class InformationNetwork {
     					InfoEnum.LOCATION,
     					InfoEnum.PRIORITY,
     					InfoEnum.UPDATE_TIME
+					)
+			);
+	
+	public static ArrayList<InfoEnum> UNIT_COUNT_INFO = 	    					
+			new ArrayList<InfoEnum>(
+				Arrays.asList(
+    					InfoEnum.ARCHON_COUNT,
+    					InfoEnum.GARDENER_COUNT,
+    					InfoEnum.SOLDIER_COUNT,
+    					InfoEnum.SCOUT_COUNT,
+       					InfoEnum.TANK_COUNT,
+       					InfoEnum.LUMBERJACK_COUNT,
+       					InfoEnum.UPDATE_TIME
 					)
 			);
 	
@@ -143,23 +151,53 @@ public class InformationNetwork {
 				); 
 			}};
 	
-	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).startIndex = STARTING_OFFSET;
-	public static int GARDENER_START_INDEX= unitInfoMap.get(RobotType.GARDENER).startIndex = unitInfoMap.get(RobotType.ARCHON).getNextInfoStartIndex();
-	public static int SOLDIER_START_INDEX= unitInfoMap.get(RobotType.SOLDIER).startIndex = unitInfoMap.get(RobotType.GARDENER).getNextInfoStartIndex();
-	public static int SCOUT_START_INDEX= unitInfoMap.get(RobotType.SCOUT).startIndex = unitInfoMap.get(RobotType.SOLDIER).getNextInfoStartIndex();
-	public static int TANK_START_INDEX= unitInfoMap.get(RobotType.TANK).startIndex = unitInfoMap.get(RobotType.SCOUT).getNextInfoStartIndex();
-	public static int LUMBERJACK_START_INDEX= unitInfoMap.get(RobotType.LUMBERJACK).startIndex = unitInfoMap.get(RobotType.TANK).getNextInfoStartIndex();
+	//Since you can't declare the start index of the item before the map is instantiated, use this stupid thing here to initialize it
+			
+	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).setStartIndex(0);
+	public static int GARDENER_START_INDEX= unitInfoMap.get(RobotType.GARDENER).setStartIndex(unitInfoMap.get(RobotType.ARCHON).getNextInfoStartIndex());
+	public static int SOLDIER_START_INDEX= unitInfoMap.get(RobotType.SOLDIER).setStartIndex(unitInfoMap.get(RobotType.GARDENER).getNextInfoStartIndex());
+	public static int SCOUT_START_INDEX= unitInfoMap.get(RobotType.SCOUT).setStartIndex(unitInfoMap.get(RobotType.SOLDIER).getNextInfoStartIndex());
+	public static int TANK_START_INDEX= unitInfoMap.get(RobotType.TANK).setStartIndex(unitInfoMap.get(RobotType.SCOUT).getNextInfoStartIndex());
+	public static int LUMBERJACK_START_INDEX= unitInfoMap.get(RobotType.LUMBERJACK).setStartIndex(unitInfoMap.get(RobotType.TANK).getNextInfoStartIndex());
 	
-    public static HashMap<String, Info> additionalInfoMap= 
-    		new HashMap<String, Info>() {{
+	
+    public static HashMap<AddInfo, Info> addInfoMap= 
+    		new HashMap<AddInfo, Info>() {{
     			//Info(reserved channel, then track count)
-    			put("Blacklist", 
+    			put(AddInfo.BLACKLIST, 
     					new Info(
 	    					unitInfoMap.get(RobotType.LUMBERJACK).getNextInfoStartIndex(),
 							BLACKLIST_TRACKED_INFO
 	    					,NUM_BLACKlIST_TRACKED)
 				);
+    			put(AddInfo.UNITCOUNT, 
+    					new Info(
+							UNIT_COUNT_INFO
+	    					,1) //should only count units once
+				);
 			}};
+	public static int UNIT_COUNT_START_INDEX= addInfoMap.get(AddInfo.UNITCOUNT).setStartIndex(addInfoMap.get(AddInfo.BLACKLIST).getNextInfoStartIndex());
+			
+	public static int countUnits(RobotController rc, RobotType rt) throws GameActionException{
+		int unitCount= 0;
+		Info trackedInfo= unitInfoMap.get(rt);
+		
+		for (int i = 0; i < trackedInfo.getTrackCount(); i++){
+			if (trackedInfo.getIndex(InfoEnum.UPDATE_TIME)!= -1){
+				int channel= trackedInfo.getStartIndex()+ (trackedInfo.reservedChannels.size()*i) + trackedInfo.getIndex(InfoEnum.UPDATE_TIME);
+				int lastUpdateRoundNum= rc.readBroadcast(channel);
+				System.out.println("\t" + rt.name() + " Channel: " + channel + " Last update round: " +  lastUpdateRoundNum + " Difference: "+  (rc.getRoundNum() - lastUpdateRoundNum));
+				if ( (rc.getRoundNum() - lastUpdateRoundNum) < Constants.DEAD_TOLERANCE_ROUNDNUM){
+					unitCount++;
+				}else{
+					break; //break on the first one not updated
+				}
+			}
+		}
+		System.out.println("\t" + rt.name() + " count: "+ unitCount);
+
+		return unitCount;
+	}
 	
 	public static int getFirstBehindRoundUpdateRobotIndex(RobotController rc) throws GameActionException{ 
 		// Returns the first not yet update robot of the round, i.e. stops at
@@ -174,18 +212,30 @@ public class InformationNetwork {
 			//else, update the time
 			
 			Info trackedInfo= unitInfoMap.get(rc.getType());
+			
 			for (int i = 0; i < trackedInfo.getTrackCount(); i++){
-				int iteratedStartIndex= trackedInfo.getStartIndex()+ trackedInfo.getChannelSize()*i;
-				int updateChannelOffset= trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //returns -1 on non-existant enums
-				if (updateChannelOffset!= -1){ 
-					int lastUpdateTime= rc.readBroadcast(iteratedStartIndex+ updateChannelOffset);
-					if (rc.getRoundNum() > lastUpdateTime){
-						answer= iteratedStartIndex;
+				int infoIndex= trackedInfo.getStartIndex() + (trackedInfo.reservedChannels.size()*i);	
+				if (trackedInfo.getIndex(InfoEnum.ID)!= -1){ //If the ID is tracked, just replace yourself
+					int id= rc.readBroadcast(infoIndex + trackedInfo.getIndex(InfoEnum.ID));
+					if (id!= 0 && id== rc.getID()){
+						answer= infoIndex;
 						break;
 					}
+					//Last update time is = rc.readBroadcast(infoIndex+ updateChannelOffset);
+				}				
+			}
+			
+			if (answer == Integer.MIN_VALUE){ //if the ID method fails (i.e. you can't find yourself) //Search until you find a timely replacement
+				for (int i = 0; i < trackedInfo.getTrackCount(); i++){
+					int infoIndex= trackedInfo.getStartIndex() + (trackedInfo.reservedChannels.size()*i);
+					if (trackedInfo.getIndex(InfoEnum.UPDATE_TIME)!= -1){ //If time is tracked, replace the 'dead' guy
+						int lastUpdated= rc.readBroadcast(infoIndex+ trackedInfo.getIndex(InfoEnum.UPDATE_TIME));
+						if (rc.getRoundNum() - lastUpdated > Constants.DEAD_TOLERANCE_ROUNDNUM){
+							answer= infoIndex;
+							break;
+						}
+					}
 				}
-				
-				
 			}
 		}
 		return answer;
@@ -198,14 +248,14 @@ public class InformationNetwork {
 		
 		
 		int answer= Integer.MIN_VALUE;
-		if (additionalInfoMap.containsKey(keyname)){
+		if (addInfoMap.containsKey(keyname)){
 			//Search for an update time of same type below the current time,
 			//If there is no update time below, do nothing
 			//else, update the time
 			
-			Info trackedInfo= additionalInfoMap.get(keyname);
+			Info trackedInfo= addInfoMap.get(keyname);
 			for (int i = 0; i < trackedInfo.getTrackCount(); i++){
-				int iteratedStartIndex= trackedInfo.getStartIndex()+ trackedInfo.getChannelSize()*i;
+				int iteratedStartIndex= trackedInfo.getStartIndex()+ trackedInfo.reservedChannels.size()*i;
 				int updateChannelOffset= trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //returns -1 on non-existant enums
 				if (updateChannelOffset!= -1){ 
 					int lastUpdateTime= rc.readBroadcast(iteratedStartIndex+ updateChannelOffset);
@@ -242,17 +292,18 @@ public class InformationNetwork {
 			answer+= value.getNumChannelsNeeded();
 		}
 		
-		for (Info value : additionalInfoMap.values()) {
+		for (Info value : addInfoMap.values()) {
 			answer+= value.getNumChannelsNeeded();
 		}
 
 		return answer;
 	}
+
 	
 	public static boolean isInfoDefValid(){ //to run in test
 		boolean answer= false;
 		
-		System.out.println("[Needed channels/Max channels:  " +getTotalNeededChannels()+"/"+Constants.BROADCAST_MAX_CHANNELS);
+		System.out.println("[Needed channels/Max channels: ]" +getTotalNeededChannels()+"/"+Constants.BROADCAST_MAX_CHANNELS);
 		if (Constants.BROADCAST_MAX_CHANNELS > getTotalNeededChannels()){
 			answer= true;
 		}

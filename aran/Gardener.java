@@ -8,22 +8,17 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.TreeInfo;
-import sherryy.Constants.SixAngle;
 
 public class Gardener extends RobotPlayer {
     
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
-                int prev = rc.readBroadcast(Constants.Channel.GARDENER_COUNTER);
-                rc.broadcast(Constants.Channel.GARDENER_COUNTER, prev+1);
-                int treeOnly = (prev + 1) % 2;
-                if (treeOnly == 1) {
-                    runTreeGardener();
-                }
-                else {
-                    runProduceGardener();
-                }
+//            	sensor.senseFriends(rc);
+//            	sensor.senseEnemies(rc);
+//            	sensor.senseTrees(rc);
+            	updateOwnInfo(rc);
+//            	move(rc);
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -31,6 +26,53 @@ public class Gardener extends RobotPlayer {
         }
     }
     
+	public static void updateOwnInfo (RobotController rc) throws GameActionException {
+		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
+		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
+		
+		if (indexOffset!= Integer.MIN_VALUE){						
+			for (int i = 0; i < trackedInfo.reservedChannels.size(); i++){
+		        switch (trackedInfo.getInfoEnum(i)) {
+			        case LOCATION:
+			        	//rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
+			        	broadcastPrint(rc, indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()), "loc");
+			        	break;
+			        case UPDATE_TIME:
+			        	//rc.broadcast(indexOffset+ i, rc.getRoundNum());
+			        	broadcastPrint(rc,indexOffset+i, rc.getRoundNum(), "time");
+			            break;
+					default:
+						break;
+		        }
+			}
+		}
+	}
+    
+    public static void move(RobotController rc) throws GameActionException{
+    	MapLocation rcLoc= rc.getLocation();
+    	
+    	if (!rc.hasMoved()){
+            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, rcLoc, Integer.MAX_VALUE, 10);
+            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, rcLoc, Integer.MAX_VALUE, 2, 0.1f, Constants.ignoreArchonGardener);
+            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
+            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
+            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, rcLoc, 1, 1);
+            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, rcLoc,1, 10);
+
+            Vector2D tryMoveVec= null;
+            if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
+            	//System.out.println("Danger vector: " + dangerVec.length());
+            	tryMoveVec= new Vector2D(rcLoc).add(treeVec).add(dangerVec); 
+            }else{
+            	tryMoveVec= new Vector2D(rcLoc).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
+            }
+
+        	if (rcLoc.directionTo(tryMoveVec.getMapLoc())!= null){
+        		Util.tryMove(rcLoc.directionTo(tryMoveVec.getMapLoc()));
+        	}
+    	}
+    }
+	
     public static void runTreeGardener() throws GameActionException {
         // priority 1: water trees
         TreeInfo[] trees = rc.senseNearbyTrees();
