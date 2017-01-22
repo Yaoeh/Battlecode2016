@@ -6,7 +6,7 @@ import aran.Constants.InfoEnum;
 import battlecode.common.MapLocation;
 
 public class Info {
-	private int startIndex;
+	public int startIndex;
 	private ArrayList<InfoEnum> reservedChannels; //number of required channels
 	private int trackCount; //number of info tracked
 	private int nextInfoStartIndex; //the place where the other guy starts
@@ -20,8 +20,20 @@ public class Info {
 		this.nextInfoStartIndex= startIndex+ getNumChannelsNeeded();
 	}
 	
+	public Info(ArrayList<InfoEnum> reservedChannels, int trackCount){
+		this.reservedChannels= reservedChannels;
+		this.trackCount= trackCount;
+		this.reservedChannelSize= reservedChannels.size();
+		this.nextInfoStartIndex= startIndex+ getNumChannelsNeeded();
+	}
+	
+	
 	public int getNumChannelsNeeded(){
-		return reservedChannels.size()*trackCount;
+		if (reservedChannels!= null){
+			return reservedChannels.size()*trackCount;
+		}else{
+			return Integer.MIN_VALUE;
+		}
 	}
 		
 	public int getStartIndex(){

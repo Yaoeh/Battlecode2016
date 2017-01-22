@@ -2,11 +2,6 @@ package aran;
 import java.util.HashSet;
 
 import battlecode.common.*;
-import sherryy.Archon;
-import sherryy.Gardener;
-import sherryy.Lumberjack;
-import sherryy.Soldier;
-import sherryy.Tank;
 
 public strictfp class RobotPlayer{
     static RobotController rc;

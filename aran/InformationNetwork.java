@@ -16,7 +16,7 @@ import battlecode.common.RobotType;
 
 import aran.Constants.InfoEnum;
 
-public interface InformationNetwork {
+public class InformationNetwork {
 	/*
 	//This is basically the communications class
 	//How it works:
@@ -58,15 +58,14 @@ public interface InformationNetwork {
 		
 	call isInfoDefValid() in the test class to check if the set definition is legal
 		
-	*/
-	public abstract void updateOwnInfo(RobotController rc) throws GameActionException;
-	
+	*/	
 	public final static int ARCHON_COUNT_INDEX= 0;
 	public final static int GARDENER_COUNT_INDEX= 1;
 	public final static int SOLDIER_COUNT_INDEX= 2;
 	public final static int SCOUT_COUNT_INDEX= 3;
 	public final static int TANK_COUNT_INDEX= 4;
 	public final static int LUMBERJACK_COUNT_INDEX= 5;
+	
 	public final static int STARTING_OFFSET= 6;
 	
 	public final static int NUM_ARCHONS_TRACKED= 3;
@@ -77,7 +76,7 @@ public interface InformationNetwork {
 	public final static int NUM_LUMBERJACKS_TRACKED= 5;
 	public final static int NUM_BLACKlIST_TRACKED= 10;
 	
-	public final ArrayList<InfoEnum> ARCH_TRACKED_INFO = 	    					
+	public static ArrayList<InfoEnum> ARCH_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
 						InfoEnum.LOCATION,
@@ -86,7 +85,7 @@ public interface InformationNetwork {
 					)
 			);
 	
-	public final ArrayList<InfoEnum> GENERIC_TRACKED_INFO = 	    					
+	public static ArrayList<InfoEnum> GENERIC_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
 						InfoEnum.LOCATION,
@@ -94,7 +93,7 @@ public interface InformationNetwork {
 					)
 			);
 	
-	public final ArrayList<InfoEnum> BLACKLIST_TRACKED_INFO = 	    					
+	public static ArrayList<InfoEnum> BLACKLIST_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
     					InfoEnum.LOCATION,
@@ -103,61 +102,62 @@ public interface InformationNetwork {
 					)
 			);
 	
-    static final HashMap<RobotType, Info> unitInfoMap= 
+    public static HashMap<RobotType, Info> unitInfoMap= 
     		new HashMap<RobotType, Info>() {{
     			//Info(reserved channel, then track count)
     			
     			put(RobotType.ARCHON, 
     					new Info(
-	    					STARTING_OFFSET, 
 	    					ARCH_TRACKED_INFO
     					,NUM_ARCHONS_TRACKED)
 				); 
     			
     			put(RobotType.GARDENER, 
     					new Info(
-							unitInfoMap.get(RobotType.ARCHON).getNextInfoStartIndex(),
 							GENERIC_TRACKED_INFO
     					,NUM_GARDENERS_TRACKED)
 				); 
     			
     			put(RobotType.SOLDIER, 
     					new Info(
-							unitInfoMap.get(RobotType.GARDENER).getNextInfoStartIndex(),
 							GENERIC_TRACKED_INFO
     					,NUM_SOLDIERS_TRACKED)
 				); 
     			
     			put(RobotType.SCOUT, 
     					new Info(
-							unitInfoMap.get(RobotType.SOLDIER).getNextInfoStartIndex(),
 							GENERIC_TRACKED_INFO
     					,NUM_SCOUTS_TRACKED)
 				); 
     			
     			put(RobotType.TANK, 
     					new Info(
-							unitInfoMap.get(RobotType.SCOUT).getNextInfoStartIndex(),
 							GENERIC_TRACKED_INFO
     					,NUM_TANKS_TRACKED)
 				); 
     			
     			put(RobotType.LUMBERJACK, 
     					new Info(
-							unitInfoMap.get(RobotType.TANK).getNextInfoStartIndex(),
 							GENERIC_TRACKED_INFO
     					,NUM_LUMBERJACKS_TRACKED)
 				); 
 			}};
 	
-    static final HashMap<String, Info> additionalInfoMap= 
+	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).startIndex = STARTING_OFFSET;
+	public static int GARDENER_START_INDEX= unitInfoMap.get(RobotType.GARDENER).startIndex = unitInfoMap.get(RobotType.ARCHON).getNextInfoStartIndex();
+	public static int SOLDIER_START_INDEX= unitInfoMap.get(RobotType.SOLDIER).startIndex = unitInfoMap.get(RobotType.GARDENER).getNextInfoStartIndex();
+	public static int SCOUT_START_INDEX= unitInfoMap.get(RobotType.SCOUT).startIndex = unitInfoMap.get(RobotType.SOLDIER).getNextInfoStartIndex();
+	public static int TANK_START_INDEX= unitInfoMap.get(RobotType.TANK).startIndex = unitInfoMap.get(RobotType.SCOUT).getNextInfoStartIndex();
+	public static int LUMBERJACK_START_INDEX= unitInfoMap.get(RobotType.LUMBERJACK).startIndex = unitInfoMap.get(RobotType.TANK).getNextInfoStartIndex();
+	
+    public static HashMap<String, Info> additionalInfoMap= 
     		new HashMap<String, Info>() {{
     			//Info(reserved channel, then track count)
     			put("Blacklist", 
     					new Info(
-							unitInfoMap.get(RobotType.LUMBERJACK).getNextInfoStartIndex(),
+	    					unitInfoMap.get(RobotType.LUMBERJACK).getNextInfoStartIndex(),
 							BLACKLIST_TRACKED_INFO
-    					,NUM_BLACKlIST_TRACKED)
+	    					,NUM_BLACKlIST_TRACKED)
 				);
 			}};
 	
@@ -223,14 +223,11 @@ public interface InformationNetwork {
 	
 	
 	public static int condenseMapLocation(MapLocation loc){
-		int answer= Integer.MIN_VALUE;
-		answer+= loc.x* Constants.MAP_MAX_WIDTH;
-		answer+= loc.y;
-		return answer;
+		return (int) (loc.x* (1000)+ loc.y);
 	}
 	
 	public static MapLocation extractMapLocation(int code){
-		return new MapLocation(code/Constants.MAP_MAX_WIDTH, code%Constants.MAP_MAX_WIDTH);
+		return new MapLocation(code/(1000), code%(1000));
 	}
 
 	//======================================================
@@ -255,8 +252,8 @@ public interface InformationNetwork {
 	public static boolean isInfoDefValid(){ //to run in test
 		boolean answer= false;
 		
-		System.out.println("Max channels: " +Constants.BROADCAST_MAX_CHANNELS + "/ Needed channels: "+ getTotalNeededChannels());
-		if (Constants.BROADCAST_MAX_CHANNELS < getTotalNeededChannels()){
+		System.out.println("[Needed channels/Max channels:  " +getTotalNeededChannels()+"/"+Constants.BROADCAST_MAX_CHANNELS);
+		if (Constants.BROADCAST_MAX_CHANNELS > getTotalNeededChannels()){
 			answer= true;
 		}
 		return answer;
@@ -264,10 +261,11 @@ public interface InformationNetwork {
 	
 	public static boolean encodingTest(){
 		boolean answer= false;
-		MapLocation testMapLoc= new MapLocation(999,306);
+		MapLocation testMapLoc= new MapLocation(999,502);
 		int encoded= condenseMapLocation(testMapLoc);
 		MapLocation decoded= extractMapLocation(encoded);
 		answer= testMapLoc.equals(decoded);
+		System.out.println("[Encoded loc / Decoded loc: ]"+ testMapLoc.toString() + "/"+decoded.toString());
 		return answer;
 	}
 }

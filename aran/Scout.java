@@ -1,12 +1,13 @@
 package aran;
 
+import aran.Constants.InfoEnum;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 
-public class Scout extends RobotPlayer {
+public class Scout extends RobotPlayer implements InfoContributor {
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
@@ -41,4 +42,24 @@ public class Scout extends RobotPlayer {
             }
         }
     }
+
+	@Override
+	public void updateOwnInfo(RobotController rc) throws GameActionException {
+		Info trackedInfo= InformationNetwork.unitInfoMap.get(rc.getType());
+		int indexOffset= InformationNetwork.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
+		
+		for (int i = 0; i < trackedInfo.getChannelSize(); i++){
+			InfoEnum currentInfo = trackedInfo.getInfoEnum(i);
+			
+	        switch (currentInfo) {
+		        case UPDATE_TIME:
+		        	rc.broadcast(indexOffset+ i, rc.getRoundNum());
+		            break;
+
+		        case LOCATION:
+		        	rc.broadcast(indexOffset+i, InformationNetwork.condenseMapLocation(rc.getLocation()));
+		            break;
+	        }
+		}
+	}
 }
