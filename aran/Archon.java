@@ -16,20 +16,19 @@ public class Archon extends RobotPlayer {
         while (true) {
             try {
             	if (firstArchon){
-            		if (rc.getRoundNum()%Constants.ARCHON_UNIT_COUNT_UPDATE_MOD== 0){
+            		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_MOD== 0){
             			updateUnitCounts(rc);
             		}
                 	//System.out.println("First Archon!");
             	}else{
             		//System.out.println("not first archon!");
             	}
-//            	updateUnitCounts(rc);
             	sensor.senseFriends(rc);
             	sensor.senseEnemies(rc);
             	sensor.senseTrees(rc);
             	updateOwnInfo(rc);
 
-            	//spawn(rc);
+            	spawn(rc);
             	move(rc);
             	
                 Clock.yield();
@@ -42,9 +41,14 @@ public class Archon extends RobotPlayer {
     
     public static void spawn(RobotController rc) throws GameActionException{
     	Direction dir = Util.randomDirection();
-        if (rc.canHireGardener(dir)) {
-            rc.hireGardener(dir);
-        }
+    	Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+    	int gardenerCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.GARDENER_COUNT);
+    	
+    	if (rc.readBroadcast(gardenerCountIndex) < Constants.GARDENER_MIN){
+            if (rc.canHireGardener(dir)) {
+                rc.hireGardener(dir);
+            }
+    	}
     }
     
     public static void move(RobotController rc) throws GameActionException{
@@ -112,7 +116,7 @@ public class Archon extends RobotPlayer {
 					break;
 	        }
     	}
-    	int broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //knowing it only has one
+    	int broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //knowing the Unit Count Info only has one unit of itself tracked
     	rc.broadcast(broadcastIndex, rc.getRoundNum());
     }
 

@@ -11,7 +11,7 @@ public class Lumberjack {
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
-            	
+            	Util.moveAwayFromMyTrees();
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();

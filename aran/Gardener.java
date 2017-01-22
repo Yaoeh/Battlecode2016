@@ -1,5 +1,9 @@
 package aran;
 
+import java.util.HashSet;
+
+import aran.Constants.AddInfo;
+import aran.Constants.InfoEnum;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -10,15 +14,22 @@ import battlecode.common.RobotType;
 import battlecode.common.TreeInfo;
 
 public class Gardener extends RobotPlayer {
-    
+    public static int gardenerNum = -1;
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
-//            	sensor.senseFriends(rc);
-//            	sensor.senseEnemies(rc);
-//            	sensor.senseTrees(rc);
+            	sensor.senseFriends(rc);
+            	sensor.senseEnemies(rc);
+            	sensor.senseTrees(rc);
+            	move(rc);
             	updateOwnInfo(rc);
-//            	move(rc);
+            	
+            	if (gardenerNum < 10){
+            		runProduceGardener();
+            	}else{
+            		runTreeGardener();
+            	}
+            	
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -30,21 +41,28 @@ public class Gardener extends RobotPlayer {
 		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
 		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
 		
-		if (indexOffset!= Integer.MIN_VALUE){						
+		if (indexOffset!= Integer.MIN_VALUE){
+			gardenerNum= (indexOffset - trackedInfo.getStartIndex()) / trackedInfo.reservedChannels.size();
+						
 			for (int i = 0; i < trackedInfo.reservedChannels.size(); i++){
-		        switch (trackedInfo.getInfoEnum(i)) {
-			        case LOCATION:
-			        	//rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
-			        	broadcastPrint(rc, indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()), "loc");
-			        	break;
-			        case UPDATE_TIME:
-			        	//rc.broadcast(indexOffset+ i, rc.getRoundNum());
-			        	broadcastPrint(rc,indexOffset+i, rc.getRoundNum(), "time");
-			            break;
+				InfoEnum state= trackedInfo.getInfoEnum(i);
+				
+				switch (state) {
+					case UPDATE_TIME:
+						rc.broadcast(indexOffset+ i, rc.getRoundNum());
+						break;
+					case LOCATION:
+						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
+					case ID:
+						rc.broadcast(indexOffset+i, rc.getID());
 					default:
 						break;
-		        }
+						
+				}
 			}
+		}else{
+			//System.out.println("Index offset returning a failed number: " + indexOffset);
+			//This can happen if there are more than the enough tracked gardeners
 		}
 	}
     
@@ -53,7 +71,8 @@ public class Gardener extends RobotPlayer {
     	
     	if (!rc.hasMoved()){
             Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, rcLoc, Integer.MAX_VALUE, 10);
-            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, rcLoc, Integer.MAX_VALUE, 2, 0.1f, Constants.ignoreArchonGardener);
+            //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier, float bodyRadiusMultiplier, HashSet<RobotType> ignoreType)
+            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, rcLoc, Integer.MAX_VALUE, 2, 2, Constants.ignoreNone);
             Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
             Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
             Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, rcLoc, 1, 1);
@@ -75,14 +94,14 @@ public class Gardener extends RobotPlayer {
 	
     public static void runTreeGardener() throws GameActionException {
         // priority 1: water trees
-        TreeInfo[] trees = rc.senseNearbyTrees();
+        TreeInfo[] trees = sensor.nearbyFriendlyTrees;
         for (TreeInfo tree: trees) {
-            if (tree.getTeam() == rc.getTeam()) {
+//            if (tree.getTeam() == rc.getTeam()) {
                 if (rc.canWater(tree.ID)) {
                     rc.water(tree.ID);
                     Clock.yield();
                 }
-            }
+//            }
         }
         
         // priority 2: build trees
@@ -125,13 +144,20 @@ public class Gardener extends RobotPlayer {
     }
     
     public static void runProduceGardener() throws GameActionException {
-        Util.dodge();
+        //Util.dodge();
+    	move(rc);
         if (rc.getRoundNum() < 500) {
-            int prevNumLj = rc.readBroadcast(Constants.Channel.LUMBERJACK_COUNTER);
-            if (prevNumLj <= Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())) {
-                rc.buildRobot(RobotType.LUMBERJACK, Util.randomDirection());
-                rc.broadcast(Constants.Channel.LUMBERJACK_COUNTER, prevNumLj + 1);
-            }
+//            int prevNumLj = rc.readBroadcast(Constants.Channel.LUMBERJACK_COUNTER);
+//            if (prevNumLj <= Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())) {
+//                rc.buildRobot(RobotType.LUMBERJACK, Util.randomDirection());
+//                rc.broadcast(Constants.Channel.LUMBERJACK_COUNTER, prevNumLj + 1);
+//            }
+        	Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+        	int lumberjackCountIndex= trackedInfo.getStartIndex() + trackedInfo.getIndex(InfoEnum.LUMBERJACK_COUNT);
+        	int lumberjackCount= rc.readBroadcast(lumberjackCountIndex);
+        	if (lumberjackCount < Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())){
+        		rc.buildRobot(RobotType.LUMBERJACK, Util.randomDirection());
+        	}
         }
         else {
             if (rc.canBuildRobot(RobotType.SOLDIER, Direction.getEast())) {

@@ -7,7 +7,7 @@ import battlecode.common.MapLocation;
 
 public class Info {
 	private int startIndex= Integer.MIN_VALUE;
-	public ArrayList<InfoEnum> reservedChannels; //number of required channels
+	public final ArrayList<InfoEnum> reservedChannels; //number of required channels
 	private int trackCount; //number of info tracked
 	private int nextInfoStartIndex; //the place where the other guy starts
 

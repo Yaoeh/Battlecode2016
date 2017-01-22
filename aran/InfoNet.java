@@ -62,7 +62,7 @@ public class InfoNet {
 	
 	
 	public final static int NUM_ARCHONS_TRACKED= 3;
-	public final static int NUM_GARDENERS_TRACKED= 10;
+	public final static int NUM_GARDENERS_TRACKED= Constants.GARDENER_MIN;
 	public final static int NUM_SOLDIERS_TRACKED= 20;
 	public final static int NUM_SCOUTS_TRACKED= 20;
 	public final static int NUM_TANKS_TRACKED= 3;
@@ -237,39 +237,41 @@ public class InfoNet {
 					}
 				}
 			}
+		}else{
+			System.out.println("**Unit info map does not contain key : " + rc.getType().name());
 		}
 		return answer;
 	}
 	
-	public static int getFirstBehindRoundUpdateAddInfoIndex(RobotController rc, String keyname) throws GameActionException{ 
-		// Returns the first not yet update robot of the round, i.e. stops at
-		// the first robot where the update round number is behind the current round number
-		// returns Integer.MinValue on fail
-		
-		
-		int answer= Integer.MIN_VALUE;
-		if (addInfoMap.containsKey(keyname)){
-			//Search for an update time of same type below the current time,
-			//If there is no update time below, do nothing
-			//else, update the time
-			
-			Info trackedInfo= addInfoMap.get(keyname);
-			for (int i = 0; i < trackedInfo.getTrackCount(); i++){
-				int iteratedStartIndex= trackedInfo.getStartIndex()+ trackedInfo.reservedChannels.size()*i;
-				int updateChannelOffset= trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //returns -1 on non-existant enums
-				if (updateChannelOffset!= -1){ 
-					int lastUpdateTime= rc.readBroadcast(iteratedStartIndex+ updateChannelOffset);
-					if (rc.getRoundNum() > lastUpdateTime){
-						answer= iteratedStartIndex;
-						break;
-					}
-				}
-				
-				
-			}
-		}
-		return answer;
-	}
+//	public static int getFirstBehindRoundUpdateAddInfoIndex(RobotController rc, String keyname) throws GameActionException{ 
+//		// Returns the first not yet update robot of the round, i.e. stops at
+//		// the first robot where the update round number is behind the current round number
+//		// returns Integer.MinValue on fail
+//		
+//		
+//		int answer= Integer.MIN_VALUE;
+//		if (addInfoMap.containsKey(keyname)){
+//			//Search for an update time of same type below the current time,
+//			//If there is no update time below, do nothing
+//			//else, update the time
+//			
+//			Info trackedInfo= addInfoMap.get(keyname);
+//			for (int i = 0; i < trackedInfo.getTrackCount(); i++){
+//				int iteratedStartIndex= trackedInfo.getStartIndex()+ trackedInfo.reservedChannels.size()*i;
+//				int updateChannelOffset= trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //returns -1 on non-existant enums
+//				if (updateChannelOffset!= -1){ 
+//					int lastUpdateTime= rc.readBroadcast(iteratedStartIndex+ updateChannelOffset);
+//					if (rc.getRoundNum() > lastUpdateTime){
+//						answer= iteratedStartIndex;
+//						break;
+//					}
+//				}
+//				
+//				
+//			}
+//		}
+//		return answer;
+//	}
 	
 	
 	public static int condenseMapLocation(MapLocation loc){
