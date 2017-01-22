@@ -129,5 +129,4 @@ class Util extends RobotPlayer{
         }
         Util.tryMove(new Direction(ra));
     }
-
 }

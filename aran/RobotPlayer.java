@@ -61,7 +61,7 @@ public strictfp class RobotPlayer{
     			}
     		}
     	}
-    	if (rc.canShake() && sensor.nearbyTrees!=null && sensor.nearbyTrees.length > 0){
+    	if (rc.canShake() && sensor.nearbyNeutralTrees!=null && sensor.nearbyNeutralTrees.length > 0){
     		sensor.tryShakeTree(rc);
         }    	
     }
@@ -85,7 +85,7 @@ public strictfp class RobotPlayer{
     			}
     		}
     	}
-    	if (rc.canShake() && sensor.nearbyTrees!=null && sensor.nearbyTrees.length > 0){
+    	if (rc.canShake() && sensor.nearbyNeutralTrees!=null && sensor.nearbyNeutralTrees.length > 0){
     		sensor.tryShakeTree(rc);
         }    	
     }

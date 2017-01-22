@@ -12,7 +12,9 @@ public class Sensor {
 	BulletInfo[] nearbyBullets;
 	RobotInfo[] nearbyFriends;
 	RobotInfo[] nearbyEnemies;
-	TreeInfo[] nearbyTrees;
+	TreeInfo[] nearbyNeutralTrees;
+	TreeInfo[] nearbyFriendlyTrees;
+	TreeInfo[] nearbyEnemyTrees;
 	HashSet<MapLocation> goalLocs = new HashSet<MapLocation>();
 			
     static Direction randomDirection() {
@@ -73,23 +75,25 @@ public class Sensor {
 	}
 	
 	public void senseBullets(RobotController rc){ //Updates the freshness of the information?
-		nearbyBullets= rc.senseNearbyBullets(rc.getType().sensorRadius);
+		nearbyBullets= rc.senseNearbyBullets(-1);
 		//System.out.println("Bullet sensed: " + nearbyBullets.length);
 		sensedInfo[Constants.SenseRefresh.BULLET.getIndex()]= rc.getRoundNum();
 	}
 	
 	public void senseFriends(RobotController rc){
-		nearbyFriends= rc.senseNearbyRobots(rc.getType().sensorRadius, rc.getTeam());
+		nearbyFriends= rc.senseNearbyRobots(-1, rc.getTeam());
 		sensedInfo[Constants.SenseRefresh.FRIEND.getIndex()]= rc.getRoundNum();
 	}
 	
 	public void senseEnemies(RobotController rc) throws GameActionException{
-		nearbyEnemies= rc.senseNearbyRobots(rc.getType().sensorRadius , rc.getTeam().opponent());
+		nearbyEnemies= rc.senseNearbyRobots(-1 , rc.getTeam().opponent());
 		sensedInfo[Constants.SenseRefresh.ENEMY.getIndex()]= rc.getRoundNum();		
 	}
 	
 	public void senseTrees(RobotController rc){
-		nearbyTrees= rc.senseNearbyTrees(rc.getType().sensorRadius);
+		nearbyNeutralTrees= rc.senseNearbyTrees(-1, rc.getTeam().NEUTRAL);
+		nearbyFriendlyTrees= rc.senseNearbyTrees(-1, rc.getTeam());
+		nearbyEnemyTrees= rc.senseNearbyTrees(-1, rc.getTeam().opponent());
 		sensedInfo[Constants.SenseRefresh.TREE.getIndex()]= rc.getRoundNum();
 	}
 		
@@ -111,7 +115,9 @@ public class Sensor {
 	}
 	
 	public void senseTrees(RobotController rc, float r){
-		nearbyTrees= rc.senseNearbyTrees(r);
+		nearbyNeutralTrees= rc.senseNearbyTrees(Value.clamp(r,1, rc.getType().sensorRadius), rc.getTeam().NEUTRAL);
+		nearbyFriendlyTrees= rc.senseNearbyTrees(Value.clamp(r,1, rc.getType().sensorRadius), rc.getTeam());
+		nearbyEnemyTrees= rc.senseNearbyTrees(Value.clamp(r,1, rc.getType().sensorRadius), rc.getTeam().opponent());
 		sensedInfo[Constants.SenseRefresh.TREE.getIndex()]= rc.getRoundNum();
 	}
 		
@@ -154,9 +160,9 @@ public class Sensor {
 	    			}
 	    		}
         	}
-        	if (nearbyTrees!= null){
-	    		for (int i = 0; i < nearbyTrees.length; i++){
-	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyTrees[i])){
+        	if (nearbyFriendlyTrees!= null){
+	    		for (int i = 0; i < nearbyFriendlyTrees.length; i++){
+	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriendlyTrees[i])){
 	    				shouldShoot= false;
 	    				break;
 	    			}
@@ -266,10 +272,10 @@ public class Sensor {
 
     public Vector2D moveTowardsTreeVector(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier) throws GameActionException{		
     	Vector2D neutralVec= new Vector2D(0,0);
-    	if (nearbyTrees!= null){;
+    	if (nearbyFriendlyTrees!= null){;
 			double scale= 0;
-			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyTrees.length); i++){
-				TreeInfo ti= nearbyTrees[i];
+			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyFriendlyTrees.length); i++){
+				TreeInfo ti= nearbyFriendlyTrees[i];
 				scale= Value.getTastiness(ti, rc);
 				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
 				if (scale> 0)
@@ -282,10 +288,10 @@ public class Sensor {
     
     public Vector2D moveTowardsTreeVectorDisregardTastiness(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier) throws GameActionException{		
     	Vector2D neutralVec= new Vector2D(0,0);
-    	if (nearbyTrees!= null){;
+    	if (nearbyFriendlyTrees!= null){;
 			double scale= 0;
-			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyTrees.length); i++){
-				TreeInfo ti= nearbyTrees[i];
+			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyFriendlyTrees.length); i++){
+				TreeInfo ti= nearbyFriendlyTrees[i];
 				//scale= getTastiness(ti, rc);
 				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(multiplier));
 				if (scale> 0)
@@ -321,7 +327,7 @@ public class Sensor {
     	
 	public void tryShakeTree(RobotController rc) throws GameActionException{
 		// getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered)
-		TreeInfo closestBody= Value.getTastiestBody(rc, nearbyTrees, rc.getLocation(), Integer.MAX_VALUE);
+		TreeInfo closestBody= Value.getTastiestBody(rc, nearbyNeutralTrees, rc.getLocation(), Integer.MAX_VALUE);
 		if (closestBody!= null){
 	        MapLocation possibleTreeLoc= closestBody.getLocation();
 	        if (possibleTreeLoc!= null){

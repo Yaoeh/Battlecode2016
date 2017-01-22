@@ -33,6 +33,10 @@ public class Constants implements GameConstants{
 	static final HashSet<RobotType> ignoreArchonGardener= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER));
 	static final HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
     
+	public enum InfoEnum {
+	    LOCATION, STATUS, UPDATE_TIME, PRIORITY
+	}
+	
     /**
      * Team shared array.
      */
