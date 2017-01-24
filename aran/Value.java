@@ -115,8 +115,8 @@ public class Value {
 	
 	public static float getTastiness(TreeInfo ti, RobotController rc){
 		if (ti.getTeam().equals(rc.getTeam().NEUTRAL) && ti.containedBullets > 0){
-			return ti.containedBullets - (Math.abs(rc.getLocation().distanceTo(ti.location)) / Constants.MAP_MAX_WIDTH); //+ ti.health; //attraction towards neutral trees
-			
+			//return ti.containedBullets - (Math.abs(rc.getLocation().distanceTo(ti.location)) / Constants.MAP_MAX_WIDTH); //+ ti.health; //attraction towards neutral trees
+			return Constants.MAP_MAX_WIDTH/(rc.getLocation().distanceTo(ti.location)+1);
 		}else{
 			return 0;
 		}

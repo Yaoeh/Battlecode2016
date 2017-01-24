@@ -24,10 +24,9 @@ public class Scout extends RobotPlayer {
             	sensor.senseBullets(rc);
             	sensor.senseEnemies(rc);
             	sensor.senseTrees(rc);
-            	//boolean hasTastyTree= overrideGoalWithTastyTreeIfExists();
-            	//removeGoalOnFound();
+            	boolean hasTastyTree= overrideGoalWithTastyTreeIfExists();
             	System.out.println("\tScount num: " + scoutNum);
-            	boolean hasNormalGoal= ifNoGoalSetNewGoalBasedOnIterator();
+            	boolean hasNormalGoal= ifNoGoalSetEdgeAsGoal();
             	//boolean defaultGoal= ifNoGoalSetDefaultGoal();
             	
             	//Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
@@ -53,8 +52,8 @@ public class Scout extends RobotPlayer {
             	}
             	
             	//rc.setIndicatorLine(rc.getLocation(), sensor.goalLoc, 255, 220, 0);
-//            	if (hasTastyTree)
-//            		sensor.tryShakeTree(rc);
+            	if (hasTastyTree)
+            		sensor.tryShakeTree(rc);
             	if (hasNormalGoal){
             		checkOnMap();
             	}
@@ -80,7 +79,7 @@ public class Scout extends RobotPlayer {
     	return answer;
     }
     
-    public static boolean ifNoGoalSetNewGoalBasedOnIterator() throws GameActionException{
+    public static boolean ifNoGoalSetEdgeAsGoal() throws GameActionException{
     	boolean answer= false;
     	if (sensor.goalLoc== null){
     		
