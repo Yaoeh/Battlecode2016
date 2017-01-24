@@ -29,13 +29,24 @@ public strictfp class RobotPlayer{
 	        case SOLDIER:
 	            Soldier.run(rc);
 	            break;
-	        case LUMBERJACK:
-	            Lumberjack.run(rc);
+	        case SCOUT:
+	        	Scout.run(rc);
 	            break;
 	        case TANK:
 	            Tank.run(rc);
+	        case LUMBERJACK:
+	            Lumberjack.run(rc);
+	            break;
 	    }
 	}
+    
+    public static void removeGoalOnFound() throws GameActionException{
+    	if (sensor.goalLoc!= null){ //remove goals once you reach them
+    		if (rc.canSenseLocation(sensor.goalLoc) && rc.getLocation().distanceTo(sensor.goalLoc) <= rc.getType().bodyRadius){
+    			sensor.goalLoc= null;
+    		}
+    	}
+    }
 
     public static void notMoveGeneric(int[] profile, float[] rads) throws GameActionException{ //incomplete, base on profiles
     	sensor.senseTrees(rc);
@@ -46,16 +57,7 @@ public strictfp class RobotPlayer{
     		sensor.tryfireSingleShot(rc, highPRobotInfo.getLocation());
     	}
 		sensor.senseBullets(rc);
-    	if (sensor.goalLocs!= null){ //remove goals once you reach them
-    		for (MapLocation loc : sensor.goalLocs) {
-    			if (rc.canSenseLocation(loc)){
-    				if (rc.senseRobotAtLocation(loc)== null){
-    					sensor.goalLocs.remove(loc);
-    					break;
-    				}
-    			}
-    		}
-    	}
+		removeGoalOnFound();
     	if (rc.canShake() && sensor.nearbyNeutralTrees!=null && sensor.nearbyNeutralTrees.length > 0){
     		sensor.tryShakeTree(rc);
         }    	
@@ -72,14 +74,7 @@ public strictfp class RobotPlayer{
     	}
 		sensor.senseBullets(rc);
 		sensor.senseEnemies(rc, rc.getType().sensorRadius-2); //this is how you move, not how you shoot
-    	if (sensor.goalLocs!= null){ //remove goals once you reach them
-    		for (MapLocation loc : sensor.goalLocs) {
-    			if (rc.canSenseLocation(loc)){
-					sensor.goalLocs.remove(loc);
-					break;
-    			}
-    		}
-    	}
+		removeGoalOnFound();
     	if (rc.canShake() && sensor.nearbyNeutralTrees!=null && sensor.nearbyNeutralTrees.length > 0){
     		sensor.tryShakeTree(rc);
         }    	

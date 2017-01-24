@@ -1,15 +1,9 @@
 package aran;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import battlecode.common.GameActionException;
-import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -62,9 +56,9 @@ public class InfoNet {
 	
 	
 	public final static int NUM_ARCHONS_TRACKED= 3;
-	public final static int NUM_GARDENERS_TRACKED= Constants.GARDENER_MIN;
+	public final static int NUM_GARDENERS_TRACKED= 20;
 	public final static int NUM_SOLDIERS_TRACKED= 20;
-	public final static int NUM_SCOUTS_TRACKED= 20;
+	public final static int NUM_SCOUTS_TRACKED= 5;
 	public final static int NUM_TANKS_TRACKED= 3;
 	public final static int NUM_LUMBERJACKS_TRACKED= 5;
 	public final static int NUM_BLACKlIST_TRACKED= 50;
@@ -79,11 +73,18 @@ public class InfoNet {
 					)
 			);
 	
+	public static ArrayList<InfoEnum> ITERATED_INFO = 	    					
+			new ArrayList<InfoEnum>(
+				Arrays.asList(
+						InfoEnum.ITERATOR
+					)
+			);
+	
 	public static ArrayList<InfoEnum> GENERIC_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
 						InfoEnum.ID,
-						InfoEnum.LOCATION,
+//						InfoEnum.LOCATION,
 						InfoEnum.UPDATE_TIME
 					)
 			);
@@ -107,6 +108,16 @@ public class InfoNet {
        					InfoEnum.TANK_COUNT,
        					InfoEnum.LUMBERJACK_COUNT,
        					InfoEnum.UPDATE_TIME
+					)
+			);
+	
+	public static ArrayList<InfoEnum> MAP_EDGE_INFO = 	    					
+			new ArrayList<InfoEnum>(
+				Arrays.asList(
+						InfoEnum.MIN_Y,
+						InfoEnum.MAX_X,
+						InfoEnum.MAX_Y,
+						InfoEnum.MIN_X
 					)
 			);
 	
@@ -175,8 +186,14 @@ public class InfoNet {
 							UNIT_COUNT_INFO
 	    					,1) //should only count units once
 				);
+    			put(AddInfo.MAP_EDGE, 
+    					new Info(
+							MAP_EDGE_INFO
+	    					,1) //should only count units once
+				);
 			}};
 	public static int UNIT_COUNT_START_INDEX= addInfoMap.get(AddInfo.UNITCOUNT).setStartIndex(addInfoMap.get(AddInfo.BLACKLIST).getNextInfoStartIndex());
+	public static int MAP_EDGE_START_INDEX= addInfoMap.get(AddInfo.MAP_EDGE).setStartIndex(addInfoMap.get(AddInfo.UNITCOUNT).getNextInfoStartIndex());
 			
 	public static int countUnits(RobotController rc, RobotType rt) throws GameActionException{
 		int unitCount= 0;
@@ -186,7 +203,7 @@ public class InfoNet {
 			if (trackedInfo.getIndex(InfoEnum.UPDATE_TIME)!= -1){
 				int channel= trackedInfo.getStartIndex()+ (trackedInfo.reservedChannels.size()*i) + trackedInfo.getIndex(InfoEnum.UPDATE_TIME);
 				int lastUpdateRoundNum= rc.readBroadcast(channel);
-				System.out.println("\t" + rt.name() + " Channel: " + channel + " Last update round: " +  lastUpdateRoundNum + " Difference: "+  (rc.getRoundNum() - lastUpdateRoundNum));
+				//System.out.println("\t" + rt.name() + " Channel: " + channel + " Last update round: " +  lastUpdateRoundNum + " Difference: "+  (rc.getRoundNum() - lastUpdateRoundNum));
 				if ( (rc.getRoundNum() - lastUpdateRoundNum) < Constants.DEAD_TOLERANCE_ROUNDNUM){
 					unitCount++;
 				}else{
@@ -197,6 +214,64 @@ public class InfoNet {
 		System.out.println("\t" + rt.name() + " count: "+ unitCount);
 
 		return unitCount;
+	}
+	
+	public static int getClosestAddInfoTargetIndex(RobotController rc, AddInfo ai) throws GameActionException{ //returns Integer.MIN_VALUE on fail
+		int channelIndex= Integer.MIN_VALUE;
+		MapLocation closestLoc= null;
+		Info trackedInfo= addInfoMap.get(ai);
+		
+		for (int i = 0; i < trackedInfo.getTrackCount(); i++){
+			int startingIndex = trackedInfo.getStartIndex()+ (trackedInfo.reservedChannels.size()*i);
+			int mapIndexOffset= trackedInfo.getIndex(InfoEnum.LOCATION);
+			if (mapIndexOffset!= -1){
+				int mapInt= rc.readBroadcast(startingIndex + trackedInfo.getIndex(InfoEnum.LOCATION));
+				MapLocation contender= null;
+				if (mapInt!= 0){
+					contender= InfoNet.extractMapLocation(mapInt);
+				}
+				if (closestLoc== null && contender!= null){
+					closestLoc= contender;
+					channelIndex= startingIndex;
+				}else if (contender!= null && closestLoc!= null && rc.getLocation().distanceTo(closestLoc) > rc.getLocation().distanceTo(contender)){
+					closestLoc= contender;
+					channelIndex= startingIndex;
+				}
+			}else{
+				break;
+			}
+		}
+		
+		return channelIndex;
+	}
+	
+	public static int getClosestRobotTypeIndex(RobotController rc, RobotType rt) throws GameActionException{ //returns Integer.MIN_VALUE on fail
+		int channelIndex= Integer.MIN_VALUE;
+		MapLocation closestRobotOfTypeLoc= null;
+		Info trackedInfo= unitInfoMap.get(rt);
+		
+		for (int i = 0; i < trackedInfo.getTrackCount(); i++){
+			int startingIndex = trackedInfo.getStartIndex()+ (trackedInfo.reservedChannels.size()*i);
+			int mapIndexOffset= trackedInfo.getIndex(InfoEnum.LOCATION);
+			if (mapIndexOffset!= -1){
+				int mapInt= rc.readBroadcast(startingIndex + trackedInfo.getIndex(InfoEnum.LOCATION));
+				MapLocation contender= null;
+				if (mapInt!= 0){
+					contender= InfoNet.extractMapLocation(mapInt);
+				}
+				if (closestRobotOfTypeLoc== null && contender!= null){
+					closestRobotOfTypeLoc= contender;
+					channelIndex= startingIndex;
+				}else if (contender!= null && closestRobotOfTypeLoc!= null && rc.getLocation().distanceTo(closestRobotOfTypeLoc) > rc.getLocation().distanceTo(contender)){
+					closestRobotOfTypeLoc= contender;
+					channelIndex= startingIndex;
+				}
+			}else{
+				break;
+			}
+		}
+		
+		return channelIndex;
 	}
 	
 	public static int getFirstBehindRoundUpdateRobotIndex(RobotController rc) throws GameActionException{ 
@@ -243,6 +318,10 @@ public class InfoNet {
 		return answer;
 	}
 	
+	public static boolean channelWithinBoradcastRange(int checkedChannel){
+		return checkedChannel >= 0 && checkedChannel <Constants.BROADCAST_MAX_CHANNELS;
+	}
+	
 //	public static int getFirstBehindRoundUpdateAddInfoIndex(RobotController rc, String keyname) throws GameActionException{ 
 //		// Returns the first not yet update robot of the round, i.e. stops at
 //		// the first robot where the update round number is behind the current round number
@@ -275,15 +354,16 @@ public class InfoNet {
 	
 	
 	public static int condenseMapLocation(MapLocation loc){
-		return (int) (loc.x* (1000)+ loc.y);
+		return (int) (loc.x* (1000)+ loc.y) + Constants.MAP_MAX_WIDTH;
 	}
 	
 	public static MapLocation extractMapLocation(int code){
+		code-= Constants.MAP_MAX_WIDTH;
 		return new MapLocation(code/(1000), code%(1000));
 	}
 
 	//======================================================
-	///TESTING 
+	///TESTING RUN THESE FUNCTION IN THE TEST PLAYER
 	//======================================================
 	public static int getTotalNeededChannels(){
 		int answer= 0;

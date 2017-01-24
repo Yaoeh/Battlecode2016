@@ -8,26 +8,19 @@ import battlecode.common.*;
 
 public class Sensor {
 	public static Random randall = new Random();
-	int[] sensedInfo= {0,0,0,0}; //0: bullets, 1: friends, 2: enemies, 3: trees
+	//int[] sensedInfo= {0,0,0,0}; //0: bullets, 1: friends, 2: enemies, 3: trees
 	BulletInfo[] nearbyBullets;
 	RobotInfo[] nearbyFriends;
 	RobotInfo[] nearbyEnemies;
 	TreeInfo[] nearbyNeutralTrees;
 	TreeInfo[] nearbyFriendlyTrees;
 	TreeInfo[] nearbyEnemyTrees;
-	HashSet<MapLocation> goalLocs = new HashSet<MapLocation>();
+	MapLocation goalLoc;
 			
     static Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
-    	
-	public void setInitialEnemyArchonAsGoal(RobotController rc){
-		MapLocation[] initArchonLocs= rc.getInitialArchonLocations(rc.getTeam().opponent());
-		for (int i = 0; i< initArchonLocs.length; i++){
-			goalLocs.add(initArchonLocs[i]);
-		}
-	}
-	
+    		
 	public void setInitialScoutGoal(RobotController rc, float numLayer){
 		MapLocation[] initArchonLocs= rc.getInitialArchonLocations(rc.getTeam());
 		MapLocation yourArchonLoc= Value.getClosestLoc(initArchonLocs, rc.getLocation(), Integer.MAX_VALUE);
@@ -41,25 +34,6 @@ public class Sensor {
 	
 	public Direction getDirToInitialArchon(RobotController rc){
 		return rc.getLocation().directionTo(rc.getInitialArchonLocations(rc.getTeam().opponent())[0]);
-	}
-	
-	public void refresh(RobotController rc, int[] profile, float[] rads) throws GameActionException{ 
-		//Refresh based on profile; i.e. does sense by how long until the next sense
-		//Rads determines how far for each corresponding sense type to sense in
-		
-		for (int i = 0; i < sensedInfo.length; i++){
-			if (rc.getRoundNum()- sensedInfo[i] > profile[i]){ //if the information is too old
-				if (rads!=null && rads.length== 4){
-					updateSense(rc, i, Value.clamp(rads[i],0, rc.getType().sensorRadius));
-				}else {
-					updateSense(rc, i, rc.getType().sensorRadius);
-				}
-			}
-		}
-		
-//		if (broadcastRead!= 0){
-//			goalsLoc.add(Broadcast.expandInt(broadcastRead));
-//		}
 	}
 	
 	public void updateSense(RobotController rc, int index, float r) throws GameActionException{
@@ -77,48 +51,48 @@ public class Sensor {
 	public void senseBullets(RobotController rc){ //Updates the freshness of the information?
 		nearbyBullets= rc.senseNearbyBullets(-1);
 		//System.out.println("Bullet sensed: " + nearbyBullets.length);
-		sensedInfo[Constants.SenseRefresh.BULLET.getIndex()]= rc.getRoundNum();
+		//sensedInfo[Constants.SenseRefresh.BULLET.getIndex()]= rc.getRoundNum();
 	}
 	
 	public void senseFriends(RobotController rc){
 		nearbyFriends= rc.senseNearbyRobots(-1, rc.getTeam());
-		sensedInfo[Constants.SenseRefresh.FRIEND.getIndex()]= rc.getRoundNum();
+		//sensedInfo[Constants.SenseRefresh.FRIEND.getIndex()]= rc.getRoundNum();
 	}
 	
 	public void senseEnemies(RobotController rc) throws GameActionException{
 		nearbyEnemies= rc.senseNearbyRobots(-1 , rc.getTeam().opponent());
-		sensedInfo[Constants.SenseRefresh.ENEMY.getIndex()]= rc.getRoundNum();		
+		//sensedInfo[Constants.SenseRefresh.ENEMY.getIndex()]= rc.getRoundNum();		
 	}
 	
 	public void senseTrees(RobotController rc){
 		nearbyNeutralTrees= rc.senseNearbyTrees(-1, rc.getTeam().NEUTRAL);
 		nearbyFriendlyTrees= rc.senseNearbyTrees(-1, rc.getTeam());
 		nearbyEnemyTrees= rc.senseNearbyTrees(-1, rc.getTeam().opponent());
-		sensedInfo[Constants.SenseRefresh.TREE.getIndex()]= rc.getRoundNum();
+		//sensedInfo[Constants.SenseRefresh.TREE.getIndex()]= rc.getRoundNum();
 	}
 		
 	
 	
 	public void senseBullets(RobotController rc, float r){ //Updates the freshness of the information?
 		nearbyBullets= rc.senseNearbyBullets(r);
-		sensedInfo[Constants.SenseRefresh.BULLET.getIndex()]= rc.getRoundNum();
+		//sensedInfo[Constants.SenseRefresh.BULLET.getIndex()]= rc.getRoundNum();
 	}
 	
 	public void senseFriends(RobotController rc, float r){
 		nearbyFriends= rc.senseNearbyRobots(r, rc.getTeam());
-		sensedInfo[Constants.SenseRefresh.FRIEND.getIndex()]= rc.getRoundNum();
+		//sensedInfo[Constants.SenseRefresh.FRIEND.getIndex()]= rc.getRoundNum();
 	}
 	
 	public void senseEnemies(RobotController rc, float r) throws GameActionException{
 		nearbyEnemies= rc.senseNearbyRobots(r , rc.getTeam().opponent());
-		sensedInfo[Constants.SenseRefresh.ENEMY.getIndex()]= rc.getRoundNum();		
+		//sensedInfo[Constants.SenseRefresh.ENEMY.getIndex()]= rc.getRoundNum();		
 	}
 	
 	public void senseTrees(RobotController rc, float r){
 		nearbyNeutralTrees= rc.senseNearbyTrees(Value.clamp(r,1, rc.getType().sensorRadius), rc.getTeam().NEUTRAL);
 		nearbyFriendlyTrees= rc.senseNearbyTrees(Value.clamp(r,1, rc.getType().sensorRadius), rc.getTeam());
 		nearbyEnemyTrees= rc.senseNearbyTrees(Value.clamp(r,1, rc.getType().sensorRadius), rc.getTeam().opponent());
-		sensedInfo[Constants.SenseRefresh.TREE.getIndex()]= rc.getRoundNum();
+		//sensedInfo[Constants.SenseRefresh.TREE.getIndex()]= rc.getRoundNum();
 	}
 		
 	
@@ -168,6 +142,14 @@ public class Sensor {
 	    			}
 	    		}
         	}
+        	if (nearbyNeutralTrees!= null){
+	    		for (int i = 0; i < nearbyNeutralTrees.length; i++){
+	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyNeutralTrees[i])){
+	    				shouldShoot= false;
+	    				break;
+	    			}
+	    		}
+        	}
     		
     		if (shouldShoot){
     			rc.fireSingleShot(rc.getLocation().directionTo(target));
@@ -206,26 +188,31 @@ public class Sensor {
         return (perpendicularDist <= rt.bodyRadius);
     }
 	
-    public Vector2D moveAwayFromBulletsVector(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier) throws GameActionException{
+    public Vector2D moveAwayFromBulletsVector(RobotController rc, int maxConsidered, float multiplier) throws GameActionException{
+    	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D();
     	double danger= 0;
     	if (nearbyBullets!= null){
 	    	for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyBullets.length); i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= Value.getDanger(bi, rc);
-				if (Util.myRand.nextBoolean()){
-					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateRightDegrees(90).radians).scale(danger*multiplier));
-				}else{
-					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateLeftDegrees(90).radians).scale(danger*multiplier));
-				}
+//				if (Util.myRand.nextBoolean()){
+//					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateRightDegrees(90).radians).scale(danger*multiplier));
+//				}else{
+//					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateLeftDegrees(90).radians).scale(danger*multiplier));
+//				}
+				neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
+				
+				
 				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
 			}
 		}
     	return neutralVec;
     }
     
-    public Vector2D moveTowardsFriendVector(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier, float bodyRadiusMultiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    public Vector2D moveTowardsFriendVector(RobotController rc, int maxConsidered, float multiplier, float bodyRadiusMultiplier, HashSet<RobotType> ignoreType) throws GameActionException{
     	//Body Radius Multiplier dictates how far away to be from a friend, where the distance away is multiplied by this value
+    	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D(0,0);
     	if (nearbyFriends!= null){
 	    	double charisma= 0;
@@ -256,7 +243,8 @@ public class Sensor {
     	return neutralVec;
     }
     
-    public Vector2D moveTowardsEnemyVector(RobotController rc,  MapLocation rcLoc, int maxConsidered, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    public Vector2D moveTowardsEnemyVector(RobotController rc, int maxConsidered, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D(0,0);
     	if (nearbyEnemies!= null){
 	    	double charisma= 0;
@@ -274,7 +262,8 @@ public class Sensor {
     	return neutralVec;
     }
 
-    public Vector2D moveTowardsTreeVector(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier) throws GameActionException{		
+    public Vector2D moveTowardsAllTreeVector(RobotController rc, int maxConsidered, float multiplier) throws GameActionException{		
+    	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D(0,0);
     	if (nearbyFriendlyTrees!= null){;
 			double scale= 0;
@@ -290,7 +279,25 @@ public class Sensor {
     	return neutralVec;
     }
     
-    public Vector2D moveTowardsTreeVectorDisregardTastiness(RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier) throws GameActionException{		
+    public Vector2D moveTowardsNeutralTreeVector(RobotController rc, int maxConsidered, float multiplier) throws GameActionException{		
+    	MapLocation rcLoc= rc.getLocation();
+    	Vector2D neutralVec= new Vector2D(0,0);
+    	if (nearbyNeutralTrees!= null){;
+			double scale= 0;
+			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyNeutralTrees.length); i++){
+				TreeInfo ti= nearbyNeutralTrees[i];
+				scale= Value.getTastiness(ti, rc);
+				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
+				if (scale> 0)
+					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
+			}
+
+		}
+    	return neutralVec;
+    }
+    
+    public Vector2D moveTowardsTreeVectorDisregardTastiness(RobotController rc, int maxConsidered, float multiplier) throws GameActionException{		
+    	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D(0,0);
     	if (nearbyFriendlyTrees!= null){;
 			double scale= 0;
@@ -306,26 +313,16 @@ public class Sensor {
     	return neutralVec;
     }
             
-    public Vector2D moveVecTowardsGoal(RobotController rc, MapLocation rcLoc,int maxConsidered, float multiplier) throws GameActionException{
+    public Vector2D moveVecTowardsGoal(RobotController rc, float multiplier) throws GameActionException{
     	//System.out.println("Current Loc Vec start: "+ currentLoc.toStr());
+    	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D(0,0);
-    	int numIterated= 0;
-    	if (goalLocs!= null){
-    		for (MapLocation loc : goalLocs) {
-    			if (numIterated>= maxConsidered){
-    				break;
-    			}else{
-		    		float distance= 0;
-					distance= rc.getLocation().distanceTo(loc);
-					neutralVec.add(new Vector2D(rcLoc.directionTo(loc).radians).scale(distance/GameConstants.MAP_MAX_HEIGHT*multiplier)); //.normalize().scale(distance*multiplier));
-					rc.setIndicatorLine(rcLoc, loc, 255, 210, 0);
-					numIterated++;
-    			}
-    		}
-		}else{
-			System.out.println("Goals Loc Array is null");
-		}
-    	
+    	if (goalLoc!= null){
+			float distance= 0;
+			distance= rc.getLocation().distanceTo(goalLoc);
+			neutralVec.add(new Vector2D(rcLoc.directionTo(goalLoc).radians).scale(distance/GameConstants.MAP_MAX_HEIGHT*multiplier)); //.normalize().scale(distance*multiplier));
+			rc.setIndicatorLine(rcLoc, goalLoc, 255, 210, 0);
+    	}
     	return neutralVec;
     }
     	

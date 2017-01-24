@@ -3,6 +3,7 @@ package aran;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import battlecode.common.Direction;
 import battlecode.common.GameConstants;
 import battlecode.common.RobotType;
 
@@ -14,10 +15,10 @@ public class Constants implements GameConstants{
     
     // regular constants
     static final int GARDENER_MAX = 30;
-    static final int LUMBERJACK_MAX = 20;
+    static final int LUMBERJACK_MAX = 1;
     static final int SOLDIER_MAX = 20;
     static final int TANK_MAX = 20;
-    static final int GARDENER_MIN = 30;
+    static final int SCOUT_MAX = 5;
     
     static final int UNIT_COUNT_UPDATE_MOD= 5;
     static final int DEAD_TOLERANCE_ROUNDNUM= 3;
@@ -28,13 +29,26 @@ public class Constants implements GameConstants{
 	static final HashSet<RobotType> ignoreScout= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT));
 	static final HashSet<RobotType> ignoreArchon= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON));
 	static final HashSet<RobotType> ignoreArchonGardener= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER));
+	static final HashSet<RobotType> ignoreArchonGardenerScout= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER, RobotType.SCOUT));
 	static final HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
+	static final HashSet<RobotType> ignoreDamaging= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT, RobotType.TANK, RobotType.SOLDIER, RobotType.LUMBERJACK));
     
+	static final Direction[] COORDINALDIRS= {
+			Direction.getNorth(),
+			Direction.getEast(),
+			Direction.getSouth(),
+			Direction.getWest()
+	};
+	
 	public enum AddInfo{
-	    BLACKLIST, UNITCOUNT
+	    BLACKLIST, UNITCOUNT, MAP_EDGE
 	}
+
 	public enum InfoEnum {
-	    ID, LOCATION, STATUS, UPDATE_TIME, PRIORITY, ARCHON_COUNT, GARDENER_COUNT, LUMBERJACK_COUNT, SOLDIER_COUNT, TANK_COUNT, SCOUT_COUNT
+		ITERATOR,
+		ID, LOCATION, STATUS, UPDATE_TIME, PRIORITY,
+		ARCHON_COUNT, GARDENER_COUNT, LUMBERJACK_COUNT, SOLDIER_COUNT, TANK_COUNT, SCOUT_COUNT,
+		MIN_X, MIN_Y, MAX_X, MAX_Y
 	}
 	
     /**

@@ -68,13 +68,18 @@ public class Value {
 	
 	public static TreeInfo getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered) throws GameActionException{
 		TreeInfo priorityBody= null;
+		int largestPriority= 0;
 		if (bodies!= null){
 			if (bodies.length> 0){
 				priorityBody= bodies[0];
-				int largestPriority= (int) getTastiness(priorityBody,rc);
+				largestPriority= (int) getTastiness(priorityBody,rc);
 				for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
 					int candidatePriority = (int) getTastiness(bodies[i],rc);
-					rc.setIndicatorDot(bodies[i].location, (int) clamp(candidatePriority,0,255) , 0, 0);
+					if (candidatePriority> 0){
+						rc.setIndicatorDot(bodies[i].location, 255 , 0, 0);
+					}else{
+						rc.setIndicatorDot(bodies[i].location, 0 , 0, 0);
+					}
 					if (candidatePriority > largestPriority){
 						largestPriority= candidatePriority;
 						priorityBody= bodies[i];
@@ -82,6 +87,10 @@ public class Value {
 				}
 			}
 		}
+		if (largestPriority <= 0){
+			priorityBody= null;
+		}
+		
 		return priorityBody;
 	}
 		
@@ -101,12 +110,13 @@ public class Value {
 	}
 	
 	public static double getCharisma(RobotInfo ri){
-		return ri.health;
+		return ri.health; //ri.getType().attackPower * (ri.health * 0.25);
 	}
 	
-	public static double getTastiness(TreeInfo ti, RobotController rc){
-		if (rc.canInteractWithTree(ti.location) && ti.containedBullets> 0){
-			return ti.containedBullets + ti.health/50;
+	public static float getTastiness(TreeInfo ti, RobotController rc){
+		if (ti.getTeam().equals(rc.getTeam().NEUTRAL) && ti.containedBullets > 0){
+			return ti.containedBullets - (Math.abs(rc.getLocation().distanceTo(ti.location)) / Constants.MAP_MAX_WIDTH); //+ ti.health; //attraction towards neutral trees
+			
 		}else{
 			return 0;
 		}
@@ -116,6 +126,62 @@ public class Value {
 		return bi.damage/rc.getHealth(); 
 	}
 	
+	public static boolean shouldStrike(RobotController rc, RobotInfo[] nearbyEnemies, RobotInfo[] nearbyFriends, TreeInfo[] nearbyEnemyTrees, TreeInfo[] nearbyFirendTrees, TreeInfo[] nearbyNeutralTrees){
+		boolean shouldStrike= true;
+		float strikeValue= 0;
+		if (nearbyEnemies!= null){
+			for (int i = 0; i < nearbyEnemies.length; i++){
+				if (rc.getLocation().distanceTo(nearbyEnemies[i].getLocation()) < rc.getType().strideRadius){
+					strikeValue+= getCharisma(nearbyEnemies[i]);
+				}
+			}
+		}
+		
+		if (nearbyEnemyTrees!= null){
+			for (int i = 0; i < nearbyEnemyTrees.length; i++){
+				if (rc.getLocation().distanceTo(nearbyEnemyTrees[i].getLocation()) < rc.getType().strideRadius){
+					strikeValue+= getTastiness(nearbyEnemyTrees[i], rc);
+				}
+			}
+		}
+		
+		if (nearbyNeutralTrees!= null){
+			for (int i = 0; i < nearbyNeutralTrees.length; i++){
+				if (rc.getLocation().distanceTo(nearbyNeutralTrees[i].getLocation()) < rc.getType().strideRadius){
+					strikeValue+= getTastiness(nearbyNeutralTrees[i], rc);
+				}
+			}
+		}
+		
+		
+		if (nearbyFriends!= null){
+			for (int i = 0; i < nearbyFriends.length; i++){
+				if (rc.getLocation().distanceTo(nearbyFriends[i].getLocation()) < rc.getType().strideRadius){
+					strikeValue-= getCharisma(nearbyFriends[i]);
+				}
+				if (strikeValue < 0){
+					break;
+				}
+			}
+		}
+		
+		if (nearbyEnemies!= null){
+			for (int i = 0; i < nearbyFirendTrees.length; i++){
+				if (rc.getLocation().distanceTo(nearbyFirendTrees[i].getLocation()) < rc.getType().strideRadius){
+					strikeValue-= getTastiness(nearbyFirendTrees[i], rc);
+				}
+				if (strikeValue < 0){
+					break;
+				}
+			}
+		}
+		
+		if (strikeValue <= 0){
+			shouldStrike= false;
+		}
+		
+		return shouldStrike;
+	}
     
 	
 	public static float clamp(float val, float min, float max) {

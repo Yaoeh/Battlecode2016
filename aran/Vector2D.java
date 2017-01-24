@@ -17,6 +17,11 @@ class Vector2D
           x = _x;
           y = _y;      
       };
+      Vector2D(Direction dir)
+      {
+          x = Math.cos(dir.radians);
+          y = Math.sin(dir.radians);      
+      };
       Vector2D(MapLocation maploc){
     	  this.x= maploc.x;
     	  this.y= maploc.y;

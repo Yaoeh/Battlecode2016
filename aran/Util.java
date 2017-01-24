@@ -1,11 +1,15 @@
 package aran;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import battlecode.common.BulletInfo;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
 import battlecode.common.Team;
 import battlecode.common.TreeInfo;
 
@@ -129,4 +133,41 @@ class Util extends RobotPlayer{
         }
         Util.tryMove(new Direction(ra));
     }
+    
+    public static Vector2D getMoveVec(RobotController rc, Vector2D[] influences){
+    	Vector2D neturalVec= new Vector2D(rc.getLocation());
+    	for (int i = 0; i< influences.length; i++){
+    		neturalVec.add(influences[i]);
+    	}
+    	
+    	return neturalVec;
+    }
+    
+	public static void removeMapLocDuplicate(ArrayList<MapLocation> a){
+		Set<MapLocation> s = new HashSet<MapLocation>(a);
+		a.clear();
+		a.addAll(s);
+	}
+	
+	public static void shuffleDirArray(Direction[] ar){
+	    for (int i = ar.length - 1; i > 0; i--)
+	    {
+	      int index = myRand.nextInt(i + 1);
+	      // Simple swap
+	      Direction a = ar[index];
+	      ar[index] = ar[i];
+	      ar[i] = a;
+	    }
+	}
+	
+    public static void drawSensorCircle(RobotController rc, int r, int g, int b) throws GameActionException{
+		for (int d = 0; d < 360; d+= 30){
+			Direction dir= new Direction((float) Math.toRadians(d));
+			rc.setIndicatorLine(rc.getLocation(), (rc.getLocation().add(dir, rc.getType().sensorRadius)), r, g, b);
+		}       
+    }
+	
+	public static float clamp(float val, float min, float max) {
+	    return Math.max(min, Math.min(max, val));
+	}
 }

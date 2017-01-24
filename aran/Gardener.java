@@ -16,7 +16,7 @@ import battlecode.common.TreeInfo;
 public class Gardener extends RobotPlayer {
     public static int gardenerNum = -1;
     public static void run(RobotController rc) throws GameActionException {
-        while (true) {
+    	while (true) {
             try {
             	sensor.senseFriends(rc);
             	sensor.senseEnemies(rc);
@@ -24,7 +24,7 @@ public class Gardener extends RobotPlayer {
             	move(rc);
             	updateOwnInfo(rc);
             	
-            	if (gardenerNum < 10){
+            	if (gardenerNum < 3){
             		runProduceGardener();
             	}else{
             		runTreeGardener();
@@ -67,27 +67,25 @@ public class Gardener extends RobotPlayer {
 	}
     
     public static void move(RobotController rc) throws GameActionException{
-    	MapLocation rcLoc= rc.getLocation();
-    	
     	if (!rc.hasMoved()){
-            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, rcLoc, Integer.MAX_VALUE, 10);
+            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
             //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier, float bodyRadiusMultiplier, HashSet<RobotType> ignoreType)
-            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, rcLoc, Integer.MAX_VALUE, 2, 2, Constants.ignoreNone);
-            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
-            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
-            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, rcLoc, 1, 1);
-            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, rcLoc,1, 10);
+            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 7, 5, Constants.ignoreNone);
+            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
+            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
+            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, -3, 1);
+            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);
 
             Vector2D tryMoveVec= null;
             if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
             	//System.out.println("Danger vector: " + dangerVec.length());
-            	tryMoveVec= new Vector2D(rcLoc).add(treeVec).add(dangerVec); 
+            	tryMoveVec= new Vector2D(rc.getLocation()).add(treeVec).add(dangerVec); 
             }else{
-            	tryMoveVec= new Vector2D(rcLoc).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
+            	tryMoveVec= new Vector2D(rc.getLocation()).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
             }
 
-        	if (rcLoc.directionTo(tryMoveVec.getMapLoc())!= null){
-        		Util.tryMove(rcLoc.directionTo(tryMoveVec.getMapLoc()));
+        	if (rc.getLocation().directionTo(tryMoveVec.getMapLoc())!= null){
+        		Util.tryMove(rc.getLocation().directionTo(tryMoveVec.getMapLoc()));
         	}
     	}
     }
@@ -120,7 +118,7 @@ public class Gardener extends RobotPlayer {
                 for (TreeInfo tr: trees) {
                     if (tr.team == rc.getTeam()) {
                         for (aran.Constants.SixAngle ra : Constants.SixAngle.values()) {
-                            if (rc.canMove(tr.location.add(new Direction(ra.getRadians()), 2))) {
+                            if (!rc.hasMoved() && rc.canMove(tr.location.add(new Direction(ra.getRadians()), 2))) {
                                 rc.move(tr.location.add(new Direction(ra.getRadians()), 2));
                                 if (rc.getLocation().distanceTo(tr.location.add(new Direction(ra.getRadians()), 2)) < 0.1) {
                                     return;
@@ -145,7 +143,7 @@ public class Gardener extends RobotPlayer {
     
     public static void runProduceGardener() throws GameActionException {
         //Util.dodge();
-    	move(rc);
+    	//move(rc);
         if (rc.getRoundNum() < 500) {
 //            int prevNumLj = rc.readBroadcast(Constants.Channel.LUMBERJACK_COUNTER);
 //            if (prevNumLj <= Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())) {
@@ -153,11 +151,26 @@ public class Gardener extends RobotPlayer {
 //                rc.broadcast(Constants.Channel.LUMBERJACK_COUNTER, prevNumLj + 1);
 //            }
         	Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-        	int lumberjackCountIndex= trackedInfo.getStartIndex() + trackedInfo.getIndex(InfoEnum.LUMBERJACK_COUNT);
-        	int lumberjackCount= rc.readBroadcast(lumberjackCountIndex);
-        	if (lumberjackCount < Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())){
-        		rc.buildRobot(RobotType.LUMBERJACK, Util.randomDirection());
+//        	int lumberjackCountIndex= trackedInfo.getStartIndex() + trackedInfo.getIndex(InfoEnum.LUMBERJACK_COUNT);
+//        	int lumberjackCount= rc.readBroadcast(lumberjackCountIndex);
+//        	if (lumberjackCount < Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())){
+//        		rc.buildRobot(RobotType.LUMBERJACK, Util.randomDirection());
+//        	}
+        	int scoutCountIndex= trackedInfo.getStartIndex() + trackedInfo.getIndex(InfoEnum.SCOUT_COUNT);
+        	int scoutCount= rc.readBroadcast(scoutCountIndex);
+        	Direction randomDir= Util.randomDirection();
+        	if (scoutCount < Constants.SCOUT_MAX && rc.canBuildRobot(RobotType.SCOUT, Util.randomDirection()) && rc.getTeamBullets() > RobotType.SCOUT.bulletCost){
+        		rc.buildRobot(RobotType.SCOUT, randomDir);
+        	}else{
+            	int tankCountIndex= trackedInfo.getStartIndex() + trackedInfo.getIndex(InfoEnum.TANK_COUNT);
+            	int tankCount= rc.readBroadcast(tankCountIndex);
+            	if (tankCount < Constants.TANK_MAX && rc.canBuildRobot(RobotType.TANK, Util.randomDirection()) && rc.getTeamBullets() > RobotType.TANK.bulletCost){
+            		rc.buildRobot(RobotType.TANK, Util.randomDirection());
+            	}
         	}
+        	
+        	
+        	
         }
         else {
             if (rc.canBuildRobot(RobotType.SOLDIER, Direction.getEast())) {

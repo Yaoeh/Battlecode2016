@@ -67,7 +67,7 @@ public class Info {
 	
 	public InfoEnum getInfoEnum(int index){
 		InfoEnum answer= null;
-		if (index< reservedChannels.size() && index> -1){
+		if (index< reservedChannels.size() && index>= 0){
 			return reservedChannels.get(index);
 		}
 		return answer;

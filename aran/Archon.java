@@ -27,9 +27,9 @@ public class Archon extends RobotPlayer {
             	sensor.senseEnemies(rc);
             	sensor.senseTrees(rc);
             	updateOwnInfo(rc);
-
             	spawn(rc);
             	move(rc);
+            	targetNearbyTree(rc);
             	
                 Clock.yield();
             } catch (Exception e) {
@@ -39,39 +39,83 @@ public class Archon extends RobotPlayer {
         }
     }
     
+    public static void targetNearbyTree(RobotController rc) throws GameActionException{
+    	sensor.senseTrees(rc, rc.getType().bodyRadius);
+    	for (int i = 0; i < sensor.nearbyNeutralTrees.length; i++){
+    		Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.BLACKLIST);
+    		int indexOffset= InfoNet.getClosestAddInfoTargetIndex(rc, AddInfo.BLACKLIST);
+    		
+    		for (int j = 0; j< trackedInfo.reservedChannels.size(); j++){
+    			InfoEnum info= trackedInfo.reservedChannels.get(j);
+				switch (info) {
+					case UPDATE_TIME:
+						rc.broadcast(indexOffset+j, rc.getRoundNum());
+						break;
+					case LOCATION:
+						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
+					case PRIORITY:
+						rc.broadcast(indexOffset+i, (int) Value.getTastiness(sensor.nearbyNeutralTrees[i], rc));
+					default:
+						break;
+						
+				}
+    		}
+    	}
+    	
+    	for (int i = 0; i < sensor.nearbyEnemyTrees.length; i++){
+    		Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.BLACKLIST);
+    		int indexOffset= InfoNet.getClosestAddInfoTargetIndex(rc, AddInfo.BLACKLIST);
+    		
+    		for (int j = 0; j< trackedInfo.reservedChannels.size(); j++){
+    			InfoEnum info= trackedInfo.reservedChannels.get(j);
+				switch (info) {
+					case UPDATE_TIME:
+						rc.broadcast(indexOffset+j, rc.getRoundNum());
+						break;
+					case LOCATION:
+						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
+					case PRIORITY:
+						rc.broadcast(indexOffset+i, (int) Value.getTastiness(sensor.nearbyEnemyTrees[i], rc));
+					default:
+						break;
+						
+				}
+    		}
+    	}
+    }
+    
     public static void spawn(RobotController rc) throws GameActionException{
     	Direction dir = Util.randomDirection();
     	Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
     	int gardenerCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.GARDENER_COUNT);
     	
-    	if (rc.readBroadcast(gardenerCountIndex) < Constants.GARDENER_MIN){
-            if (rc.canHireGardener(dir)) {
+    	if (rc.readBroadcast(gardenerCountIndex) < InfoNet.NUM_GARDENERS_TRACKED){
+            if (rc.canHireGardener(dir) && rc.getTeamBullets() > RobotType.GARDENER.bulletCost) {
                 rc.hireGardener(dir);
             }
     	}
     }
     
     public static void move(RobotController rc) throws GameActionException{
-    	MapLocation rcLoc= rc.getLocation();
-    	
     	if (!rc.hasMoved()){
-            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, rcLoc, Integer.MAX_VALUE, 10);
-            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, rcLoc, Integer.MAX_VALUE, 2, 0.1f, Constants.ignoreArchonGardener);
-            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
-            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, rcLoc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
-            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, rcLoc, 1, 1);
-            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, rcLoc,1, 10);
+            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
+            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 2, 0.1f, Constants.ignoreArchonGardener);
+            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
+            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
+            //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier		
+            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, Integer.MAX_VALUE, -5);
+            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);
 
             Vector2D tryMoveVec= null;
             if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
             	//System.out.println("Danger vector: " + dangerVec.length());
-            	tryMoveVec= new Vector2D(rcLoc).add(treeVec).add(dangerVec); 
+            	tryMoveVec= new Vector2D(rc.getLocation()).add(treeVec).add(dangerVec); 
             }else{
-            	tryMoveVec= new Vector2D(rcLoc).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
+            	tryMoveVec= new Vector2D(rc.getLocation()).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
             }
 
-        	if (rcLoc.directionTo(tryMoveVec.getMapLoc())!= null){
-        		Util.tryMove(rcLoc.directionTo(tryMoveVec.getMapLoc()));
+        	if (rc.getLocation().directionTo(tryMoveVec.getMapLoc())!= null){
+        		Util.tryMove(rc.getLocation().directionTo(tryMoveVec.getMapLoc()));
         	}
     	}
     }
@@ -97,11 +141,11 @@ public class Archon extends RobotPlayer {
 		    		//rc.broadcast(broadcastIndex, unitCount);
 		        	broadcastPrint(rc, broadcastIndex, unitCount, "SoldierCount");
 		        	break;
-		        case SCOUT:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SCOUT_COUNT);
-		    		//rc.broadcast(broadcastIndex, unitCount);
-		        	broadcastPrint(rc, broadcastIndex, unitCount, "ScoutCount");
-		        	break;
+//		        case SCOUT:
+//		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SCOUT_COUNT);
+//		    		//rc.broadcast(broadcastIndex, unitCount);
+//		        	broadcastPrint(rc, broadcastIndex, unitCount, "ScoutCount");
+//		        	break;
 		        case TANK:
 		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.TANK_COUNT);
 		    		//rc.broadcast(broadcastIndex, unitCount);
