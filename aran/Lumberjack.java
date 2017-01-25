@@ -1,143 +1,165 @@
 package aran;
-
-import aran.Constants.AddInfo;
-import aran.Constants.InfoEnum;
-import battlecode.common.Clock;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
-import battlecode.common.TreeInfo;
-
-public class Lumberjack extends RobotPlayer {
-	public static int lumberjackNum= -1;
-    public static void run(RobotController rc) throws GameActionException {
-        sensor.goalLoc= rc.getInitialArchonLocations(rc.getTeam().opponent())[0];
-    	while (true) {
+import battlecode.common.*;
+public class Lumberjack extends RobotPlayer
+{
+	public static void run(RobotController rc) throws GameActionException {
+        Team enemy = rc.getTeam().opponent();
+        String mode = "seek";
+        MapLocation goalTreeLoc = rc.getLocation();
+        MapLocation movegoal = rc.getLocation();
+        Direction randomDir = Util.randomDirection();
+        int seekrounds = 40;
+        Clock.yield();
+        while (true) {
             try {
-            	Info unitCount= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-            	int archonCountIndex= unitCount.getStartIndex()+ unitCount.getIndex(InfoEnum.ARCHON_COUNT);
-            	int numArchons= rc.readBroadcast(archonCountIndex);
-            	if (numArchons > 0){
-            		int closestArchonInfoIndex= InfoNet.getClosestRobotTypeIndex(rc, RobotType.ARCHON);
-            		int dangerStatus= rc.readBroadcast(closestArchonInfoIndex + InfoNet.unitInfoMap.get(RobotType.ARCHON).getIndex(InfoEnum.STATUS));
-            		if (dangerStatus- 2 > 0){
-            			int mapInt= rc.readBroadcast(closestArchonInfoIndex + InfoNet.unitInfoMap.get(RobotType.ARCHON).getIndex(InfoEnum.LOCATION));
-            			if (mapInt!= 0){
-            				MapLocation archonLoc= InfoNet.extractMapLocation(mapInt);
-                			sensor.goalLoc= archonLoc;
-            			}
-            		}
-            		
-            	}else{
-            		if (lumberjackNum== InfoNet.NUM_LUMBERJACKS_TRACKED){ //if last guy tracked
-            			updateTypeUnitCounts(rc);
-            		}
-            	}
-            	
-            	sensor.senseEnemies(rc);
-            	if (sensor.goalLoc== null){
-	            	if (sensor.nearbyEnemies.length <= 0){ //if no enemies nearby
-	            		int readChannel = InfoNet.getClosestAddInfoTargetIndex(rc, AddInfo.BLACKLIST) + InfoNet.addInfoMap.get(AddInfo.BLACKLIST).getIndex(InfoEnum.LOCATION);
-	            		//System.out.println("Read channel: " + readChannel);
-	            		if (InfoNet.channelWithinBoradcastRange(readChannel)){
-//		            		int hateLocIndex= rc.readBroadcast(readChannel);
-//		            		if (hateLocIndex!= 0){
-//		            			MapLocation hatecrimeLoc= InfoNet.extractMapLocation(hateLocIndex);
-//		            			sensor.goalLoc= hatecrimeLoc;
-//		            		}
-	            		}else{
-	            			//No stated enemies
-	            		}
-	            	}
-            	}
-            	
-            	sensor.senseTrees(rc, rc.getType().strideRadius);
-            	sensor.senseBullets(rc);
-            	
-            	move(rc);
-				if (!rc.hasAttacked() && Value.shouldStrike(rc, sensor.nearbyEnemies, sensor.nearbyFriends,
-						sensor.nearbyEnemyTrees, sensor.nearbyFriendlyTrees, sensor.nearbyNeutralTrees)) {
-            		rc.strike();
-            	}
-            	
-            	
+            	MapLocation myLoc = rc.getLocation();
+                RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
+                if(robots.length > 0 && !rc.hasAttacked()) {
+                    rc.strike();
+                } else {
+                    // No close robots, so search for robots within sight radius
+                    robots = rc.senseNearbyRobots(-1,enemy);
+
+                    // If there is a robot, move towards it
+                    if(robots.length > 0) {
+                        MapLocation myLocation = rc.getLocation();
+                        MapLocation enemyLocation = robots[0].getLocation();
+                        Direction toEnemy = myLocation.directionTo(enemyLocation);
+
+                        Util.tryMove(toEnemy);
+                        Clock.yield();
+                    } 
+                    else {
+                    	if(mode == "seek")
+                    	{
+                    		
+	                        // look for trees
+	                    	TreeInfo[] trees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
+	                    	if(trees.length > 0)
+	                    	{
+	                    		//choose closest tree
+	                    		float minDistance = 99999.0f;
+	                    		for(int i=0;i<trees.length;i++){
+	                    			if(myLoc.distanceTo(trees[i].location) < minDistance)
+	                    			{
+	                    				minDistance = myLoc.distanceTo(trees[i].location);
+	                    				goalTreeLoc = trees[i].location;
+	                    			}
+	                    		}
+	                    		mode = "chopper";
+	                    		Clock.yield();
+	                    	}
+	                    	else
+	                    	{
+	                    		//move toward signals
+	                    		int scoutLength = rc.readBroadcast(0);
+	                        	int[] recent = new int[3];
+	                        	recent[0] = -9999;
+	                        	recent[1] = -9999;
+	                        	recent[2] = -9999;
+	                    		float[][] locations = new float[3][2];
+	                    		for(int i=1;i<scoutLength+1;i++){
+	                            	int msg = rc.readBroadcast(i);
+	                            	if(msg != 0)
+	                            	{
+	                            		int[] m = fastUnHash(msg);
+	                            		for(int j=0;j<3;j++){
+	                            			if(m[0]>recent[j])
+	                            			{
+	                            				recent[j] = m[0];
+	                            				locations[j][0] = (float)m[1];
+	                            				locations[j][1] = (float)m[2];
+	                            				break;
+	                            			}
+	                            				
+	                            		}
+	                            		
+	                            	}
+	                            	
+	                            }
+	                    		//calculate shortest distance
+	                        	float shortestDistance = 99999.0f;
+	                        	int index = -1;
+	                        	//goal = new MapLocation((float)locations[0][0],(float)locations[0][1]);
+	                        	for(int i=1;i<3;i++){
+	                        		if(myLoc.distanceTo(new MapLocation(locations[i][0], locations[i][1])) < shortestDistance && rc.getRoundNum() - recent[i] < 60){
+	                        			shortestDistance = myLoc.distanceTo(new MapLocation(locations[i][0], locations[i][1]));
+	                        			index = i;
+	                        			//goal = new MapLocation((float)locations[i][0],(float)locations[i][1]);
+	                        		}
+	                        	}
+	                        	if(index != -1)
+	                        	{
+	                        		movegoal = new MapLocation((float)locations[index][0],(float)locations[index][1]);
+	                        		mode = "moveseek";
+	                        		seekrounds = 40;
+	                        	}
+	                        	else{
+	                        		while(!rc.canMove(randomDir))
+	        	            		{
+	        	            			randomDir = Util.randomDirection();
+	        	            		}
+	        	            		rc.move(randomDir);
+	                        	}
+	                    	}
+	                    	Clock.yield();
+                    	}
+                    	else if(mode == "chopper"){
+                    		if(rc.canChop(goalTreeLoc)) //chop tree
+                    		{
+                    			rc.chop(goalTreeLoc);
+                    			if(rc.senseTreeAtLocation(goalTreeLoc) == null)
+                    			{
+                    				mode = "seek";
+                    			}
+                    		}
+                    		else{
+                    			//move toward tree
+                    			Direction dir = myLoc.directionTo(goalTreeLoc);
+                    			int count = 0;
+                    			float rotateamount = 15.0f;
+                                if(rc.getRoundNum()%100<50){
+                                	rotateamount = -15.0f;
+                                }
+    			            	while(!rc.canMove(dir) && count<24){
+    			            		dir = dir.rotateLeftDegrees(rotateamount);
+    			            		count+=1;
+    			            	}
+    		                    rc.move(dir);
+    		                    Clock.yield();
+                    		}
+                    	}
+                    	else if(mode == "moveseek")
+                    	{
+                    		seekrounds --;
+                    		//rc.setIndicatorDot(myLoc, 100, 100, 100);
+                    		if(myLoc.distanceTo(movegoal) < 5.0f || seekrounds < 0){
+                    			mode = "seek";
+                    		}
+                    		Direction dir = myLoc.directionTo(movegoal);
+                			int count = 0;
+                			float rotateamount = 15.0f;
+                            if(rc.getRoundNum()%100<50){
+                            	rotateamount = -15.0f;
+                            }
+			            	while(!rc.canMove(dir) && count<24){
+			            		dir = dir.rotateLeftDegrees(rotateamount);
+			            		count+=1;
+			            	}
+		                    rc.move(dir);
+		                    Clock.yield();
+                    	}
+                    	
+                        
+                    }
+                    
+                }
                 Clock.yield();
+
             } catch (Exception e) {
+                System.out.println("Lumberjack Exception");
                 e.printStackTrace();
             }
         }
     }
-    
-	public static void updateOwnInfo (RobotController rc) throws GameActionException {
-		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
-		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
-		
-		if (indexOffset!= Integer.MIN_VALUE){
-			lumberjackNum= (indexOffset - trackedInfo.getStartIndex()) / trackedInfo.reservedChannels.size();
-						
-			for (int i = 0; i < trackedInfo.reservedChannels.size(); i++){
-				InfoEnum state= trackedInfo.getInfoEnum(i);
-				
-				switch (state) {
-					case UPDATE_TIME:
-						rc.broadcast(indexOffset+ i, rc.getRoundNum());
-						break;
-					case LOCATION:
-						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
-					case ID:
-						rc.broadcast(indexOffset+i, rc.getID());
-					default:
-						break;
-						
-				}
-			}
-		}else{
-			//System.out.println("Index offset returning a failed number: " + indexOffset);
-			//This can happen if there are more than the enough tracked gardeners
-		}
-	}
-	
-    public static void move(RobotController rc) throws GameActionException{
-    	if (!rc.hasMoved()){
-            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc,2, Integer.MAX_VALUE, 10);
-            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 2, 2, Constants.ignoreNone);
-            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, -3, Constants.ignoreNone);    
-            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 2, Constants.ignoreArchonGardener); 
-            //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier		
-            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, Integer.MAX_VALUE, -5);
-            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);
-
-            Vector2D tryMoveVec= null;
-            if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
-            	//System.out.println("Danger vector: " + dangerVec.length());
-            	tryMoveVec= new Vector2D(rc.getLocation()).add(treeVec).add(dangerVec); 
-            }else{
-            	tryMoveVec= new Vector2D(rc.getLocation()).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
-            }
-
-        	if (rc.getLocation().directionTo(tryMoveVec.getMapLoc())!= null){
-        		Util.tryMove(rc.getLocation().directionTo(tryMoveVec.getMapLoc()));
-        	}
-    	}
-    }
-	
-    public static void updateTypeUnitCounts(RobotController rc) throws GameActionException{
-		Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-    	for (RobotType rt : InfoNet.unitInfoMap.keySet()) {
-    		int unitCount= InfoNet.countUnits(rc, rt);
-    		int broadcastIndex= -1;
-    		switch (rt) {
-		        case LUMBERJACK:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.LUMBERJACK_COUNT);
-		        	rc.broadcast(broadcastIndex, unitCount);
-		        	break;
-				default:
-					break;
-	        }
-    	}
-    }
-    
 }

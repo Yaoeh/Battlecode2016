@@ -135,23 +135,27 @@ public class Sensor {
 	    			}
 	    		}
         	}
-        	if (nearbyFriendlyTrees!= null){
-	    		for (int i = 0; i < nearbyFriendlyTrees.length; i++){
-	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriendlyTrees[i])){
-	    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
-	    				shouldShoot= false;
-	    				break;
-	    			}
-	    		}
+        	if (shouldShoot){
+	        	if (nearbyFriendlyTrees!= null){
+		    		for (int i = 0; i < nearbyFriendlyTrees.length; i++){
+		    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriendlyTrees[i])){
+		    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
+		    				shouldShoot= false;
+		    				break;
+		    			}
+		    		}
+	        	}
         	}
-        	if (nearbyNeutralTrees!= null){
-	    		for (int i = 0; i < nearbyNeutralTrees.length; i++){
-	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyNeutralTrees[i])){
-	    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
-	    				shouldShoot= false;
-	    				break;
-	    			}
-	    		}
+        	if (shouldShoot){
+	        	if (nearbyNeutralTrees!= null){
+		    		for (int i = 0; i < nearbyNeutralTrees.length; i++){
+		    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyNeutralTrees[i])){
+		    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
+		    				shouldShoot= false;
+		    				break;
+		    			}
+		    		}
+	        	}
         	}
     		
     		if (shouldShoot){
@@ -159,6 +163,11 @@ public class Sensor {
     			rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 255);
     			rc.setIndicatorDot(target, 255, 255, 255);
     			rc.setIndicatorDot(rc.getLocation(), 255, 255, 255);
+    		}else{
+    			rc.fireSingleShot(rc.getLocation().directionTo(target));
+    			rc.setIndicatorLine(rc.getLocation(), target, 0, 0, 0);
+    			rc.setIndicatorDot(target, 0, 0, 0);
+    			rc.setIndicatorDot(rc.getLocation(), 0, 0, 0);
     		}
         }
     
@@ -281,9 +290,9 @@ public class Sensor {
 			for (int i = 0; i <  Value.clamp(maxConsidered, 0,nearbyEnemies.length); i++){
 				RobotInfo ri= nearbyEnemies[i];
 				if (!ignoreType.contains(ri.getType())){
-					if (rc.getLocation().distanceTo(ri.getLocation()) < rc.getType().sensorRadius/consideredDivison){
+					if (rc.getLocation().distanceTo(ri.getLocation()) < Value.clamp(rc.getType().sensorRadius/consideredDivison, rc.getType().strideRadius*3, rc.getType().sensorRadius)){
 						charisma= Value.getCharisma(ri);
-						scale= rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius/ GameConstants.MAP_MAX_HEIGHT;
+						scale= rc.getLocation().distanceTo(ri.location)/ GameConstants.MAP_MAX_HEIGHT;
 						neutralVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
 						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
 					}

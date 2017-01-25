@@ -88,4 +88,19 @@ public strictfp class RobotPlayer{
     	System.out.println("\t"+descript+ " Channel: " + channel + ": "+ message);
     	rc.broadcast(channel, message);
     }
+    
+    static int fastHash(int rounds, int x1, int y1){
+    	return rounds*600*600 + x1*600 + y1;
+    }
+    static int[] fastUnHash(int m){
+    	int[] ans = new int[3];
+    	
+    	ans[0] = m/600/600;
+    	m -= ans[0]*600*600;
+    	ans[1] = m/600;
+    	ans[2] = m%600;
+    	
+    	
+    	return ans;
+    }
 }
