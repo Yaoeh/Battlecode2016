@@ -11,15 +11,18 @@ public class Archon extends RobotPlayer {
         while (true) {
             try {
                 Util.dodge();
-                Util.moveAwayFromMyTrees();
-                int prevNumGard = rc.readBroadcast(Constants.Channel.GARDENER_COUNTER);
-                rc.broadcast(Constants.Channel.GARDENER_COUNTER, 0);
                 Direction dir = Util.randomDirection();
-                if (rc.canHireGardener(dir)) {
-                    rc.hireGardener(dir);
-                    rc.broadcast(Constants.Channel.GARDENER_COUNTER, prevNumGard + 1);
+                if (rc.isCircleOccupiedExceptByThisRobot(rc.getLocation(), 4)) {
+                    Util.tryMove(dir.opposite());
+                    Util.tryMove(dir.rotateLeftDegrees(90));
+                    Util.tryMove(dir.rotateRightDegrees(90));
                 }
-
+                int prev = rc.readBroadcast(Constants.Channel.GARDENER_COUNTER);
+                rc.broadcast(Constants.Channel.GARDENER_COUNTER, 0);
+                if (prev < Constants.GARDENER_MAX && rc.canHireGardener(dir)) {
+                    rc.hireGardener(dir);
+                    Clock.yield();
+                }
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();

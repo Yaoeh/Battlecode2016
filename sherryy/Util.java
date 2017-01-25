@@ -3,14 +3,31 @@ package sherryy;
 import java.util.Random;
 
 import battlecode.common.BulletInfo;
+import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.Team;
+import battlecode.common.RobotInfo;
 import battlecode.common.TreeInfo;
 
 class Util extends RobotPlayer{
     static Random myRand = new Random(rc.getID());
+    
+    public static void moveAwayFromMyTrees() throws GameActionException {
+        TreeInfo[] trees = rc.senseNearbyTrees(3, team);
+        for (TreeInfo t : trees) {
+            tryMove(t.getLocation().directionTo(curLoc));
+            Clock.yield();
+        }
+    }
+    
+    public static void moveAwayFromMyRobots() throws GameActionException {
+        RobotInfo[] bots = rc.senseNearbyRobots(3, team);
+        for (RobotInfo bot : bots) {
+            tryMove(bot.getLocation().directionTo(curLoc));
+            Clock.yield();
+        }
+    }
     
     public static Direction randomDirection() {
         return(new Direction(myRand.nextFloat()*2*(float)Math.PI));
@@ -67,6 +84,7 @@ class Util extends RobotPlayer{
         // First, try intended direction
         if (!rc.hasMoved() && rc.canMove(dir)) {
             rc.move(dir);
+            Clock.yield();
             return true;
         }
 
@@ -78,11 +96,13 @@ class Util extends RobotPlayer{
             // Try the offset of the left side
             if(!rc.hasMoved() && rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
                 rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+                Clock.yield();
                 return true;
             }
             // Try the offset on the right side
             if(! rc.hasMoved() && rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
                 rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
+                Clock.yield();
                 return true;
             }
             // No move performed, try slightly further
@@ -112,21 +132,7 @@ class Util extends RobotPlayer{
     }
     
     public static void wander() throws GameActionException {
-        System.out.println("try to move");
         Direction dir = randomDirection();
         tryMove(dir);
-    }
-    
-    public static void moveAwayFromMyTrees() throws GameActionException {
-        TreeInfo[] trees = rc.senseNearbyTrees();
-        float ra = 0;
-        MapLocation rcLoc = rc.getLocation();
-        Team myTeam = rc.getTeam();
-        for (TreeInfo t : trees) {
-            if (t.getTeam() == myTeam) {
-                ra += t.location.directionTo(rc.getLocation()).radians;
-            }
-        }
-        Util.tryMove(new Direction(ra));
     }
 }

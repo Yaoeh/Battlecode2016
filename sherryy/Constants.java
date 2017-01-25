@@ -9,7 +9,7 @@ import battlecode.common.GameConstants;
 public class Constants implements GameConstants{
     
     // regular constants
-    static final int GARDENER_MAX = 30;
+    static final int GARDENER_MAX = 20;
     static final int LUMBERJACK_MAX = 20;
     
     /**
@@ -45,6 +45,23 @@ public class Constants implements GameConstants{
         
         public float getRadians() {
             return radians;
+        }
+    }
+    
+    public enum PackedGardenerDelta {
+        ONE(5f, (float)Math.sqrt((3f))),
+        TWO(-5f, -(float)Math.sqrt(3f)),
+        THREE((float) (2 * Math.sqrt(3f)), -4f),
+        FOUR(-(float) (2 * Math.sqrt(3f)), 4f),
+        FIVE(-1f, -(float)(3 * Math.sqrt(3f))),
+        SIX(1f, (float)(3 * Math.sqrt(3f)));
+        
+        protected float x;
+        protected float y;
+        
+        PackedGardenerDelta(float x_, float y_) {
+            x = x_;
+            y = y_;
         }
     }
 }

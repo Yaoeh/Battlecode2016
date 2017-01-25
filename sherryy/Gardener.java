@@ -6,19 +6,23 @@ import battlecode.common.GameActionException;
 import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.TreeInfo;
 import sherryy.Constants.SixAngle;
 
 public class Gardener extends RobotPlayer {
     
+    static int gardenerID;
+    
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
+                System.out.println(rc.getID());
                 int prev = rc.readBroadcast(Constants.Channel.GARDENER_COUNTER);
+                gardenerID = prev + 1;
                 rc.broadcast(Constants.Channel.GARDENER_COUNTER, prev+1);
-                int treeOnly = (prev + 1) % 2;
-                if (treeOnly == 1) {
+                if (rc.getID() % 2 == 1) {
                     runTreeGardener();
                 }
                 else {
@@ -32,68 +36,71 @@ public class Gardener extends RobotPlayer {
     }
     
     public static void runTreeGardener() throws GameActionException {
-        // priority 1: water trees
-        TreeInfo[] trees = rc.senseNearbyTrees();
-        for (TreeInfo tree: trees) {
-            if (tree.getTeam() == rc.getTeam()) {
-                if (rc.canWater(tree.ID)) {
-                    rc.water(tree.ID);
-                    Clock.yield();
-                }
-            }
-        }
-        
-        // priority 2: build trees
-        if (trees.length == 0) {
-            // no tree around. start a new cluster
-            for (SixAngle ra : Constants.SixAngle.values()) {
-                Direction d = new Direction(ra.getRadians());
-                if (rc.canPlantTree(d)) {
-                    rc.plantTree(d);
-                    Clock.yield();
-                }
-            }
-        } else {
-            if (rc.senseNearbyTrees(2).length == 0) {
-                // move towards cluster
-                for (TreeInfo tr: trees) {
-                    if (tr.team == rc.getTeam()) {
-                        for (SixAngle ra : Constants.SixAngle.values()) {
-                            if (rc.canMove(tr.location.add(new Direction(ra.getRadians()), 2))) {
-                                rc.move(tr.location.add(new Direction(ra.getRadians()), 2));
-                                if (rc.getLocation().distanceTo(tr.location.add(new Direction(ra.getRadians()), 2)) < 0.1) {
-                                    return;
-                                }
-                                Clock.yield();
-                            }
-                        }
-                    }
-                }
-            } else {
-                // continue planting trees in a circle
-                for (SixAngle ra : Constants.SixAngle.values()) {
-                    Direction d = new Direction(ra.getRadians());
-                    if (rc.canPlantTree(d)) {
-                        rc.plantTree(d);
-                        Clock.yield();
-                    }
-                }
+      // #1 water
+      TreeInfo[] trees = rc.senseNearbyTrees(2);
+
+      if (trees.length == 0) {
+          RobotInfo[] bots = rc.senseNearbyRobots(3);
+          if (bots.length > 0) {
+              for (RobotInfo bot : bots) {
+                  Util.tryMove(bot.getLocation().directionTo(curLoc));
+                  Util.tryMove(bot.getLocation().directionTo(curLoc).rotateLeftDegrees(90));
+                  Util.tryMove(bot.getLocation().directionTo(curLoc).rotateRightDegrees(90));
+              }
+          } else {
+              plantCircleTrees();
+              Clock.yield();
+          }
+
+      } else {
+          for (TreeInfo tree: trees) {
+              if (tree.getTeam() == team && rc.canWater(tree.ID)) {
+                  System.out.println("watering");
+                  rc.water(tree.ID);
+                  Clock.yield();
+              }
+          }
+          plantCircleTrees();
+      }
+    }
+    
+    private static void plantCircleTrees() throws GameActionException {
+        for (SixAngle ra : Constants.SixAngle.values()) {
+            Direction d = new Direction(ra.getRadians());
+            if (rc.canPlantTree(d)) {
+                rc.plantTree(d);
+                Clock.yield();
             }
         }
     }
+
     
     public static void runProduceGardener() throws GameActionException {
         Util.dodge();
-        if (rc.getRoundNum() < 500) {
-            int prevNumLj = rc.readBroadcast(Constants.Channel.LUMBERJACK_COUNTER);
-            if (prevNumLj <= Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, Util.randomDirection())) {
-                rc.buildRobot(RobotType.LUMBERJACK, Util.randomDirection());
-                rc.broadcast(Constants.Channel.LUMBERJACK_COUNTER, prevNumLj + 1);
+        RobotInfo[] bots = rc.senseNearbyRobots(3);
+        if (bots.length > 0) {
+            for (RobotInfo bot : bots) {
+                Util.tryMove(bot.getLocation().directionTo(curLoc));
+                Util.tryMove(bot.getLocation().directionTo(curLoc).rotateLeftDegrees(90));
+                Util.tryMove(bot.getLocation().directionTo(curLoc).rotateRightDegrees(90));
             }
-        }
-        else {
-            if (rc.canBuildRobot(RobotType.SOLDIER, Direction.getEast())) {
-                rc.buildRobot(RobotType.SOLDIER, Direction.getEast());
+        } else {
+            Direction dir = Util.randomDirection();
+            if (rc.getRoundNum() < 500) {
+                int prevNumLj = rc.readBroadcast(Constants.Channel.LUMBERJACK_COUNTER);
+                if (prevNumLj <= Constants.LUMBERJACK_MAX && rc.canBuildRobot(RobotType.LUMBERJACK, dir)) {
+                    rc.buildRobot(RobotType.LUMBERJACK, dir);
+                    rc.broadcast(Constants.Channel.LUMBERJACK_COUNTER, prevNumLj + 1);
+                    Clock.yield();
+                    Util.tryMove(dir.opposite());
+                }
+            }
+            else {
+                if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+                    rc.buildRobot(RobotType.SOLDIER, dir);
+                    Clock.yield();
+                    Util.tryMove(dir.opposite());
+                }
             }
         }
     }
