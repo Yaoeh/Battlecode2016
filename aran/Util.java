@@ -214,6 +214,19 @@ class Util extends RobotPlayer{
     	return false;
 	}
 	
+	public static Direction getDodgeBulletDirection(RobotController rc, MapLocation myLocation, Direction dir) throws GameActionException
+	{
+		//dodge any bullets
+    	BulletInfo[] bulletInfo = rc.senseNearbyBullets();
+    	for(int i=0;i<bulletInfo.length;i++){
+    		if(willCollideWithMe(rc, myLocation, bulletInfo[i])){
+    			dir = dodgeOneBullet(bulletInfo[i], myLocation);
+    			break;
+    		}
+    	}
+    	return dir;
+	}
+	
     
     static boolean trySidestep(BulletInfo bullet) throws GameActionException{
 

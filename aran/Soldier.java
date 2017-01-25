@@ -1,4 +1,8 @@
 package aran;
+import aran.InfoNet;
+import aran.Constants.AddInfo;
+import aran.Constants.InfoEnum;
+import aran.Info;
 import battlecode.common.*;
 public class Soldier extends RobotPlayer
 {

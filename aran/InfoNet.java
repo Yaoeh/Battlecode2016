@@ -121,6 +121,13 @@ public class InfoNet {
 					)
 			);
 	
+	public static ArrayList<InfoEnum> ANDYKEY_ITERATOR = 	    					
+			new ArrayList<InfoEnum>(
+				Arrays.asList(
+						InfoEnum.STATUS
+					)
+			);
+	
     public static HashMap<RobotType, Info> unitInfoMap= 
     		new HashMap<RobotType, Info>() {{
     			//Info(reserved channel, then track count)
@@ -164,7 +171,7 @@ public class InfoNet {
 	
 	//Since you can't declare the start index of the item before the map is instantiated, use this stupid thing here to initialize it
 			
-	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).setStartIndex(0);
+	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).setStartIndex(1000); //starting at 1000 since andrew uses the first 1000
 	public static int GARDENER_START_INDEX= unitInfoMap.get(RobotType.GARDENER).setStartIndex(unitInfoMap.get(RobotType.ARCHON).getNextInfoStartIndex());
 	public static int SOLDIER_START_INDEX= unitInfoMap.get(RobotType.SOLDIER).setStartIndex(unitInfoMap.get(RobotType.GARDENER).getNextInfoStartIndex());
 	public static int SCOUT_START_INDEX= unitInfoMap.get(RobotType.SCOUT).setStartIndex(unitInfoMap.get(RobotType.SOLDIER).getNextInfoStartIndex());
@@ -191,10 +198,16 @@ public class InfoNet {
 							MAP_EDGE_INFO
 	    					,1) //should only count units once
 				);
+    			put(AddInfo.ANDREW_SCOUT_ITERATOR, 
+    					new Info(
+							ANDYKEY_ITERATOR
+	    					,1) //should only count units once
+				);
 			}};
 	public static int UNIT_COUNT_START_INDEX= addInfoMap.get(AddInfo.UNITCOUNT).setStartIndex(addInfoMap.get(AddInfo.BLACKLIST).getNextInfoStartIndex());
 	public static int MAP_EDGE_START_INDEX= addInfoMap.get(AddInfo.MAP_EDGE).setStartIndex(addInfoMap.get(AddInfo.UNITCOUNT).getNextInfoStartIndex());
-			
+	public static int ANNDY_ITERATOR_INDEX= addInfoMap.get(AddInfo.ANDREW_SCOUT_ITERATOR).setStartIndex(addInfoMap.get(AddInfo.MAP_EDGE).getNextInfoStartIndex());
+		
 	public static int countUnits(RobotController rc, RobotType rt) throws GameActionException{
 		int unitCount= 0;
 		Info trackedInfo= unitInfoMap.get(rt);

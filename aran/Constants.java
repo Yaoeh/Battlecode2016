@@ -41,7 +41,7 @@ public class Constants implements GameConstants{
 	};
 	
 	public enum AddInfo{
-	    BLACKLIST, UNITCOUNT, MAP_EDGE
+	    BLACKLIST, UNITCOUNT, MAP_EDGE, ANDREW_SCOUT_ITERATOR
 	}
 
 	public enum InfoEnum {

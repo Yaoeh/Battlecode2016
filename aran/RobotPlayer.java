@@ -103,4 +103,19 @@ public strictfp class RobotPlayer{
     	
     	return ans;
     }
+    
+    public static MapLocation getClosestLoc(MapLocation[] locs, MapLocation ref){
+		MapLocation cloestLoc= locs[0];
+
+		float shortestLength= ref.distanceTo(cloestLoc);
+		for (int i = 1; i< locs.length; i++){
+			float candidateDis= ref.distanceTo(locs[i]);
+			if (candidateDis < shortestLength){
+				shortestLength= candidateDis;
+				cloestLoc= locs[i];
+			}
+		}
+
+		return cloestLoc;
+	}
 }
