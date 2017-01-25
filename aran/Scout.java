@@ -27,20 +27,31 @@ public class Scout extends RobotPlayer {
             	boolean hasTastyTree= overrideGoalWithTastyTreeIfExists();
             	System.out.println("\tScount num: " + scoutNum);
             	boolean hasNormalGoal= ifNoGoalSetEdgeAsGoal();
-            	//boolean defaultGoal= ifNoGoalSetDefaultGoal();
             	
-            	//Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
-            	//Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 5, Constants.ignoreArchonGardener);
-            	//Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 3, 2, Constants.ignoreNone);
-            	//Vector2D badGuyVec= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 1, Constants.ignoreDamaging);
-            	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 1000);
+            	float goalAttraction= 1000;
+            	
+            	if (!hasTastyTree && !hasNormalGoal){
+            		ifNoGoalSetDefaultGoal();
+            		goalAttraction= 0.5f;
+            	}
+            	
+            	
+            	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, Integer.MAX_VALUE, 10);
+            	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, -5, Constants.ignoreArchonGardener);
+            	Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 3, 2, Constants.ignoreNone);
+            	Vector2D badGuyVec= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 1, Constants.ignoreDamaging);
+            	if (enemyVec.length() > 0){
+            		badGuyVec.scale(0);
+            	}
+            	
+            	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalAttraction);
             	//Vector2D treeVec= sensor.moveTowardsNeutralTreeVector(rc, Integer.MAX_VALUE, 4);
 
             	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
-            		//dangerVec,
-            		//enemyVec,
-            		//friendVec,
-            		//badGuyVec,
+            		dangerVec,
+            		enemyVec,
+            		friendVec,
+            		badGuyVec,
             		goalVec,
             		//treeVec,
             		
@@ -54,8 +65,10 @@ public class Scout extends RobotPlayer {
             	//rc.setIndicatorLine(rc.getLocation(), sensor.goalLoc, 255, 220, 0);
             	if (hasTastyTree)
             		sensor.tryShakeTree(rc);
-            	if (hasNormalGoal){
+            	else if (hasNormalGoal){
             		checkOnMap();
+            	}else{
+            		Util.tryShoot();
             	}
 
                 Clock.yield();

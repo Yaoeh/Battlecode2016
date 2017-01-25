@@ -10,6 +10,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.Team;
 import battlecode.common.TreeInfo;
 
@@ -97,6 +98,13 @@ class Util extends RobotPlayer{
         return false;
     }
     
+    static void tryShoot() throws GameActionException{
+    	if(rc.getType().canAttack() && sensor.nearbyEnemies.length > 0 && !rc.hasAttacked()) {        	
+        	RobotInfo highPRobotInfo= (RobotInfo) Value.getHighestPriorityBody(rc, sensor.nearbyEnemies,rc.getLocation(), Integer.MAX_VALUE);
+    		sensor.tryfireSingleShot(rc, highPRobotInfo.getLocation());
+    	}
+    }
+    
     static void dodge() throws GameActionException {
         BulletInfo[] bullets = rc.senseNearbyBullets();
         for (BulletInfo bi : bullets) {
@@ -104,6 +112,19 @@ class Util extends RobotPlayer{
                 trySidestep(bi);
             }
         }
+    }
+    
+    static boolean isStuck() throws GameActionException{
+    	boolean answer= true;
+    	for (int i = 0; i < Constants.COORDINALDIRS.length; i++){
+    		if (rc.canMove(rc.getLocation().add(Constants.COORDINALDIRS[i], rc.getType().bodyRadius))){
+    			rc.setIndicatorDot(rc.getLocation(), 150, 150, 0);
+    			answer= false;
+    			break;
+    		}
+    	}
+    	
+    	return answer;
     }
 
     static boolean trySidestep(BulletInfo bullet) throws GameActionException{

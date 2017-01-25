@@ -24,7 +24,7 @@ public class Gardener extends RobotPlayer {
             	move(rc);
             	updateOwnInfo(rc);
             	
-            	if (gardenerNum < 3){
+            	if (gardenerNum < 2){
             		runProduceGardener();
             	}else{
             		runTreeGardener();
@@ -68,11 +68,11 @@ public class Gardener extends RobotPlayer {
     
     public static void move(RobotController rc) throws GameActionException{
     	if (!rc.hasMoved()){
-            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
+            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc,2, Integer.MAX_VALUE, 10);
             //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier, float bodyRadiusMultiplier, HashSet<RobotType> ignoreType)
             Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 7, 5, Constants.ignoreNone);
-            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
-            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
+            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, -3, Constants.ignoreNone);    
+            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 2, Constants.ignoreArchonGardener); 
             Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, -3, 1);
             Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);
 

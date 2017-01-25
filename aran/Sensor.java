@@ -129,6 +129,7 @@ public class Sensor {
         	if (nearbyFriends!= null){
 	    		for (int i = 0; i < nearbyFriends.length; i++){
 	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriends[i])){
+	    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
 	    				shouldShoot= false;
 	    				break;
 	    			}
@@ -137,6 +138,7 @@ public class Sensor {
         	if (nearbyFriendlyTrees!= null){
 	    		for (int i = 0; i < nearbyFriendlyTrees.length; i++){
 	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriendlyTrees[i])){
+	    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
 	    				shouldShoot= false;
 	    				break;
 	    			}
@@ -145,6 +147,7 @@ public class Sensor {
         	if (nearbyNeutralTrees!= null){
 	    		for (int i = 0; i < nearbyNeutralTrees.length; i++){
 	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyNeutralTrees[i])){
+	    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
 	    				shouldShoot= false;
 	    				break;
 	    			}
@@ -187,8 +190,30 @@ public class Sensor {
 
         return (perpendicularDist <= rt.bodyRadius);
     }
+    
+    public Vector2D getSideStepVector(RobotController rc, BulletInfo bullet){
+        Vector2D answer= null;
+        
+    	Direction towards = bullet.getDir();
+        MapLocation leftGoal = rc.getLocation().add(towards.rotateLeftDegrees(90), rc.getType().bodyRadius);
+        MapLocation rightGoal = rc.getLocation().add(towards.rotateRightDegrees(90), rc.getType().bodyRadius);
+        
+        ArrayList<MapLocation> possLocs= new ArrayList<MapLocation>();
+        if (rc.canMove(rc.getLocation().directionTo(leftGoal), rc.getType().strideRadius)){
+        	possLocs.add(leftGoal);
+        }
+        if (rc.canMove(rc.getLocation().directionTo(rightGoal), rc.getType().strideRadius)){
+        	possLocs.add(rightGoal);
+        }
+        
+        if (possLocs.size() > 0){
+        	answer= new Vector2D(rc.getLocation().directionTo(possLocs.get(randall.nextInt(possLocs.size()))).radians);
+        }
+        
+		return answer;
+    }
 	
-    public Vector2D moveAwayFromBulletsVector(RobotController rc, int maxConsidered, float multiplier) throws GameActionException{
+    public Vector2D moveAwayFromBulletsVector(RobotController rc, float consideredDivision, int maxConsidered, float multiplier) throws GameActionException{
     	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D();
     	double danger= 0;
@@ -201,9 +226,13 @@ public class Sensor {
 //				}else{
 //					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateLeftDegrees(90).radians).scale(danger*multiplier));
 //				}
-				neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
 				
-				
+				if (rc.getLocation().distanceTo(bi.location) < 3 * (rc.getType().strideRadius + bi.speed)){
+					neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
+				}
+				if (rc.getLocation().distanceTo(bi.location) < rc.getType().sensorRadius/consideredDivision){
+					neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
+				}
 				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
 			}
 		}
@@ -243,7 +272,7 @@ public class Sensor {
     	return neutralVec;
     }
     
-    public Vector2D moveTowardsEnemyVector(RobotController rc, int maxConsidered, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
+    public Vector2D moveTowardsEnemyVector(RobotController rc, int maxConsidered, float consideredDivison, float multiplier, HashSet<RobotType> ignoreType) throws GameActionException{
     	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D(0,0);
     	if (nearbyEnemies!= null){
@@ -252,10 +281,12 @@ public class Sensor {
 			for (int i = 0; i <  Value.clamp(maxConsidered, 0,nearbyEnemies.length); i++){
 				RobotInfo ri= nearbyEnemies[i];
 				if (!ignoreType.contains(ri.getType())){
-					charisma= Value.getCharisma(ri);
-					scale= rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius/ GameConstants.MAP_MAX_HEIGHT;
-					neutralVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
-					rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
+					if (rc.getLocation().distanceTo(ri.getLocation()) < rc.getType().sensorRadius/consideredDivison){
+						charisma= Value.getCharisma(ri);
+						scale= rc.getLocation().distanceTo(ri.location)/ rc.getType().sensorRadius/ GameConstants.MAP_MAX_HEIGHT;
+						neutralVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
+						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
+					}
 				}
 			}
 		}

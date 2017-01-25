@@ -102,10 +102,10 @@ public class Lumberjack extends RobotPlayer {
 	
     public static void move(RobotController rc) throws GameActionException{
     	if (!rc.hasMoved()){
-            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
+            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc,2, Integer.MAX_VALUE, 10);
             Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 2, 2, Constants.ignoreNone);
-            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
-            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
+            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, -3, Constants.ignoreNone);    
+            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 2, Constants.ignoreArchonGardener); 
             //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier		
             Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, Integer.MAX_VALUE, -5);
             Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);

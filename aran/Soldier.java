@@ -14,44 +14,37 @@ public class Soldier extends RobotPlayer{
         //sensor.goalLoc= rc.getInitialArchonLocations(rc.getTeam().opponent())[0];
     	while (true) {
             try {
+            	sensor.goalLoc= null;
+            	updateOwnInfo();
+            	sensor.senseBullets(rc);
+            	sensor.senseEnemies(rc);
             	sensor.senseTrees(rc);
-        		sensor.senseFriends(rc);
-        		sensor.senseEnemies(rc);
-        		sensor.senseBullets(rc);
-            	if (sensor.goalLoc!= null){ //remove goals once you reach them
-        			if (rc.senseRobotAtLocation(sensor.goalLoc)== null){
-        				sensor.goalLoc= null;
-        			}
+            	ifNoGoalSetDefaultGoal();
+            	
+            	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, Integer.MAX_VALUE, 10);
+            	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, -5, Constants.ignoreArchonGardener);
+            	Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 3, 2, Constants.ignoreNone);
+            	Vector2D badGuyVec= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 1, Constants.ignoreDamaging);
+            	if (enemyVec.length() > 0){
+            		badGuyVec.scale(0);
             	}
-            	if (rc.canShake() && sensor.nearbyNeutralTrees!=null && sensor.nearbyNeutralTrees.length > 0){
-            		sensor.tryShakeTree(rc);
-                } 
-            	//Danger, goal, enemy, friend, tree
-            	if (!rc.hasMoved()){
-                    Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, Integer.MAX_VALUE, 10);
-                    Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 2, 1, Constants.ignoreArchonGardenerScout);
-                    Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, -3, Constants.ignoreNone);    
-                    Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE, 2, Constants.ignoreArchonGardener); 
-                    //Vector2D treeVec= sensor.moveTowardsNeutralTreeVector(rc, rcLoc, 1, 9);
-                    Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 1);
-
-                    Vector2D tryMoveVec= null;
-                    if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
-                    	System.out.println("Danger vector: " + dangerVec.length());
-                    	tryMoveVec= new Vector2D(rc.getLocation()).add(dangerVec); 
-                    }else{
-                    	tryMoveVec= new Vector2D(rc.getLocation()).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(dangerVec);
-                    }
-
-                	if (rc.getLocation().directionTo(tryMoveVec.getMapLoc())!= null){
-                		Util.tryMove(rc.getLocation().directionTo(tryMoveVec.getMapLoc()));
-                	}
+            	
+            	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 0.5f);
+            	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
+            		dangerVec,
+            		enemyVec,
+            		friendVec,
+            		badGuyVec,
+            		goalVec,
+            		//treeVec,
             		
+            	});
+            	
+            	Direction moveDir= rc.getLocation().directionTo(moveVec.getMapLoc());
+            	if (moveDir != null){
+            		Util.tryMove(moveDir);
             	}
-            	if(rc.getType().canAttack() && sensor.nearbyEnemies.length > 0 && !rc.hasAttacked()) {        	
-                	RobotInfo highPRobotInfo= (RobotInfo) Value.getHighestPriorityBody(rc, sensor.nearbyEnemies,rc.getLocation(), Integer.MAX_VALUE);
-            		sensor.tryfireSingleShot(rc, highPRobotInfo.getLocation());
-            	}
+            	
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -60,7 +53,7 @@ public class Soldier extends RobotPlayer{
     }
 
 
-	public static void updateOwnInfo(RobotController rc) throws GameActionException {
+	public static void updateOwnInfo() throws GameActionException {
 		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
 		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
 		
@@ -77,4 +70,11 @@ public class Soldier extends RobotPlayer{
 	        }
 		}
 	}
+	
+    
+    public static boolean ifNoGoalSetDefaultGoal(){
+    	sensor.goalLoc= Value.getClosestLoc(rc.getInitialArchonLocations(rc.getTeam().opponent()), rc.getLocation(), Integer.MAX_VALUE);
+    	return true;
+    }
+    
 }
