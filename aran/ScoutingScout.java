@@ -14,7 +14,6 @@ import battlecode.common.RobotType;
 import battlecode.common.TreeInfo;
 
 public class ScoutingScout extends RobotPlayer {
-	public static int scoutNum= -1;
     public static void run(RobotController rc) throws GameActionException {
         Info trackedInfo= InfoNet.unitInfoMap.get(RobotType.SCOUT);
     	while (true) {
@@ -107,9 +106,9 @@ public class ScoutingScout extends RobotPlayer {
 //        	};
 	    	MapLocation[] edgeGoalLocs= getRemainingMapEdgeLocGoals(); //correspondingGoals; //
 	    	//System.out.println("Remaining map edge goals: " + edgeGoalLocs.length);
-	    	if (scoutNum>= 0 && scoutNum < 4){
+	    	if (unitNum>= 0 && unitNum < 4){
 		    	if (edgeGoalLocs.length== 4){
-		       		sensor.goalLoc= edgeGoalLocs[scoutNum];
+		       		sensor.goalLoc= edgeGoalLocs[unitNum];
 		       		System.out.println("setting new Goal loc: " + sensor.goalLoc);
 		    		answer = true;
 		    	}else if (edgeGoalLocs.length > 0){

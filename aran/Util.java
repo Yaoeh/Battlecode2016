@@ -11,6 +11,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.TreeInfo;
 
@@ -262,6 +263,18 @@ class Util extends RobotPlayer{
         tryMove(dir);
     }
     
+    public static void tryBuildRobot(RobotType rt) throws GameActionException{
+    	if (rc.getType().equals(RobotType.GARDENER)){
+    		for (int i = 0; i < Constants.SixAngle.values().length; i++){
+    			Direction tryBuildDir= new Direction(Constants.SixAngle.values()[i].getRadians());
+    			if (rc.isBuildReady() && rc.canBuildRobot(rt, tryBuildDir)){
+    				rc.buildRobot(rt, tryBuildDir);
+    				break;
+    			}
+    		}
+    	}
+    }
+    
     public static void moveAwayFromMyTrees() throws GameActionException {
         TreeInfo[] trees = rc.senseNearbyTrees();
         float ra = 0;
@@ -290,15 +303,16 @@ class Util extends RobotPlayer{
 		a.addAll(s);
 	}
 	
-	public static void shuffleDirArray(Direction[] ar){
+	public static float[] shuffleFloatArray(float[] ar){
 	    for (int i = ar.length - 1; i > 0; i--)
 	    {
 	      int index = myRand.nextInt(i + 1);
 	      // Simple swap
-	      Direction a = ar[index];
+	      float a = ar[index];
 	      ar[index] = ar[i];
 	      ar[i] = a;
 	    }
+	    return ar;
 	}
 	
     public static void drawSensorCircle(RobotController rc, int r, int g, int b) throws GameActionException{

@@ -9,6 +9,8 @@ public strictfp class RobotPlayer{
     static RobotController rc;
     static Sensor sensor= new Sensor();
     static boolean firstOfType= false;
+    static boolean archonDead= false;
+    static int unitNum= -1;
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
@@ -134,7 +136,7 @@ public strictfp class RobotPlayer{
 		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
 				
 		if (indexOffset!= Integer.MIN_VALUE){
-			//scoutNum= (indexOffset - trackedInfo.getStartIndex()) / trackedInfo.reservedChannels.size(); //number in the info net slot
+			unitNum= (indexOffset - trackedInfo.getStartIndex()) / trackedInfo.reservedChannels.size(); //number in the info net slot
 			if (indexOffset== InfoNet.unitInfoMap.get(rc.getType()).getStartIndex()){
 				firstOfType= true;
 			}
@@ -163,7 +165,7 @@ public strictfp class RobotPlayer{
 
     	if (firstOfType){
 	    	Info archonAliveInfo= InfoNet.unitInfoMap.get(RobotType.ARCHON);
-	    	boolean archonDead= false;
+	    	archonDead= false;
 	    	int firstArchonUpdateIndex= archonAliveInfo.getStartIndex()+ archonAliveInfo.getIndex(InfoEnum.UPDATE_TIME);
 	    	int archonUpdateTime= rc.readBroadcast(firstArchonUpdateIndex);
 	    	if (archonUpdateTime- rc.getRoundNum() > Constants.DEAD_TOLERANCE_ROUNDNUM){ //if archon is past due of update, it is presumed dead

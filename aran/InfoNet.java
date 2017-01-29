@@ -63,6 +63,23 @@ public class InfoNet {
 	public final static int NUM_LUMBERJACKS_TRACKED= 5;
 	public final static int NUM_BLACKlIST_TRACKED= 50;
 	
+	public static int getNumTypeTracked(RobotType rt){
+		if (rt.equals(RobotType.ARCHON)){
+			return NUM_ARCHONS_TRACKED;
+		}else if (rt.equals(RobotType.GARDENER)){
+			return NUM_GARDENERS_TRACKED;
+		}else if (rt.equals(RobotType.SOLDIER)){
+			return NUM_SOLDIERS_TRACKED;
+		}else if (rt.equals(RobotType.SCOUT)){
+			return NUM_SCOUTS_TRACKED;
+		}else if (rt.equals(RobotType.TANK)){
+			return NUM_TANKS_TRACKED;
+		}else {
+			return NUM_LUMBERJACKS_TRACKED;
+		}
+	}
+	
+	
 	public static ArrayList<InfoEnum> ARCH_TRACKED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
@@ -311,6 +328,38 @@ public class InfoNet {
 					//Last update time is = rc.readBroadcast(infoIndex+ updateChannelOffset);
 				}				
 			}
+			
+			if (answer == Integer.MIN_VALUE){ //if the ID method fails (i.e. you can't find yourself) //Search until you find a timely replacement
+				for (int i = 0; i < trackedInfo.getTrackCount(); i++){
+					int infoIndex= trackedInfo.getStartIndex() + (trackedInfo.reservedChannels.size()*i);
+					if (trackedInfo.getIndex(InfoEnum.UPDATE_TIME)!= -1){ //If time is tracked, replace the 'dead' guy
+						int lastUpdated= rc.readBroadcast(infoIndex+ trackedInfo.getIndex(InfoEnum.UPDATE_TIME));
+						if (rc.getRoundNum() - lastUpdated > Constants.DEAD_TOLERANCE_ROUNDNUM){
+							answer= infoIndex;
+							break;
+						}
+					}
+				}
+			}
+		}else{
+			System.out.println("**Unit info map does not contain key : " + rc.getType().name());
+		}
+		return answer;
+	}
+	
+	public static int getFirstBehindRoundUpdateOtherRobotIndex(RobotController rc, RobotType rt) throws GameActionException{ 
+		// Returns the first not yet update robot of the round, i.e. stops at
+		// the first robot where the update round number is behind the current round number
+		// returns Integer.MinValue on fail
+		
+		
+		int answer= Integer.MIN_VALUE;
+		if (unitInfoMap.containsKey(rt)){
+			//Search for an update time of same type below the current time,
+			//If there is no update time below, do nothing
+			//else, update the time
+			
+			Info trackedInfo= unitInfoMap.get(rt);
 			
 			if (answer == Integer.MIN_VALUE){ //if the ID method fails (i.e. you can't find yourself) //Search until you find a timely replacement
 				for (int i = 0; i < trackedInfo.getTrackCount(); i++){

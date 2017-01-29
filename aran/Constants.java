@@ -14,11 +14,11 @@ import battlecode.common.RobotType;
 public class Constants implements GameConstants{
     
     // regular constants
-    static final int GARDENER_MAX = 30;
-    static final int LUMBERJACK_MAX = 1;
-    static final int SOLDIER_MAX = 20;
-    static final int TANK_MAX = 20;
-    static final int SCOUT_MAX = 5;
+//    static final int GARDENER_MAX = 30;
+//    static final int LUMBERJACK_MAX = 1;
+//    static final int SOLDIER_MAX = 20;
+//    static final int TANK_MAX = 20;
+//    static final int SCOUT_MAX = 5;
     
     static final int UNIT_COUNT_UPDATE_OFFSET= 20;
     static final int DEAD_TOLERANCE_ROUNDNUM= 25; //20, by decree of the andykat
@@ -46,7 +46,7 @@ public class Constants implements GameConstants{
 	};
 	
 	public enum AddInfo{
-	    BLACKLIST, UNITCOUNT, MAP_EDGE, ANDREW_SCOUT_ITERATOR
+	    BLACKLIST, UNITCOUNT, MAP_EDGE
 	}
 
 	public enum InfoEnum {
@@ -93,7 +93,7 @@ public class Constants implements GameConstants{
     }
     
     
-    static final int[] ARCH_PROFIL= {0,0,0,0};
+    //static final int[] ARCH_PROFIL= {0,0,0,0};
     
 	public enum SenseRefresh{
 		//0: bullets, 1: friends, 2: enemies, 3: trees
