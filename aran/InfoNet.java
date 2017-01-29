@@ -198,16 +198,12 @@ public class InfoNet {
 							MAP_EDGE_INFO
 	    					,1) //should only count units once
 				);
-    			put(AddInfo.ANDREW_SCOUT_ITERATOR, 
-    					new Info(
-							ANDYKEY_ITERATOR
-	    					,1) //should only count units once
-				);
 			}};
 	public static int UNIT_COUNT_START_INDEX= addInfoMap.get(AddInfo.UNITCOUNT).setStartIndex(addInfoMap.get(AddInfo.BLACKLIST).getNextInfoStartIndex());
 	public static int MAP_EDGE_START_INDEX= addInfoMap.get(AddInfo.MAP_EDGE).setStartIndex(addInfoMap.get(AddInfo.UNITCOUNT).getNextInfoStartIndex());
-	public static int ANNDY_ITERATOR_INDEX= addInfoMap.get(AddInfo.ANDREW_SCOUT_ITERATOR).setStartIndex(addInfoMap.get(AddInfo.MAP_EDGE).getNextInfoStartIndex());
-		
+
+	
+	
 	public static int countUnits(RobotController rc, RobotType rt) throws GameActionException{
 		int unitCount= 0;
 		Info trackedInfo= unitInfoMap.get(rt);

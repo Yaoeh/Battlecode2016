@@ -13,7 +13,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.TreeInfo;
 
-public class Scout extends RobotPlayer {
+public class ScoutingScout extends RobotPlayer {
 	public static int scoutNum= -1;
     public static void run(RobotController rc) throws GameActionException {
         Info trackedInfo= InfoNet.unitInfoMap.get(RobotType.SCOUT);
@@ -38,12 +38,12 @@ public class Scout extends RobotPlayer {
             	
             	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
             	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreArchonGardener);
-            	Vector2D friendVec= sensor.moveTowardsFriendVector(rc, 5, 3, 2, Constants.ignoreNone);
-            	Vector2D badGuyVec= sensor.moveTowardsEnemyVector(rc, 10 ,1, 1, Constants.ignoreDamaging);
-            	if (enemyVec.length() > 0){
-            		badGuyVec.scale(0);
-            	}
-            	
+//            	Vector2D friendVec= sensor.moveTowardsFriendVector(rc, 5, 3, 2, Constants.ignoreNone);
+            	//Vector2D badGuyVec= sensor.moveTowardsEnemyVector(rc, 10 ,1, 1, Constants.ignoreDamaging);
+//            	if (enemyVec.length() > 0){
+//            		badGuyVec.scale(0);
+//            	}
+//            	
             	
             	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalAttraction);
             	//Vector2D treeVec= sensor.moveTowardsNeutralTreeVector(rc, Integer.MAX_VALUE, 4);
@@ -51,8 +51,8 @@ public class Scout extends RobotPlayer {
             	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
             		dangerVec,
             		enemyVec,
-            		friendVec,
-            		badGuyVec,
+//            		friendVec,
+            		//badGuyVec,
             		goalVec,
             		//treeVec,
             		

@@ -264,12 +264,13 @@ public class Sensor {
 	    	for (int i = 0; i <iteratedValues ; i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= Value.getDanger(bi, rc);
-				if (iteratedValues == 1){
-					//move left or right, depending on how close the line is. If it is exactly in the middle, chose one at random
-					neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
-				}else{
-					neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
-				}
+//				if (iteratedValues == 1){
+//					//move left or right, depending on how close the line is. If it is exactly in the middle, chose one at random
+//					neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
+//				}else{
+//					neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
+//				}
+				neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
 				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
 			}
 		}
@@ -337,7 +338,7 @@ public class Sensor {
 			double scale= 0;
 			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyFriendlyTrees.length); i++){
 				TreeInfo ti= nearbyFriendlyTrees[i];
-				scale= Value.getTastiness(ti, rc);
+				scale= Value.getDistanceToTree(ti, rc);
 				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
 				if (scale> 0)
 					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);
@@ -354,7 +355,7 @@ public class Sensor {
 			double scale= 0;
 			for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyNeutralTrees.length); i++){
 				TreeInfo ti= nearbyNeutralTrees[i];
-				scale= Value.getTastiness(ti, rc);
+				scale= Value.getDistanceToTree(ti, rc);
 				neutralVec.add(new Vector2D(rcLoc.directionTo(ti.location).radians).scale(scale*multiplier));
 				if (scale> 0)
 					rc.setIndicatorLine(rcLoc, ti.location, 0, 150, 0);

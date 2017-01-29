@@ -30,7 +30,7 @@ public strictfp class RobotPlayer{
 	            Soldier.run(rc);
 	            break;
 	        case SCOUT:
-	        	Scout.run(rc);
+	        	ScoutingScout.run(rc);
 	            break;
 	        case TANK:
 	            Tank.run(rc);

@@ -131,7 +131,7 @@ public class Archon extends RobotPlayer {
 					case LOCATION:
 						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
 					case PRIORITY:
-						rc.broadcast(indexOffset+i, (int) Value.getTastiness(sensor.nearbyNeutralTrees[i], rc));
+						rc.broadcast(indexOffset+i, (int) Value.getDistanceToTree(sensor.nearbyNeutralTrees[i], rc));
 					default:
 						break;
 						
@@ -152,7 +152,7 @@ public class Archon extends RobotPlayer {
 					case LOCATION:
 						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
 					case PRIORITY:
-						rc.broadcast(indexOffset+i, (int) Value.getTastiness(sensor.nearbyEnemyTrees[i], rc));
+						rc.broadcast(indexOffset+i, (int) Value.getDistanceToTree(sensor.nearbyEnemyTrees[i], rc));
 					default:
 						break;
 						

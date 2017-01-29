@@ -68,26 +68,32 @@ public class Value {
 	
 	public static TreeInfo getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered) throws GameActionException{
 		TreeInfo priorityBody= null;
-		int largestPriority= 0;
+		float largestPriority= 0;
 		if (bodies!= null){
 			if (bodies.length> 0){
 				priorityBody= bodies[0];
-				largestPriority= (int) getTastiness(priorityBody,rc);
-				for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
-					int candidatePriority = (int) getTastiness(bodies[i],rc);
-					if (candidatePriority> 0){
-						rc.setIndicatorDot(bodies[i].location, 255 , 0, 0);
-					}else{
-						rc.setIndicatorDot(bodies[i].location, 0 , 0, 0);
-					}
-					if (candidatePriority > largestPriority){
-						largestPriority= candidatePriority;
-						priorityBody= bodies[i];
+				largestPriority= getDistanceToTree(priorityBody,rc);
+				if (! (largestPriority < rc.getType().bodyRadius)){
+					for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
+						float candidatePriority = getDistanceToTree(bodies[i],rc);
+//						if (candidatePriority> 0){
+//							rc.setIndicatorDot(bodies[i].location, 255 , 0, 0);
+//						}else{
+//							rc.setIndicatorDot(bodies[i].location, 0 , 0, 0);
+//						}
+						if (candidatePriority < largestPriority){
+							largestPriority= candidatePriority;
+							priorityBody= bodies[i];
+							if (largestPriority < rc.getType().bodyRadius){
+								break;
+							}
+						}
 					}
 				}
+				
 			}
 		}
-		if (largestPriority <= 0){
+		if (largestPriority == Float.MAX_VALUE){
 			priorityBody= null;
 		}
 		
@@ -113,12 +119,13 @@ public class Value {
 		return ri.health; //ri.getType().attackPower * (ri.health * 0.25);
 	}
 	
-	public static float getTastiness(TreeInfo ti, RobotController rc){
+	public static float getDistanceToTree(TreeInfo ti, RobotController rc){
 		if (ti.getTeam().equals(rc.getTeam().NEUTRAL) && ti.containedBullets > 0){
 			//return ti.containedBullets - (Math.abs(rc.getLocation().distanceTo(ti.location)) / Constants.MAP_MAX_WIDTH); //+ ti.health; //attraction towards neutral trees
-			return Constants.MAP_MAX_WIDTH/(rc.getLocation().distanceTo(ti.location)+1);
+			//return Constants.MAP_MAX_WIDTH/(rc.getLocation().distanceTo(ti.location)+1);
+			return rc.getLocation().distanceTo(ti.location);
 		}else{
-			return 0;
+			return Float.MAX_VALUE;
 		}
 	}
 	
@@ -140,7 +147,7 @@ public class Value {
 		if (nearbyEnemyTrees!= null){
 			for (int i = 0; i < nearbyEnemyTrees.length; i++){
 				if (rc.getLocation().distanceTo(nearbyEnemyTrees[i].getLocation()) < rc.getType().strideRadius){
-					strikeValue+= getTastiness(nearbyEnemyTrees[i], rc);
+					strikeValue+= getDistanceToTree(nearbyEnemyTrees[i], rc);
 				}
 			}
 		}
@@ -148,7 +155,7 @@ public class Value {
 		if (nearbyNeutralTrees!= null){
 			for (int i = 0; i < nearbyNeutralTrees.length; i++){
 				if (rc.getLocation().distanceTo(nearbyNeutralTrees[i].getLocation()) < rc.getType().strideRadius){
-					strikeValue+= getTastiness(nearbyNeutralTrees[i], rc);
+					strikeValue+= getDistanceToTree(nearbyNeutralTrees[i], rc);
 				}
 			}
 		}
@@ -168,7 +175,7 @@ public class Value {
 		if (nearbyEnemies!= null){
 			for (int i = 0; i < nearbyFirendTrees.length; i++){
 				if (rc.getLocation().distanceTo(nearbyFirendTrees[i].getLocation()) < rc.getType().strideRadius){
-					strikeValue-= getTastiness(nearbyFirendTrees[i], rc);
+					strikeValue-= getDistanceToTree(nearbyFirendTrees[i], rc);
 				}
 				if (strikeValue < 0){
 					break;
