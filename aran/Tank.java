@@ -9,6 +9,9 @@ public class Tank extends RobotPlayer{
     public static void run(RobotController rc) throws GameActionException {
         while (true) {
             try {
+            	infoUpdate();	
+        		
+            	
             	sensor.senseTrees(rc);
             	if (sensor.nearbyNeutralTrees!= null && sensor.nearbyNeutralTrees.length> 0){
             		BodyInfo closetTree= Value.getClosestBody(sensor.nearbyNeutralTrees, rc.getLocation(), Integer.MAX_VALUE);

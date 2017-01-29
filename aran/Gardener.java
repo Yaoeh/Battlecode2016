@@ -1,4 +1,6 @@
 package aran;
+import aran.Constants.AddInfo;
+import aran.Constants.InfoEnum;
 import aran.Constants.SixAngle;
 import battlecode.common.*;
 public class Gardener extends RobotPlayer
@@ -12,7 +14,11 @@ public class Gardener extends RobotPlayer
     static int currentlyPlanted = 0;
     static int earlyGameIndex = 0;
     static int[] earlyGameQueue = {};
-    static String status = "looking";
+    
+    static enum status {earlygame, looking, gardenCheck, gardening, ratiogame};
+    //static String status = "looking";
+    static status stat= status.looking;
+    
 	public static void run(RobotController rc) throws GameActionException {
         
         myTeam = rc.getTeam();
@@ -23,12 +29,18 @@ public class Gardener extends RobotPlayer
         earlyGameInit();
         while (true) {
             try {
+            	infoUpdate();
+        		
+            	
+            	
             	//move away from other gardeners
-            	if(status == "earlygame")
+            	if(stat== status.earlygame)//(status == "earlygame")
             	{
             		earlyGame();
+            	}else if (stat== status.ratiogame){
+            		
             	}
-            	if(status == "looking")
+            	if(stat== status.looking)//status == "looking")
             	{
             		//MapLocation myLocation = rc.getLocation();
             		RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
@@ -42,7 +54,8 @@ public class Gardener extends RobotPlayer
             		}
             		if(gardenerCount == 0)
             		{
-            			status = "gardenCheck";
+            			//status = "gardenCheck";
+            			stat= status.gardenCheck;
             		}
             		else
             		{
@@ -67,7 +80,7 @@ public class Gardener extends RobotPlayer
             		}
             		
             	}
-            	if(status == "gardenCheck")
+            	if(stat==status.gardenCheck)//status == "gardenCheck")
             	{
             		dirNum = 0;
             		for (SixAngle ra : Constants.SixAngle.values()) {
@@ -76,9 +89,10 @@ public class Gardener extends RobotPlayer
                             dirNum+=1;
                         }
                     }
-                    status = "gardening";		
+                    //status = "gardening";	
+            		stat= status.gardening;
             	}
-            	if(status == "gardening")
+            	if(stat== status.gardening)//status == "gardening")
             	{
             		gardening();
             	}
@@ -126,7 +140,8 @@ public class Gardener extends RobotPlayer
 			if(earlyGameIndex > earlyGameQueue.length)
 			{
 				rc.broadcast(500, 1);
-				status = "gardenCheck";
+				//status = "gardenCheck";
+				stat= status.gardenCheck;
 			}
 			
 		}
@@ -137,7 +152,8 @@ public class Gardener extends RobotPlayer
 		int isEarlyGame = rc.readBroadcast(500);
         
         if(isEarlyGame == 0){
-        	status = "earlygame";
+        	//status = "earlygame";
+        	stat=stat.earlygame;
         	int earlyGameType = rc.readBroadcast(507);
         	if(earlyGameType == 0)
         	{

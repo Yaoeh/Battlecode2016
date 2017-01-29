@@ -397,7 +397,7 @@ public class Sensor {
     	
 	public void tryShakeTree(RobotController rc) throws GameActionException{
 		// getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered)
-		TreeInfo closestBody= Value.getTastiestBody(rc, nearbyNeutralTrees, rc.getLocation(), Integer.MAX_VALUE);
+		TreeInfo closestBody= Value.getTastiestBody(rc, rc.senseNearbyTrees(1, rc.getTeam().NEUTRAL), rc.getLocation(), Integer.MAX_VALUE);
 		if (closestBody!= null){
 	        MapLocation possibleTreeLoc= closestBody.getLocation();
 	        if (possibleTreeLoc!= null){

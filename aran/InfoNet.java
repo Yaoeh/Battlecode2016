@@ -106,8 +106,9 @@ public class InfoNet {
     					InfoEnum.SOLDIER_COUNT,
     					InfoEnum.SCOUT_COUNT,
        					InfoEnum.TANK_COUNT,
-       					InfoEnum.LUMBERJACK_COUNT,
-       					InfoEnum.UPDATE_TIME
+       					InfoEnum.LUMBERJACK_COUNT
+       					//InfoEnum.UPDATE_TIME 
+       					//You can check this by first checking if the archon is dead, and then by the first of the corresponding unit type is dead
 					)
 			);
 	
@@ -254,7 +255,9 @@ public class InfoNet {
 		return channelIndex;
 	}
 	
-	public static int getClosestRobotTypeIndex(RobotController rc, RobotType rt) throws GameActionException{ //returns Integer.MIN_VALUE on fail
+	public static int getClosestRobotTypeIndex(RobotController rc, RobotType rt) throws GameActionException{ 
+		//returns Integer.MIN_VALUE on fail
+		
 		int channelIndex= Integer.MIN_VALUE;
 		MapLocation closestRobotOfTypeLoc= null;
 		Info trackedInfo= unitInfoMap.get(rt);

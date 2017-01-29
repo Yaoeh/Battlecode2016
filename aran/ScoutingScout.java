@@ -19,8 +19,9 @@ public class ScoutingScout extends RobotPlayer {
         Info trackedInfo= InfoNet.unitInfoMap.get(RobotType.SCOUT);
     	while (true) {
             try {
+            	infoUpdate();
+            	
             	sensor.goalLoc= null;
-            	updateOwnInfo();
             	sensor.senseBullets(rc);
             	sensor.senseEnemies(rc);
             	sensor.senseTrees(rc);
@@ -227,29 +228,4 @@ public class ScoutingScout extends RobotPlayer {
 		}
     	return answer;
     }
-
-	public static void updateOwnInfo () throws GameActionException {
-		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
-		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
-				
-		if (indexOffset!= Integer.MIN_VALUE){
-			scoutNum= (indexOffset - trackedInfo.getStartIndex()) / trackedInfo.reservedChannels.size(); //number in the info net slot
-			
-			for (int i = 0; i < trackedInfo.reservedChannels.size(); i++){ //Iterate through all needed channels
-				InfoEnum state= trackedInfo.getInfoEnum(i);
-				
-				switch (state) {
-					case UPDATE_TIME:
-						broadcastPrint(rc,indexOffset+ i, rc.getRoundNum(), "time");
-						break;
-					case ID:
-						broadcastPrint(rc, indexOffset+i, rc.getID());
-					default:
-						break;
-				}
-			}
-		}else{
-			//System.out.println("Index offset returning a failed number: " + indexOffset);
-		}
-	}
 }

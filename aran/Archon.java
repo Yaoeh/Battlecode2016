@@ -18,14 +18,11 @@ public class Archon extends RobotPlayer {
     	
         while (true) {
             try {
-            	if (firstArchon){
-            		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_MOD== 0){
-            			updateUnitCounts(rc);
-            		}
-                	//System.out.println("First Archon!");
-            	}else{
-            		//System.out.println("not first archon!");
-            	}
+        		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
+        			archonUpdateOwnInfo();
+        			archonUpdateUnitCounts(); 
+        		}
+        		
             	if(status == "earlygame")
             	{
             		earlyGame(rc);
@@ -197,51 +194,53 @@ public class Archon extends RobotPlayer {
     	}
     }
     
-    public static void updateUnitCounts(RobotController rc) throws GameActionException{
-		Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-    	for (RobotType rt : InfoNet.unitInfoMap.keySet()) {
-    		int unitCount= InfoNet.countUnits(rc, rt);
-    		int broadcastIndex= -1;
-    		switch (rt) {
-		        case ARCHON:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.ARCHON_COUNT);
-		    		//rc.broadcast(broadcastIndex, unitCount);
-		            broadcastPrint(rc, broadcastIndex, unitCount, "ArchonCount");
-		        	break;
-		        case GARDENER:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.GARDENER_COUNT);
-		    		//rc.broadcast(broadcastIndex, unitCount);
-		        	broadcastPrint(rc, broadcastIndex, unitCount, "GardenerCount");
-		        	break;
-		        case SOLDIER:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SOLDIER_COUNT);
-		    		//rc.broadcast(broadcastIndex, unitCount);
-		        	broadcastPrint(rc, broadcastIndex, unitCount, "SoldierCount");
-		        	break;
-//		        case SCOUT:
-//		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SCOUT_COUNT);
-//		    		//rc.broadcast(broadcastIndex, unitCount);
-//		        	broadcastPrint(rc, broadcastIndex, unitCount, "ScoutCount");
-//		        	break;
-		        case TANK:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.TANK_COUNT);
-		    		//rc.broadcast(broadcastIndex, unitCount);
-		        	broadcastPrint(rc, broadcastIndex, unitCount, "TankCount");
-		        	break;
-		        case LUMBERJACK:
-		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.LUMBERJACK_COUNT);
-		    		//rc.broadcast(broadcastIndex, unitCount);
-		        	broadcastPrint(rc, broadcastIndex, unitCount, "LumberJackCount");
-		        	break;
-				default:
-					break;
-	        }
+    public static void archonUpdateUnitCounts() throws GameActionException{
+    	if (firstArchon){
+			Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+	    	for (RobotType rt : InfoNet.unitInfoMap.keySet()) {
+	    		int unitCount= InfoNet.countUnits(rc, rt);
+	    		int broadcastIndex= -1;
+	    		switch (rt) {
+			        case ARCHON:
+			        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.ARCHON_COUNT);
+			    		//rc.broadcast(broadcastIndex, unitCount);
+			            broadcastPrint(rc, broadcastIndex, unitCount, "ArchonCount");
+			        	break;
+			        case GARDENER:
+			        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.GARDENER_COUNT);
+			    		//rc.broadcast(broadcastIndex, unitCount);
+			        	broadcastPrint(rc, broadcastIndex, unitCount, "GardenerCount");
+			        	break;
+			        case SOLDIER:
+			        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SOLDIER_COUNT);
+			    		//rc.broadcast(broadcastIndex, unitCount);
+			        	broadcastPrint(rc, broadcastIndex, unitCount, "SoldierCount");
+			        	break;
+	//		        case SCOUT:
+	//		        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SCOUT_COUNT);
+	//		    		//rc.broadcast(broadcastIndex, unitCount);
+	//		        	broadcastPrint(rc, broadcastIndex, unitCount, "ScoutCount");
+	//		        	break;
+			        case TANK:
+			        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.TANK_COUNT);
+			    		//rc.broadcast(broadcastIndex, unitCount);
+			        	broadcastPrint(rc, broadcastIndex, unitCount, "TankCount");
+			        	break;
+			        case LUMBERJACK:
+			        	broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.LUMBERJACK_COUNT);
+			    		//rc.broadcast(broadcastIndex, unitCount);
+			        	broadcastPrint(rc, broadcastIndex, unitCount, "LumberJackCount");
+			        	break;
+					default:
+						break;
+		        }
+	    	}
     	}
-    	int broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //knowing the Unit Count Info only has one unit of itself tracked
-    	rc.broadcast(broadcastIndex, rc.getRoundNum());
+    	//int broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.UPDATE_TIME); //knowing the Unit Count Info only has one unit of itself tracked
+    	//rc.broadcast(broadcastIndex, rc.getRoundNum());
     }
 
-	public static void updateOwnInfo (RobotController rc) throws GameActionException {
+	public static void archonUpdateOwnInfo () throws GameActionException {
 		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
 		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
 		

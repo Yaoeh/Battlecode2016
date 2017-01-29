@@ -13,8 +13,12 @@ public class Soldier extends RobotPlayer
         MapLocation goal = rc.getLocation();
         int bulletwait = 0;
         int seekRounds = 25;
+        
+        //
         while (true) {
             try {
+            	infoUpdate();
+            	
                 MapLocation myLoc = rc.getLocation();
 
                 // See if there are any nearby enemy robots
@@ -190,5 +194,58 @@ public class Soldier extends RobotPlayer
                 e.printStackTrace();
             }
         }
+    }
+	
+	public static void updateOwnInfo() throws GameActionException {
+		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
+		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
+				
+		if (indexOffset!= Integer.MIN_VALUE){
+			//scoutNum= (indexOffset - trackedInfo.getStartIndex()) / trackedInfo.reservedChannels.size(); //number in the info net slot
+			if (indexOffset== InfoNet.unitInfoMap.get(rc.getType()).getStartIndex()){
+				firstOfType= true;
+			}
+			
+			for (int i = 0; i < trackedInfo.reservedChannels.size(); i++){ //Iterate through all needed channels
+				InfoEnum state= trackedInfo.getInfoEnum(i);
+				
+				switch (state) {
+					case UPDATE_TIME:
+						broadcastPrint(rc,indexOffset+ i, rc.getRoundNum(), "time");
+						break;
+					case ID:
+						broadcastPrint(rc, indexOffset+i, rc.getID());
+					default:
+						break;
+				}
+			}
+		}else{
+			//System.out.println("Index offset returning a failed number: " + indexOffset);
+		}
+	}
+	
+    public static void updateUnitCounts() throws GameActionException{
+    	//In case the archon dies, this runs. Only works for the first of the unit
+    	//!!! Gardener can check the validity of the unit count by checking first if the archon is dead, and then if the first of the unit type is dead
+
+    	if (firstOfType){
+	    	Info archonAliveInfo= InfoNet.unitInfoMap.get(RobotType.ARCHON);
+	    	boolean archonDead= false;
+	    	int firstArchonUpdateIndex= archonAliveInfo.getStartIndex()+ archonAliveInfo.getIndex(InfoEnum.UPDATE_TIME);
+	    	int archonUpdateTime= rc.readBroadcast(firstArchonUpdateIndex);
+	    	if (archonUpdateTime- rc.getRoundNum() > Constants.DEAD_TOLERANCE_ROUNDNUM){ //if archon is past due of update, it is presumed dead
+	    		archonDead= true;
+	    	}
+	    	
+	    	if (archonDead){
+	    		//Only initiate the update if you are the first guy. THe dead tolerance has to be greater than the update time. 
+	    		//This is set in the tests
+
+				Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+				int unitCount= InfoNet.countUnits(rc, rc.getType());
+				int broadcastIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.SOLDIER_COUNT);
+				broadcastPrint(rc, broadcastIndex, unitCount, "Soldier count");
+	    	}
+    	}
     }
 }

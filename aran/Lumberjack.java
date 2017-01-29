@@ -12,6 +12,8 @@ public class Lumberjack extends RobotPlayer
         Clock.yield();
         while (true) {
             try {
+            	infoUpdate();
+            	
             	MapLocation myLoc = rc.getLocation();
                 RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
                 if(robots.length > 0 && !rc.hasAttacked()) {

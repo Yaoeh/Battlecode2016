@@ -20,8 +20,8 @@ public class Constants implements GameConstants{
     static final int TANK_MAX = 20;
     static final int SCOUT_MAX = 5;
     
-    static final int UNIT_COUNT_UPDATE_MOD= 5;
-    static final int DEAD_TOLERANCE_ROUNDNUM= 3;
+    static final int UNIT_COUNT_UPDATE_OFFSET= 20;
+    static final int DEAD_TOLERANCE_ROUNDNUM= 25; //20, by decree of the andykat
 	static final int STEPSUNTILJIGGLE= 5; //jiggle so moving in a direction they don't get stuck
 	static final float PERCENTAGE_UNTIL_DANGER_OVERRIDE= 0.5f;
 	
