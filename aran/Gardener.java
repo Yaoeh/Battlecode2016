@@ -14,46 +14,48 @@ public class Gardener extends RobotPlayer
         myTeam = rc.getTeam();
         String status = "looking";
         int lookingCount = 0;
-        int lookingCountLimit = 40;
-        
+        int lookingCountLimit = 7;
+        Direction lookingDir = Util.randomDirection();
         while (true) {
             try {
             	//move away from other gardeners
             	if(status == "looking")
             	{
-            		MapLocation myLocation = rc.getLocation();
+            		//MapLocation myLocation = rc.getLocation();
             		RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
-            		boolean closeFlag = false;
+            		int gardenerCount = 0;
             		for(int i=0;i<robots.length;i++){
-            			if(myLocation.distanceTo(robots[i].getLocation()) < 15.0f)
+            			if(robots[i].type == RobotType.GARDENER)
             			{
-            				Util.tryMove(robots[i].getLocation().directionTo(myLocation), 30.0f, 4);
-            				closeFlag = true;
+            				gardenerCount+=1;
             				break;
             			}
             		}
-            		
-            		if(!closeFlag){
-            			TreeInfo[] trees = rc.senseNearbyTrees(-1);
-            			for(int i=0;i<trees.length;i++){
-                			if(myLocation.distanceTo(trees[i].getLocation()) < 12.0f)
-                			{
-                				Util.tryMove(trees[i].getLocation().directionTo(myLocation), 30.0f, 4);
-                				closeFlag = true;
-                				break;
-                			}
-                		}
-            		}
-            		
-            		if(!closeFlag){
-            			status = "gardenCheck";
-            		}
-            		lookingCount += 1;
-            		if(lookingCount > lookingCountLimit)
+            		if(gardenerCount == 0)
             		{
             			status = "gardenCheck";
             		}
-            		
+            		else
+            		{
+	            		boolean moved = Util.tryMove(lookingDir, 30.0f, 3);
+	            		if(moved)
+	            		{
+	            			lookingCount += 1;
+	            		}
+	            		else
+	            		{
+	            			//cannot move, use perpendicular direction
+	            			lookingDir = lookingDir.rotateLeftDegrees(90.0f);
+	            			lookingCount = 0;
+	            		}
+	            		
+	            		if(lookingCount > lookingCountLimit)
+	            		{
+	            			//find new direction
+	            			lookingDir = Util.randomDirection();
+	            			lookingCount = 0;
+	            		}
+            		}
             		
             	}
             	if(status == "gardenCheck")
@@ -87,7 +89,7 @@ public class Gardener extends RobotPlayer
             Direction dir = Util.randomDirection();
             if(queue == 0)
             {
-            	if(currentlyPlanted < dirNum - 2)
+            	if(currentlyPlanted < dirNum - 1)
             	{
             		plantCircleTrees();
             		currentlyPlanted += 1;
@@ -101,7 +103,7 @@ public class Gardener extends RobotPlayer
             }
             else if(queue< 2){
             	if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-            		rc.broadcast(999, 1);
+            		//rc.broadcast(999, 1);
                     rc.buildRobot(RobotType.SOLDIER, dir);
                     queue++;
             	}
@@ -112,7 +114,7 @@ public class Gardener extends RobotPlayer
                     queue++;
             	}
             }
-            /*else if(queue < 5){
+            else if(queue < 5){
             	if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
                     rc.buildRobot(RobotType.SOLDIER, dir);
                     queue++;
@@ -130,8 +132,8 @@ public class Gardener extends RobotPlayer
                     rc.buildRobot(RobotType.SOLDIER, dir);
                     queue++;
             	}
-            }*/
-            if(queue>0){
+            }
+            if(queue>7){
             	queue = 0;
             }
     	}
