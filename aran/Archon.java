@@ -32,13 +32,7 @@ public class Archon extends RobotPlayer {
             		midGame(rc);
             	}
             	
-            	/*sensor.senseFriends(rc);
-            	sensor.senseEnemies(rc);
-            	sensor.senseTrees(rc);
-            	updateOwnInfo(rc);
-            	spawn(rc);
-            	move(rc);
-            	targetNearbyTree(rc);*/
+            	
             	
                 Clock.yield();
             } catch (Exception e) {
@@ -84,6 +78,19 @@ public class Archon extends RobotPlayer {
     		else{
     			rc.broadcast(507, 0); //scout first
     		}
+    		//farming/combat ratio
+    		float ratio = maxDistance/100.0f * 2.0f + 0.01f;
+    		int broadcastRatio = (int)(ratio * 10000.0f);
+    		rc.broadcast(501, broadcastRatio);
+    		
+    		//gardener/unit ratio
+    		rc.broadcast(502, 10); // divide it by 100
+    		
+    		//unit ratios
+    		rc.broadcast(503, 5);
+    		rc.broadcast(504, 1);
+    		rc.broadcast(505, 1);
+    		rc.broadcast(506, 1);
     	}
     	else
     	{
@@ -111,7 +118,29 @@ public class Archon extends RobotPlayer {
     	
     }
     public static void midGame(RobotController rc) throws GameActionException{
+    	Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
     	
+    	int gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
+    	if(gardenerCount == 0)
+    	{
+    		Util.tryBuildRobot(RobotType.GARDENER);
+    	}
+    	else
+    	{
+	    	float bulletToGardener = rc.getTeamBullets() / ((float)gardenerCount);
+	    	
+	    	if(bulletToGardener > 20){
+	    		Util.tryBuildRobot(RobotType.GARDENER);
+	    	}
+    	}
+    	
+    	sensor.senseFriends(rc);
+    	sensor.senseEnemies(rc);
+    	sensor.senseTrees(rc);
+    	//updateOwnInfo(rc);
+
+    	move(rc);
+    	targetNearbyTree(rc);
     }
     public static void targetNearbyTree(RobotController rc) throws GameActionException{
     	sensor.senseTrees(rc, rc.getType().bodyRadius);

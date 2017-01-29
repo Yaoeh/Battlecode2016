@@ -15,9 +15,15 @@ public class Gardener extends RobotPlayer
     static int earlyGameIndex = 0;
     static int[] earlyGameQueue = {};
     
-    static enum status {earlygame, looking, gardenCheck, gardening, ratiogame};
+    static enum status {earlygame, looking, gardenCheck, midgame, ratiogame};
     //static String status = "looking";
     static status stat= status.looking;
+    
+    static int soldierCount= 0;
+    static int tankCount= 0;
+    static int scoutCount= 0;
+    static int lumberjackCount= 0;
+    static int gardenerCount = 0;
     
 	public static void run(RobotController rc) throws GameActionException {
         
@@ -35,9 +41,6 @@ public class Gardener extends RobotPlayer
             	if(stat== status.earlygame)//(status == "earlygame")
             	{
             		earlyGame();
-            	}
-            	if (stat== status.ratiogame){
-            		ratioGame();
             	}
             	if(stat== status.looking)//status == "looking")
             	{
@@ -89,11 +92,12 @@ public class Gardener extends RobotPlayer
                         }
                     }
                     //status = "gardening";	
-            		stat= status.gardening;
+            		stat= status.midgame;
             	}
-            	if(stat== status.gardening)//status == "gardening")
+            	if(stat== status.midgame)//status == "gardening")
             	{
-            		gardening();
+            		ratioGame();
+            		Util.waterLowestHealthTreeWithoutMoving(rc, myTeam);
             	}
             	
                 Clock.yield();
@@ -109,33 +113,113 @@ public class Gardener extends RobotPlayer
 		//3 soldier to 1 lumberjack to 1 tank to 1 scout
 		
 		//Gardener first checks whether or not the unit count is accurate, if it is not then presume 0
-		int soldierCount= 0;
-		int tankCount= 0;
-		int scoutCount= 0;
-		int lumberjackCount= 0;
+		
 		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-		RobotType rtToBuild= RobotType.SOLDIER;
+		
 		
 		if (!archonDead){ //all info is accurate
 			soldierCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SOLDIER_COUNT));
 			tankCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.TANK_COUNT));
 			scoutCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SCOUT_COUNT));
 			lumberjackCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.LUMBERJACK_COUNT));
+			gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
 		}else{ //need to check, if inaccurate then they all dead
 			soldierCount= getAccurateUnitCount(RobotType.SOLDIER);
 			tankCount= getAccurateUnitCount(RobotType.TANK);
 			scoutCount= getAccurateUnitCount(RobotType.SCOUT);
 			lumberjackCount= getAccurateUnitCount(RobotType.LUMBERJACK);
+			gardenerCount = getAccurateUnitCount(RobotType.GARDENER);
+		}
+		//tree cost is 50 bullets
+		int totalUnitCount = soldierCount + tankCount + scoutCount;
+		float farmingBulletCount = (float)(gardenerCount * RobotType.GARDENER.bulletCost +rc.getTreeCount() *50); 
+		float combatBulletCount = (float)(soldierCount * RobotType.SOLDIER.bulletCost + tankCount * RobotType.TANK.bulletCost
+				+ scoutCount * RobotType.SCOUT.bulletCost + lumberjackCount * RobotType.LUMBERJACK.bulletCost);
+		float farmingToCombatRatio = ((float)rc.readBroadcast(501)) / 10000.0f;
+		float safeBulletBank =(float)( totalUnitCount * 5 + Constants.SAFEMINIMUMBANK);
+		if(rc.getRoundNum() < 200){
+			safeBulletBank = Constants.SAFEMINIMUMBANK;
 		}
 		
+		broadcastPrint(rc, 900, rc.readBroadcast(501));
+		broadcastPrint(rc, 901, (int)combatBulletCount);
 		
+		if(farmingBulletCount == 0){
+			//build tree
+			buildTree(safeBulletBank);
+		}
+		else if(combatBulletCount == 0)
+		{
+			buildRobot(safeBulletBank);
+		}
+		else if(farmingBulletCount/combatBulletCount < farmingToCombatRatio)
+		{
+			//build tree
+			buildTree(safeBulletBank);
+		}
+		else
+		{
+			//build combat unit
+			buildRobot(safeBulletBank);
+		}
 		
-		
-		Util.tryBuildRobot(rtToBuild);
-		stat = status.gardenCheck;
+		//Util.tryBuildRobot(rtToBuild);
 	}
 	
-	
+	public static void buildTree(float safeBulletBank) throws GameActionException{
+		
+		if(currentlyPlanted < dirNum - 1)
+		{
+		
+			boolean hasPlanted = plantCircleTrees();
+			if(hasPlanted){
+				currentlyPlanted+=1;
+				return;
+			}
+		}
+		
+		if(rc.getTeamBullets() > safeBulletBank)
+		{
+			buildRobot(safeBulletBank);
+		}
+		
+	}
+	public static void buildRobot(float safeBulletBank) throws GameActionException{
+		if(rc.getTeamBullets() > safeBulletBank)
+		{
+			float[] unitRatio = new float[4];
+			float totalRatioN = 0.0f;
+			for(int i=0;i<4;i++){
+				unitRatio[i] = (float)rc.readBroadcast(503+i);
+				totalRatioN += unitRatio[i];
+			}
+			float unitTotalCount = (float)(soldierCount + tankCount + scoutCount + lumberjackCount);
+			if(unitTotalCount < 0.01f){
+				Util.tryBuildRobot(RobotType.SOLDIER);
+				return;
+			}
+			unitRatio[0] = unitRatio[0] - ((float)soldierCount)/unitTotalCount ;
+			unitRatio[1] = unitRatio[1] - ((float)scoutCount)/unitTotalCount ;
+			unitRatio[2] = unitRatio[2] - ((float)tankCount)/unitTotalCount ;
+			unitRatio[3] = unitRatio[3] - ((float)lumberjackCount)/unitTotalCount ;
+			
+			float maxIndex = 0;
+			float max = unitRatio[0];
+			for(int i=1;i<4;i++){
+				if(unitRatio[i] > max)
+				{
+					max = unitRatio[i];
+					maxIndex = i;
+				}
+			}
+			
+			
+			if(maxIndex==0) Util.tryBuildRobot(RobotType.SOLDIER);
+			if(maxIndex==1) Util.tryBuildRobot(RobotType.SCOUT);
+			if(maxIndex==2) Util.tryBuildRobot(RobotType.TANK);
+			if(maxIndex==3) Util.tryBuildRobot(RobotType.LUMBERJACK);
+		}
+	}
 //	public static RobotType needMore(int soldierCount, tankCount, scoutCount, lumberjackCount){
 //		
 //	}
@@ -191,7 +275,7 @@ public class Gardener extends RobotPlayer
 			
 			if (flag) {
 				earlyGameIndex += 1;
-				if (earlyGameIndex > earlyGameQueue.length) {
+				if (earlyGameIndex >= earlyGameQueue.length) {
 					rc.broadcast(500, 1);
 					// status = "gardenCheck";
 					stat = status.gardenCheck;
@@ -221,82 +305,20 @@ public class Gardener extends RobotPlayer
         		earlyGameQueue = Constants.EARLYGAME_SOLDIERFIRST_SPAWNORDER;
         	}
         }
-	}
-	
-	private static void gardening() throws GameActionException{
-		if(Math.random()<chance)
-    	{
-    		// :) ninja coding skills
-            Direction dir = Util.randomDirection();
-            if(queue == 0)
-            {
-            	if(currentlyPlanted < dirNum - 1)
-            	{
-            		plantCircleTrees();
-            		currentlyPlanted += 1;
-            		queue++;
-            	}
-            	else
-            	{
-            		queue++;
-            	}
-            	
-            }
-            else if(queue< 2){
-            	if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-            		//rc.broadcast(999, 1);
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                    queue++;
-            	}
-            }
-            else if(queue<3){
-            	if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
-                    rc.buildRobot(RobotType.SCOUT, dir);
-                    queue++;
-            	}
-            }
-            else if(queue < 5){
-            	if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                    queue++;
-            	}
-            }
-            else if(queue < 6){
-            	if(rc.canBuildRobot(RobotType.LUMBERJACK, dir))
-            	{
-            		rc.buildRobot(RobotType.LUMBERJACK, dir);
-                    queue++;
-            	}
-            }
-            else if(queue < 7){
-            	if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                    queue++;
-            	}
-            }
-            if(queue>0){
-            	queue = 0;
-            }
-    	}
-		Util.waterLowestHealthTreeWithoutMoving(rc, myTeam);
-    	/*if(!Util.dodgeBullets(rc, rc.getLocation()))
-        {
-        	if(!Util.waterLowestHealthTree(rc, myTeam))
-        	{
-            	Util.tryMove(Util.randomDirection());
-            }
-    	}*/
-		Clock.yield();
+        else if(isEarlyGame == 1){
+        	stat = stat.looking;
+        }
 	}
 	
 	
-	private static void plantCircleTrees() throws GameActionException {
+	private static boolean plantCircleTrees() throws GameActionException {
         for (SixAngle ra : Constants.SixAngle.values()) {
             Direction d = new Direction(ra.getRadians());
             if (rc.canPlantTree(d)) {
                 rc.plantTree(d);
-                Clock.yield();
+                return true;
             }
         }
+        return false;
     }
 }
