@@ -213,7 +213,26 @@ class Util extends RobotPlayer{
     	}
     	return false;
 	}
-	
+	public static boolean waterLowestHealthTreeWithoutMoving(RobotController rc, Team myTeam) throws GameActionException{
+		TreeInfo[] trees = rc.senseNearbyTrees(-1, myTeam);
+    	//get tree with lowest health and water
+    	if(trees.length>0)
+    	{
+        	float minHealth = 9999.0f;
+        	TreeInfo deadTree = trees[0];
+        	for(int i=0;i<trees.length;i++){
+        		if(trees[i].health< minHealth){
+        			minHealth = trees[i].health;
+        			deadTree = trees[i];
+        		}
+        	}
+        	if(rc.canWater(deadTree.ID)){
+        		rc.water(deadTree.ID);
+        	}
+        	return true;
+    	}
+    	return false;
+	}
 	public static Direction getDodgeBulletDirection(RobotController rc, MapLocation myLocation, Direction dir) throws GameActionException
 	{
 		//dodge any bullets

@@ -8,12 +8,13 @@ public class Gardener extends RobotPlayer
     static double chance = 0.20;
     static Team myTeam;
     static int dirNum = 6; // number of directions this gardener can plant/build robots
+    static int currentlyPlanted = 0;
 	public static void run(RobotController rc) throws GameActionException {
         
         myTeam = rc.getTeam();
         String status = "looking";
         int lookingCount = 0;
-        int lookingCountLimit = 20;
+        int lookingCountLimit = 40;
         
         while (true) {
             try {
@@ -24,7 +25,7 @@ public class Gardener extends RobotPlayer
             		RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
             		boolean closeFlag = false;
             		for(int i=0;i<robots.length;i++){
-            			if(myLocation.distanceTo(robots[i].getLocation()) < 2.0f)
+            			if(myLocation.distanceTo(robots[i].getLocation()) < 15.0f)
             			{
             				Util.tryMove(robots[i].getLocation().directionTo(myLocation), 30.0f, 4);
             				closeFlag = true;
@@ -35,7 +36,7 @@ public class Gardener extends RobotPlayer
             		if(!closeFlag){
             			TreeInfo[] trees = rc.senseNearbyTrees(-1);
             			for(int i=0;i<trees.length;i++){
-                			if(myLocation.distanceTo(trees[i].getLocation()) < 2.0f)
+                			if(myLocation.distanceTo(trees[i].getLocation()) < 12.0f)
                 			{
                 				Util.tryMove(trees[i].getLocation().directionTo(myLocation), 30.0f, 4);
                 				closeFlag = true;
@@ -86,11 +87,16 @@ public class Gardener extends RobotPlayer
             Direction dir = Util.randomDirection();
             if(queue == 0)
             {
-            	if(rc.canPlantTree(dir)){
-            		rc.plantTree(dir);
+            	if(currentlyPlanted < dirNum - 2)
+            	{
+            		plantCircleTrees();
+            		currentlyPlanted += 1;
             		queue++;
             	}
-            	
+            	else
+            	{
+            		queue++;
+            	}
             	
             }
             else if(queue< 2){
@@ -106,7 +112,7 @@ public class Gardener extends RobotPlayer
                     queue++;
             	}
             }
-            else if(queue < 5){
+            /*else if(queue < 5){
             	if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
                     rc.buildRobot(RobotType.SOLDIER, dir);
                     queue++;
@@ -124,18 +130,20 @@ public class Gardener extends RobotPlayer
                     rc.buildRobot(RobotType.SOLDIER, dir);
                     queue++;
             	}
-            }
-            if(queue>6){
+            }*/
+            if(queue>0){
             	queue = 0;
             }
     	}
-    	if(!Util.dodgeBullets(rc, rc.getLocation()))
+		Util.waterLowestHealthTreeWithoutMoving(rc, myTeam);
+    	/*if(!Util.dodgeBullets(rc, rc.getLocation()))
         {
         	if(!Util.waterLowestHealthTree(rc, myTeam))
         	{
             	Util.tryMove(Util.randomDirection());
             }
-    	}
+    	}*/
+		Clock.yield();
 	}
 	
 	
