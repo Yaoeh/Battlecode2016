@@ -24,9 +24,10 @@ public class ScoutingScout extends RobotPlayer {
             	sensor.goalLoc= null;
             	sensor.senseBullets(rc);
             	sensor.senseEnemies(rc);
+            	sensor.senseFriends(rc);
             	sensor.senseTrees(rc);
             	boolean hasTastyTree= overrideGoalWithTastyTreeIfExists();
-            	System.out.println("\tScount num: " + scoutNum);
+            	//System.out.println("\tScount num: " + scoutNum);
             	boolean hasNormalGoal= ifNoGoalSetEdgeAsGoal();
             	
             	float goalAttraction= 1000;
@@ -195,7 +196,7 @@ public class ScoutingScout extends RobotPlayer {
     		boolean stillGoal= isEdgeMissionCompleted(InfoNet.addInfoMap.get(AddInfo.MAP_EDGE).getInfoEnum(i));
     		//System.out.println("Edge mission completed: " + stillGoal);
     		if (!stillGoal){
-    			System.out.println("\t\tRemaining goal:  "+ correspondingGoals[i]);
+    			//System.out.println("\t\tRemaining goal:  "+ correspondingGoals[i]);
     			edgeGoalLoc.add(correspondingGoals[i]);
     		}
     	}

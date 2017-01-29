@@ -250,7 +250,7 @@ public class Archon extends RobotPlayer {
 			}
 			
 			int dangerStatus= 0; //0 normal, 1 danger, 2 stuck, 3 danger and stuck
-			if (sensor.nearbyEnemies.length > sensor.nearbyFriends.length){
+			if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length > sensor.nearbyFriends.length){
 				dangerStatus+= 1;
 			}
 			if (Util.isStuck()){ //ARCHON JUST SENSE SOMEWHERE CLOSE

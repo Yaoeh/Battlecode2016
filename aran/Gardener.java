@@ -30,15 +30,11 @@ public class Gardener extends RobotPlayer
         while (true) {
             try {
             	infoUpdate();
-        		
-            	
             	
             	//move away from other gardeners
             	if(stat== status.earlygame)//(status == "earlygame")
             	{
             		earlyGame();
-            	}else if (stat== status.ratiogame){
-            		
             	}
             	if(stat== status.looking)//status == "looking")
             	{
@@ -104,49 +100,46 @@ public class Gardener extends RobotPlayer
             }
         }
     }
-	private static void earlyGame() throws GameActionException{
-		boolean flag = false;
-		Direction dir = new Direction(0.0f);
-		for(int i=0;i<12;i++){
-			if(earlyGameQueue[earlyGameIndex] == 0)
-			{
-	    		if(rc.canBuildRobot(RobotType.SCOUT, dir)){
-	    			rc.buildRobot(RobotType.SCOUT, dir);
-	    			flag = true;
-	    			break;
-	    		}
+
+	private static void earlyGame() throws GameActionException {
+		if (earlyGameQueue != null) {
+			boolean flag = false;
+			Direction dir = new Direction(0.0f);
+			for (int i = 0; i < 12; i++) {
+				if (i >= 0 && i < earlyGameQueue.length) { //added check because I found Array Index out of bound error
+					if (earlyGameQueue[earlyGameIndex] == 0) {
+						if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
+							rc.buildRobot(RobotType.SCOUT, dir);
+							flag = true;
+							break;
+						}
+					} else if (earlyGameQueue[earlyGameIndex] == 1) {
+						if (rc.canPlantTree(dir)) {
+							rc.plantTree(dir);
+							flag = true;
+							break;
+						}
+					} else if (earlyGameQueue[earlyGameIndex] == 2) {
+						if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+							rc.buildRobot(RobotType.SOLDIER, dir);
+							flag = true;
+							break;
+						}
+					}
+					dir = dir.rotateLeftDegrees(30.0f);
+				}
+
+				if (flag) {
+					earlyGameIndex += 1;
+					if (earlyGameIndex > earlyGameQueue.length) {
+						rc.broadcast(500, 1);
+						// status = "gardenCheck";
+						stat = status.gardenCheck;
+					}
+
+				}
 			}
-			else if(earlyGameQueue[earlyGameIndex] == 1)
-			{
-	    		if(rc.canPlantTree(dir)){
-	    			rc.plantTree(dir);
-	    			flag = true;
-	    			break;
-	    		}
-			}
-			else if(earlyGameQueue[earlyGameIndex] == 2)
-			{
-	    		if(rc.canBuildRobot(RobotType.SOLDIER, dir)){
-	    			rc.buildRobot(RobotType.SOLDIER, dir);
-	    			flag = true;
-	    			break;
-	    		}
-			}
-	    	dir = dir.rotateLeftDegrees(30.0f);
-    	}
-		
-		if(flag){
-			earlyGameIndex += 1;
-			if(earlyGameIndex > earlyGameQueue.length)
-			{
-				rc.broadcast(500, 1);
-				//status = "gardenCheck";
-				stat= status.gardenCheck;
-			}
-			
 		}
-		
-		
 	}
 	private static void earlyGameInit() throws GameActionException{
 		int isEarlyGame = rc.readBroadcast(500);

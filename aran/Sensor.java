@@ -129,17 +129,20 @@ public class Sensor {
         	if (nearbyFriends!= null){
 	    		for (int i = 0; i < nearbyFriends.length; i++){
 	    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriends[i])){
-	    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
+	    				//rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
+	    				rc.setIndicatorDot(nearbyFriends[i].getLocation(), 0, 120, 0);
 	    				shouldShoot= false;
 	    				break;
 	    			}
 	    		}
+        	}else{
+        		shouldShoot= false; //if you didn't look out for your friends you shouldn't shoot
         	}
         	if (shouldShoot){
 	        	if (nearbyFriendlyTrees!= null){
 		    		for (int i = 0; i < nearbyFriendlyTrees.length; i++){
 		    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyFriendlyTrees[i])){
-		    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
+		    				rc.setIndicatorLine(rc.getLocation(), nearbyFriendlyTrees[i].getLocation(), 0, 120, 0);
 		    				shouldShoot= false;
 		    				break;
 		    			}
@@ -150,7 +153,7 @@ public class Sensor {
 	        	if (nearbyNeutralTrees!= null){
 		    		for (int i = 0; i < nearbyNeutralTrees.length; i++){
 		    			if (willCollideWithBody(rc.getLocation(), rc.getLocation().directionTo(target), nearbyNeutralTrees[i])){
-		    				rc.setIndicatorLine(rc.getLocation(), nearbyFriends[i].getLocation(), 0, 120, 0);
+		    				rc.setIndicatorLine(rc.getLocation(), nearbyNeutralTrees[i].getLocation(), 0, 120, 0);
 		    				shouldShoot= false;
 		    				break;
 		    			}
@@ -160,14 +163,14 @@ public class Sensor {
     		
     		if (shouldShoot){
     			rc.fireSingleShot(rc.getLocation().directionTo(target));
-    			rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 255);
+    			//rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 255);
     			rc.setIndicatorDot(target, 255, 255, 255);
-    			rc.setIndicatorDot(rc.getLocation(), 255, 255, 255);
+    			//rc.setIndicatorDot(rc.getLocation(), 255, 255, 255);
     		}else{
-    			rc.fireSingleShot(rc.getLocation().directionTo(target));
-    			rc.setIndicatorLine(rc.getLocation(), target, 0, 0, 0);
+    			//rc.fireSingleShot(rc.getLocation().directionTo(target));
+    			//rc.setIndicatorLine(rc.getLocation(), target, 0, 0, 0);
     			rc.setIndicatorDot(target, 0, 0, 0);
-    			rc.setIndicatorDot(rc.getLocation(), 0, 0, 0);
+    			//rc.setIndicatorDot(rc.getLocation(), 0, 0, 0);
     		}
         }
     
@@ -263,15 +266,13 @@ public class Sensor {
     		int iteratedValues= (int) Value.clamp(maxConsidered,0,nearbyBullets.length);
 	    	for (int i = 0; i <iteratedValues ; i++){
 				BulletInfo bi= nearbyBullets[i];
-				danger= Value.getDanger(bi, rc);
-//				if (iteratedValues == 1){
-//					//move left or right, depending on how close the line is. If it is exactly in the middle, chose one at random
-//					neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
-//				}else{
-//					neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
-//				}
-				neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
-				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
+				if (bi!= null){
+					danger= Value.getDanger(bi, rc);
+					Vector2D sideStepVec= getSideStepVector(rc, bi);
+					if (sideStepVec!= null)
+						neutralVec.add(sideStepVec.scale(danger*multiplier));
+					rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
+				}
 			}
 		}
     	return neutralVec;

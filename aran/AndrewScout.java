@@ -25,6 +25,7 @@ public class AndrewScout extends RobotPlayer
 		}
 		 while (true) {
 	            try {
+	            	infoUpdate();
 	            	MapLocation myLoc = rc.getLocation();
 	            	if(mode == "seekinit")//initially go to archon spawn
 	            	{
