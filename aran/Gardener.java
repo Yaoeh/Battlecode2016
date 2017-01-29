@@ -10,16 +10,24 @@ public class Gardener extends RobotPlayer
     static Team myTeam;
     static int dirNum = 6; // number of directions this gardener can plant/build robots
     static int currentlyPlanted = 0;
+    static int earlyGameIndex = 0;
+    static int[] earlyGameQueue = {};
+    static String status = "looking";
 	public static void run(RobotController rc) throws GameActionException {
         
         myTeam = rc.getTeam();
-        String status = "looking";
+        
         int lookingCount = 0;
         int lookingCountLimit = 7;
         Direction lookingDir = Util.randomDirection();
+        earlyGameInit();
         while (true) {
             try {
             	//move away from other gardeners
+            	if(status == "earlygame")
+            	{
+            		earlyGame();
+            	}
             	if(status == "looking")
             	{
             		//MapLocation myLocation = rc.getLocation();
@@ -82,6 +90,69 @@ public class Gardener extends RobotPlayer
             }
         }
     }
+	private static void earlyGame() throws GameActionException{
+		boolean flag = false;
+		Direction dir = new Direction(0.0f);
+		for(int i=0;i<12;i++){
+			if(earlyGameQueue[earlyGameIndex] == 0)
+			{
+	    		if(rc.canBuildRobot(RobotType.SCOUT, dir)){
+	    			rc.buildRobot(RobotType.SCOUT, dir);
+	    			flag = true;
+	    			break;
+	    		}
+			}
+			else if(earlyGameQueue[earlyGameIndex] == 1)
+			{
+	    		if(rc.canPlantTree(dir)){
+	    			rc.plantTree(dir);
+	    			flag = true;
+	    			break;
+	    		}
+			}
+			else if(earlyGameQueue[earlyGameIndex] == 2)
+			{
+	    		if(rc.canBuildRobot(RobotType.SOLDIER, dir)){
+	    			rc.buildRobot(RobotType.SOLDIER, dir);
+	    			flag = true;
+	    			break;
+	    		}
+			}
+	    	dir = dir.rotateLeftDegrees(30.0f);
+    	}
+		
+		if(flag){
+			earlyGameIndex += 1;
+			if(earlyGameIndex > earlyGameQueue.length)
+			{
+				rc.broadcast(500, 1);
+				status = "gardenCheck";
+			}
+			
+		}
+		
+		
+	}
+	private static void earlyGameInit() throws GameActionException{
+		int isEarlyGame = rc.readBroadcast(500);
+        
+        if(isEarlyGame == 0){
+        	status = "earlygame";
+        	int earlyGameType = rc.readBroadcast(507);
+        	if(earlyGameType == 0)
+        	{
+        		earlyGameQueue = Constants.EARLYGAME_SCOUTFIRST_SPAWNORDER;
+        	}
+        	else if(earlyGameType == 1)
+        	{
+        		earlyGameQueue = Constants.EARLYGAME_TREEFIRST_SPAWNORDER;
+        	}
+        	else if(earlyGameType == 2)
+        	{
+        		earlyGameQueue = Constants.EARLYGAME_SOLDIERFIRST_SPAWNORDER;
+        	}
+        }
+	}
 	
 	private static void gardening() throws GameActionException{
 		if(Math.random()<chance)

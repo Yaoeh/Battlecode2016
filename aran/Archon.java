@@ -78,6 +78,15 @@ public class Archon extends RobotPlayer {
     	if(rc.getLocation().distanceTo(maxArchonLocation) < 1.0f)
     	{
     		status = "earlygame";
+    		if(maxDistance < 30.0f){
+    			rc.broadcast(507, 2); //soldier first
+    		}
+    		else if(maxDistance > 80.0f){
+    			rc.broadcast(507, 1); //tree first
+    		}
+    		else{
+    			rc.broadcast(507, 0); //scout first
+    		}
     	}
     	else
     	{

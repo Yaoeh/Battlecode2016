@@ -33,6 +33,11 @@ public class Constants implements GameConstants{
 	static final HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
 	static final HashSet<RobotType> ignoreDamaging= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT, RobotType.TANK, RobotType.SOLDIER, RobotType.LUMBERJACK));
     
+	//scout:0, tree: 1, soldier: 2, lumberjack: 3
+	static final int[] EARLYGAME_SCOUTFIRST_SPAWNORDER = {0, 1, 2, 0};
+	static final int[] EARLYGAME_TREEFIRST_SPAWNORDER = {1, 0, 0};
+	static final int[] EARLYGAME_SOLDIERFIRST_SPAWNORDER = {2, 0, 0};
+	
 	static final Direction[] COORDINALDIRS= {
 			Direction.getNorth(),
 			Direction.getEast(),
