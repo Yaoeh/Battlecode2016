@@ -11,8 +11,11 @@ import battlecode.common.RobotType;
 
 public class Archon extends RobotPlayer {
 	static boolean firstArchon= false;
-	
+	static String status = "whicharchon";
+	static boolean gardenerHired = false;
     public static void run(RobotController rc) throws GameActionException {
+    	figureOutClosestArchon(rc);
+    	
         while (true) {
             try {
             	if (firstArchon){
@@ -23,13 +26,22 @@ public class Archon extends RobotPlayer {
             	}else{
             		//System.out.println("not first archon!");
             	}
-            	sensor.senseFriends(rc);
+            	if(status == "earlygame")
+            	{
+            		earlyGame(rc);
+            	}
+            	else if(status == "midgame")
+            	{
+            		midGame(rc);
+            	}
+            	
+            	/*sensor.senseFriends(rc);
             	sensor.senseEnemies(rc);
             	sensor.senseTrees(rc);
             	updateOwnInfo(rc);
             	spawn(rc);
             	move(rc);
-            	targetNearbyTree(rc);
+            	targetNearbyTree(rc);*/
             	
                 Clock.yield();
             } catch (Exception e) {
@@ -38,7 +50,63 @@ public class Archon extends RobotPlayer {
             }
         }
     }
-    
+    public static void figureOutClosestArchon(RobotController rc) throws GameActionException{
+    	rc.broadcast(500, 0);
+    	MapLocation[] enemyArchonLocations = rc.getInitialArchonLocations(rc.getTeam().opponent());
+    	MapLocation[] allyArchonLocations = rc.getInitialArchonLocations(rc.getTeam());
+    	
+    	float maxDistance = 0.0f;
+    	MapLocation maxArchonLocation = rc.getLocation();
+    	for(MapLocation allyArchonLoc : allyArchonLocations)
+    	{
+    		float minDistanceToEnemy = 9999.0f;
+    		for(MapLocation enemyArchonLoc : enemyArchonLocations)
+    		{
+    			float d = allyArchonLoc.distanceTo(enemyArchonLoc);
+    			if(d < minDistanceToEnemy)
+    			{
+    				minDistanceToEnemy = d;
+    			}
+    		}
+    		if(minDistanceToEnemy > maxDistance)
+    		{
+    			maxDistance = minDistanceToEnemy;
+    			maxArchonLocation = allyArchonLoc;
+    		}
+    	}
+    	
+    	if(rc.getLocation().distanceTo(maxArchonLocation) < 1.0f)
+    	{
+    		status = "earlygame";
+    	}
+    	else
+    	{
+    		status = "idk";
+    	}
+    }
+    public static void earlyGame(RobotController rc) throws GameActionException{
+    	int isEarlyGame = rc.readBroadcast(500);
+    	if(isEarlyGame == 1){
+    		status = "midGame";
+    	}
+    	
+    	if(gardenerHired){
+    		return;
+    	}
+    	Direction dir = new Direction(0.0f);
+    	for(int i=0;i<12;i++){
+    		if(rc.canHireGardener(dir)){
+    			rc.hireGardener(dir);
+    			gardenerHired = true;
+    			break;
+    		}
+    		dir = dir.rotateLeftDegrees(30.0f);
+    	}
+    	
+    }
+    public static void midGame(RobotController rc) throws GameActionException{
+    	
+    }
     public static void targetNearbyTree(RobotController rc) throws GameActionException{
     	sensor.senseTrees(rc, rc.getType().bodyRadius);
     	for (int i = 0; i < sensor.nearbyNeutralTrees.length; i++){

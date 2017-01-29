@@ -3,6 +3,7 @@ import aran.Constants.SixAngle;
 import battlecode.common.*;
 public class Gardener extends RobotPlayer
 {
+	
 	static int queue = 0;//first plants a tree, then a scout, then 3 soldiers, and repeats
     static int treesPlanted = 0;
     static double chance = 0.20;
@@ -133,7 +134,7 @@ public class Gardener extends RobotPlayer
                     queue++;
             	}
             }
-            if(queue>7){
+            if(queue>0){
             	queue = 0;
             }
     	}
