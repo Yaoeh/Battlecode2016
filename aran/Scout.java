@@ -68,12 +68,10 @@ public class Scout extends RobotPlayer {
             		sensor.tryShakeTree(rc);
             	else if (hasNormalGoal){
             		checkOnMap();
-            	}else if (rc.getRoundNum() < 500){
-            		Util.tryShoot();
             	}else{
-            		AndrewScout.run(rc);
+            		Util.tryShoot();
             	}
-
+            	
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();

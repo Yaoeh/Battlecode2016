@@ -171,7 +171,7 @@ public class InfoNet {
 	
 	//Since you can't declare the start index of the item before the map is instantiated, use this stupid thing here to initialize it
 			
-	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).setStartIndex(1000); //starting at 1000 since andrew uses the first 1000
+	public static int ARCHON_START_INDEX= unitInfoMap.get(RobotType.ARCHON).setStartIndex(0); 
 	public static int GARDENER_START_INDEX= unitInfoMap.get(RobotType.GARDENER).setStartIndex(unitInfoMap.get(RobotType.ARCHON).getNextInfoStartIndex());
 	public static int SOLDIER_START_INDEX= unitInfoMap.get(RobotType.SOLDIER).setStartIndex(unitInfoMap.get(RobotType.GARDENER).getNextInfoStartIndex());
 	public static int SCOUT_START_INDEX= unitInfoMap.get(RobotType.SCOUT).setStartIndex(unitInfoMap.get(RobotType.SOLDIER).getNextInfoStartIndex());
