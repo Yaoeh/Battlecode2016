@@ -200,23 +200,56 @@ public class Sensor {
         return (perpendicularDist <= rt.bodyRadius);
     }
     
-    public Vector2D getSideStepVector(RobotController rc, BulletInfo bullet){
+    static float[] willCollide(BulletInfo bullet, MapLocation robotLoc) {
+        MapLocation myLocation = robotLoc;
+
+        // Get relevant bullet information
+        Direction propagationDirection = bullet.dir;
+        MapLocation bulletLocation = bullet.location;
+
+        // Calculate bullet relations to this robot
+        Direction directionToRobot = bulletLocation.directionTo(myLocation);
+        float distToRobot = bulletLocation.distanceTo(myLocation);
+        float theta = propagationDirection.radiansBetween(directionToRobot);
+
+        // If theta > 90 degrees, then the bullet is traveling away from us and we can break early
+        if (Math.abs(theta) > Math.PI/2) {
+            return new float[]{0, 0};
+        }
+
+        // distToRobot is our hypotenuse, theta is our angle, and we want to know this length of the opposite leg.
+        // This is the distance of a line that goes from myLocation and intersects perpendicularly with propagationDirection.
+        // This corresponds to the smallest radius circle centered at our location that would intersect with the
+        // line that is the path of the bullet.
+        float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
+
+        return new float[]{1, perpendicularDist};
+    }
+       
+    
+    public Vector2D getSideStepVector(RobotController rc, BulletInfo bullet){ //not tested
         Vector2D answer= null;
-        
-    	Direction towards = bullet.getDir();
-        MapLocation leftGoal = rc.getLocation().add(towards.rotateLeftDegrees(90), rc.getType().bodyRadius);
-        MapLocation rightGoal = rc.getLocation().add(towards.rotateRightDegrees(90), rc.getType().bodyRadius);
-        
-        ArrayList<MapLocation> possLocs= new ArrayList<MapLocation>();
-        if (rc.canMove(rc.getLocation().directionTo(leftGoal), rc.getType().strideRadius)){
-        	possLocs.add(leftGoal);
-        }
-        if (rc.canMove(rc.getLocation().directionTo(rightGoal), rc.getType().strideRadius)){
-        	possLocs.add(rightGoal);
-        }
-        
-        if (possLocs.size() > 0){
-        	answer= new Vector2D(rc.getLocation().directionTo(possLocs.get(randall.nextInt(possLocs.size()))).radians);
+        float[] collideAnswer= willCollide(bullet, rc.getLocation());
+        if (collideAnswer[0]== 1){
+	    	Direction towards = bullet.getDir();
+	        MapLocation leftGoal = rc.getLocation().add(towards.rotateLeftDegrees(90), rc.getType().bodyRadius);
+	        MapLocation rightGoal = rc.getLocation().add(towards.rotateRightDegrees(90), rc.getType().bodyRadius);
+	        
+	        ArrayList<MapLocation> possLocs= new ArrayList<MapLocation>();
+	        if (collideAnswer[1]== 0){
+		        if (rc.canMove(rc.getLocation().directionTo(leftGoal), rc.getType().strideRadius)){
+		        	possLocs.add(leftGoal);
+		        }
+		        if (rc.canMove(rc.getLocation().directionTo(rightGoal), rc.getType().strideRadius)){
+		        	possLocs.add(rightGoal);
+		        }
+		        
+		        if (possLocs.size() > 0){
+		        	answer= new Vector2D(rc.getLocation().directionTo(possLocs.get(randall.nextInt(possLocs.size()))).radians).normalize();
+		        }
+	        }else{
+	        	answer= new Vector2D(rc.getLocation()).add(new Vector2D(towards.rotateRightDegrees(90 * collideAnswer[1]/Math.abs(collideAnswer[1])).radians));
+	        }
         }
         
 		return answer;
@@ -227,19 +260,14 @@ public class Sensor {
     	Vector2D neutralVec= new Vector2D();
     	double danger= 0;
     	if (nearbyBullets!= null){
-	    	for (int i = 0; i < Value.clamp(maxConsidered,0,nearbyBullets.length); i++){
+    		int iteratedValues= (int) Value.clamp(maxConsidered,0,nearbyBullets.length);
+	    	for (int i = 0; i <iteratedValues ; i++){
 				BulletInfo bi= nearbyBullets[i];
 				danger= Value.getDanger(bi, rc);
-//				if (Util.myRand.nextBoolean()){
-//					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateRightDegrees(90).radians).scale(danger*multiplier));
-//				}else{
-//					neutralVec.add(new Vector2D(rcLoc.directionTo(bi.location).rotateLeftDegrees(90).radians).scale(danger*multiplier));
-//				}
-				
-				if (rc.getLocation().distanceTo(bi.location) < 3 * (rc.getType().strideRadius + bi.speed)){
+				if (iteratedValues == 1){
+					//move left or right, depending on how close the line is. If it is exactly in the middle, chose one at random
 					neutralVec.add(getSideStepVector(rc, bi).scale(danger*multiplier));
-				}
-				if (rc.getLocation().distanceTo(bi.location) < rc.getType().sensorRadius/consideredDivision){
+				}else{
 					neutralVec.minus(new Vector2D(rcLoc.directionTo(bi.location).radians).scale(danger*multiplier));
 				}
 				rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
