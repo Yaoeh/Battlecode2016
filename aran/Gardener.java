@@ -87,8 +87,16 @@ public class Gardener extends RobotPlayer
             		dirNum = 0;
             		for (SixAngle ra : Constants.SixAngle.values()) {
                         Direction d = new Direction(ra.getRadians());
-                        if (rc.canMove(d)) {
-                            dirNum+=1;
+                        if(rc.getTeamBullets() >= 50.0f){
+                        	if (rc.canPlantTree(d)) {
+                        		dirNum+=1;
+                        	}
+                        }
+                        else
+                        {
+                        	if (rc.canMove(d)) {
+                        		dirNum+=1;
+                        	}
                         }
                     }
                     //status = "gardening";	
@@ -131,6 +139,9 @@ public class Gardener extends RobotPlayer
 			gardenerCount = getAccurateUnitCount(RobotType.GARDENER);
 		}
 		//tree cost is 50 bullets
+		broadcastPrint(rc, 910, soldierCount);
+		broadcastPrint(rc, 911, scoutCount);
+		
 		int totalUnitCount = soldierCount + tankCount + scoutCount;
 		float farmingBulletCount = (float)(gardenerCount * RobotType.GARDENER.bulletCost +rc.getTreeCount() *50); 
 		float combatBulletCount = (float)(soldierCount * RobotType.SOLDIER.bulletCost + tankCount * RobotType.TANK.bulletCost
@@ -141,38 +152,31 @@ public class Gardener extends RobotPlayer
 			safeBulletBank = Constants.SAFEMINIMUMBANK;
 		}
 		
-		/*broadcastPrint(rc, 900, rc.readBroadcast(501));
-		broadcastPrint(rc, 901, (int)combatBulletCount);
-		broadcastPrint(rc, 902, (int)farmingBulletCount);*/
+		
 		
 		if(farmingBulletCount < 0.01f){
 			//build tree
 			buildTree(safeBulletBank);
-			//broadcastPrint(rc, 903, 1);
 		}
 		else if(combatBulletCount < 0.01f)
 		{
 			buildRobot(safeBulletBank);
-			//broadcastPrint(rc, 903, 2);
 		}
 		else if(farmingBulletCount/combatBulletCount < farmingToCombatRatio)
 		{
 			//build tree
-			//broadcastPrint(rc, 903, 1);
 			buildTree(safeBulletBank);
 		}
 		else
 		{
 			//build combat unit
 			buildRobot(safeBulletBank);
-			//broadcastPrint(rc, 903, 2);
 		}
 		
 		//Util.tryBuildRobot(rtToBuild);
 	}
 	
 	public static void buildTree(float safeBulletBank) throws GameActionException{
-		//broadcastPrint(rc, 904, dirNum-1 - currentlyPlanted);
 		if(currentlyPlanted < dirNum - 2)
 		{
 		
@@ -182,7 +186,7 @@ public class Gardener extends RobotPlayer
 				//Clock.yield();
 				return;
 			}
-			broadcastPrint(rc,905,999);
+			
 		}
 		
 		if(rc.getTeamBullets() > safeBulletBank)
@@ -200,6 +204,9 @@ public class Gardener extends RobotPlayer
 				unitRatio[i] = (float)rc.readBroadcast(503+i);
 				totalRatioN += unitRatio[i];
 			}
+			for(int i=0;i<4;i++){
+				unitRatio[i]/=totalRatioN;
+			}
 			float unitTotalCount = (float)(soldierCount + tankCount + scoutCount + lumberjackCount);
 			if(unitTotalCount < 0.01f){
 				Util.tryBuildRobot(RobotType.SOLDIER);
@@ -209,6 +216,14 @@ public class Gardener extends RobotPlayer
 			unitRatio[1] = unitRatio[1] - ((float)scoutCount)/unitTotalCount ;
 			unitRatio[2] = unitRatio[2] - ((float)tankCount)/unitTotalCount ;
 			unitRatio[3] = unitRatio[3] - ((float)lumberjackCount)/unitTotalCount ;
+			
+			broadcastPrint(rc, 900, soldierCount);
+			broadcastPrint(rc, 901, scoutCount);
+			
+			/*for(int i=0;i<4;i++)
+			{
+				broadcastPrint(rc, 900+i, (int)(unitRatio[i]*100.0f));
+			}*/
 			
 			float maxIndex = 0;
 			float max = unitRatio[0];
