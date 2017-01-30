@@ -48,6 +48,8 @@ public class Archon extends RobotPlayer {
     	
     	float maxDistance = 0.0f;
     	MapLocation maxArchonLocation = rc.getLocation();
+    	
+    	
     	for(MapLocation allyArchonLoc : allyArchonLocations)
     	{
     		float minDistanceToEnemy = 9999.0f;
@@ -91,6 +93,12 @@ public class Archon extends RobotPlayer {
     		rc.broadcast(504, 1);
     		rc.broadcast(505, 1);
     		rc.broadcast(506, 1);
+    		
+    		rc.broadcast(600, 0);
+    		rc.broadcast(601, 0);
+    		rc.broadcast(602, 0);
+    		rc.broadcast(603, 0);
+    		rc.broadcast(604, 0);
     	}
     	else
     	{
