@@ -258,7 +258,7 @@ public class Sensor {
 		return answer;
     }
 	
-    public Vector2D moveAwayFromBulletsVector(RobotController rc, float consideredDivision, int maxConsidered, float multiplier) throws GameActionException{
+    public Vector2D moveAwayFromBulletsVector(RobotController rc, float consideredRadius, int maxConsidered, float multiplier) throws GameActionException{
     	MapLocation rcLoc= rc.getLocation();
     	Vector2D neutralVec= new Vector2D();
     	double danger= 0;
@@ -266,12 +266,14 @@ public class Sensor {
     		int iteratedValues= (int) Value.clamp(maxConsidered,0,nearbyBullets.length);
 	    	for (int i = 0; i <iteratedValues ; i++){
 				BulletInfo bi= nearbyBullets[i];
-				if (bi!= null){
-					danger= Value.getDanger(bi, rc);
-					Vector2D sideStepVec= getSideStepVector(rc, bi);
-					if (sideStepVec!= null)
-						neutralVec.add(sideStepVec.scale(danger*multiplier));
-					rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
+				if (rc.getLocation().distanceTo(bi.location) < consideredRadius){
+					if (bi!= null){
+						danger= Value.getDanger(bi, rc);
+						Vector2D sideStepVec= getSideStepVector(rc, bi);
+						if (sideStepVec!= null)
+							neutralVec.add(sideStepVec.scale(danger*multiplier));
+						rc.setIndicatorLine(rcLoc, bi.location, 0, 200, 20);
+					}
 				}
 			}
 		}
