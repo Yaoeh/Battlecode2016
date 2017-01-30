@@ -121,6 +121,7 @@ public class Archon extends RobotPlayer {
     	Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
     	
     	int gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
+    	
     	if(gardenerCount == 0)
     	{
     		Direction dir = new Direction(0.0f);
