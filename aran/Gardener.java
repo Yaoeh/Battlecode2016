@@ -145,7 +145,7 @@ public class Gardener extends RobotPlayer
 		gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
 		
 		System.out.println("soldier count in gardener: " + soldierCount);
-		System.out.println("scout count in gardener: " + soldierCount);
+		System.out.println("scout count in gardener: " + scoutCount);
 		
 		//tree cost is 50 bullets
 		broadcastPrint(rc, 910, soldierCount);
@@ -229,10 +229,10 @@ public class Gardener extends RobotPlayer
 			broadcastPrint(rc, 900, soldierCount);
 			broadcastPrint(rc, 901, scoutCount);
 			
-			/*for(int i=0;i<4;i++)
+			for(int i=0;i<4;i++)
 			{
 				broadcastPrint(rc, 900+i, (int)(unitRatio[i]*100.0f));
-			}*/
+			}
 			
 			float maxIndex = 0;
 			float max = unitRatio[0];
@@ -248,7 +248,11 @@ public class Gardener extends RobotPlayer
 			if(maxIndex==0) flag = Util.tryBuildRobot(RobotType.SOLDIER);
 			if(maxIndex==1) flag = Util.tryBuildRobot(RobotType.SCOUT);
 			if(maxIndex==2) flag = Util.tryBuildRobot(RobotType.TANK);
-			if(maxIndex==3) flag = Util.tryBuildRobot(RobotType.LUMBERJACK);
+			if(maxIndex==3)
+			{
+				flag = Util.tryBuildRobot(RobotType.LUMBERJACK);
+				System.out.println("lumberjack");
+			}
 			/*if(flag){
 				Clock.yield();
 			}*/

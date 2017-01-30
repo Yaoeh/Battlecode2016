@@ -88,7 +88,7 @@ public class Archon extends RobotPlayer {
     		rc.broadcast(502, 10); // divide it by 100
     		
     		//unit ratios
-    		rc.broadcast(503, 5);
+    		rc.broadcast(503, 3);
     		rc.broadcast(504, 1);
     		rc.broadcast(505, 1);
     		rc.broadcast(506, 1);
@@ -145,7 +145,7 @@ public class Archon extends RobotPlayer {
 
 	    	float bulletToGardener = rc.getTeamBullets() / ((float)gardenerCount);
     		broadcastPrint(rc, 910, (int)bulletToGardener, "bulletToGardener");	    	
-	    	if(bulletToGardener > 50.0f){
+	    	if(bulletToGardener > 50.0f && gardenerCount < 25){
 	    		Direction dir = new Direction(0.0f);
 	        	for(int i=0;i<12;i++){
 	        		if(rc.canHireGardener(dir)){
