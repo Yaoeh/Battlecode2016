@@ -28,7 +28,7 @@ public class Tank extends RobotPlayer{
             	}
             	
             	
-            	decrementCountOnLowHealth();
+            	decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
             	Clock.yield();
             	
             } catch (Exception e) {

@@ -18,10 +18,10 @@ public class Archon extends RobotPlayer {
     	incrementCountOnSpawn();
         while (true) {
             try {
-        		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
-        			archonUpdateOwnInfo();
-        			//archonUpdateUnitCounts(); 
-        		}
+//        		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
+//        			archonUpdateOwnInfo();
+//        			//archonUpdateUnitCounts(); 
+//        		}
         		
             	if(status == "earlygame")
             	{
@@ -32,7 +32,7 @@ public class Archon extends RobotPlayer {
             		midGame(rc);
             	}
             	
-            	decrementCountOnLowHealth();
+            	decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
                 Clock.yield();
             } catch (Exception e) {
             	System.out.println("Archon Error!");
@@ -314,21 +314,25 @@ public class Archon extends RobotPlayer {
 				
 				switch (state) {
 					case UPDATE_TIME:
-						broadcastPrint(rc,indexOffset+ i, rc.getRoundNum(), "time");
+						//broadcastPrint(rc,indexOffset+ i, rc.getRoundNum(), "time");
+						rc.broadcast(indexOffset+ i, rc.getRoundNum());
 						break;
 					case STATUS:
-						broadcastPrint(rc, indexOffset+i, dangerStatus, "stat");
+						//broadcastPrint(rc, indexOffset+i, dangerStatus, "stat");
+						rc.broadcast(indexOffset+i, dangerStatus);
 					case LOCATION:
-						broadcastPrint(rc, indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()), "loc");
+						//broadcastPrint(rc, indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()), "loc");
+						rc.broadcast(indexOffset+i, InfoNet.condenseMapLocation(rc.getLocation()));
 					case ID:
-						broadcastPrint(rc, indexOffset+i, rc.getID());
+						//broadcastPrint(rc, indexOffset+i, rc.getID());
+						rc.broadcast(indexOffset+i, rc.getID());
 					default:
 						break;
 						
 				}
 			}
 		}else{
-			System.out.println("Index offset returning a failed number: " + indexOffset);
+			//System.out.println("Index offset returning a failed number: " + indexOffset);
 		}
 	}
 }

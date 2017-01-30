@@ -109,7 +109,7 @@ public class Gardener extends RobotPlayer
             		ratioGame();
             	}
             	
-            	decrementCountOnLowHealth();
+            	decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
                 Clock.yield();
             } catch (Exception e) {
                 System.out.println("Gardener Exception");
@@ -139,8 +139,8 @@ public class Gardener extends RobotPlayer
 			gardenerCount = getAccurateUnitCount(RobotType.GARDENER);
 		}
 		
-//		System.out.println("soldier count in gardener: " + soldierCount);
-//		System.out.println("scout count in gardener: " + soldierCount);
+		System.out.println("soldier count in gardener: " + soldierCount);
+		System.out.println("scout count in gardener: " + soldierCount);
 		
 		//tree cost is 50 bullets
 		broadcastPrint(rc, 910, soldierCount);

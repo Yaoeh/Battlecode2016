@@ -184,7 +184,7 @@ public class Soldier extends RobotPlayer
                         }
 		            }
                     
-                    decrementCountOnLowHealth();
+                    decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
 	                Clock.yield();
                 }
                 

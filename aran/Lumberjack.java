@@ -151,7 +151,7 @@ public class Lumberjack extends RobotPlayer
 			            	}
 		                    rc.move(dir);
 		                    
-		                    decrementCountOnLowHealth();
+		                    decrementCountOnLowHealth(12);
 		                    Clock.yield();
                     	}
                     	

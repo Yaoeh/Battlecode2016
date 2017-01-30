@@ -129,15 +129,19 @@ public strictfp class RobotPlayer{
 		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
 		int index= unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoNet.getCountEnumTypeTracked(rc.getType()));
 		int count= rc.readBroadcast(index);
-		rc.broadcast(index, count++);
+		//rc.broadcast(index, count++);
+		count+= 1;
+		broadcastPrint(rc, index, count, rc.getType().name()+ ": count increment");
     }
     
-    public static void decrementCountOnLowHealth() throws GameActionException{
-    	if (!decrementedCount && rc.getHealth() <= Constants.LOW_HEALTH_DECREMENT_VALUE){ //uh... how to stop it from keeping on to decrement? self desruct?
+    public static void decrementCountOnLowHealth(int lowHealthThreshold) throws GameActionException{
+    	if (!decrementedCount && rc.getHealth() <= lowHealthThreshold){ //uh... how to stop it from keeping on to decrement? self desruct?
     		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
     		int index= unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoNet.getCountEnumTypeTracked(rc.getType()));
     		int count= rc.readBroadcast(index);
-    		rc.broadcast(index, count--);
+    		count-= 1;
+    		//rc.broadcast(index, count--);
+    		broadcastPrint(rc, index, count, rc.getType().name()+ ": count decrement");
     		decrementedCount= true;
     	}
     }

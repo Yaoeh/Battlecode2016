@@ -74,7 +74,7 @@ public class ScoutingScout extends RobotPlayer {
             		Util.tryShoot();
             	}
             	
-            	decrementCountOnLowHealth();
+            	decrementCountOnLowHealth(5);
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();
