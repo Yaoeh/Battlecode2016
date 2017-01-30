@@ -215,7 +215,7 @@ class Util extends RobotPlayer{
     	return false;
 	}
 	public static boolean waterLowestHealthTreeWithoutMoving(RobotController rc, Team myTeam) throws GameActionException{
-		TreeInfo[] trees = rc.senseNearbyTrees(-1, myTeam);
+		TreeInfo[] trees = rc.senseNearbyTrees(2, myTeam);
     	//get tree with lowest health and water
     	if(trees.length>0)
     	{
@@ -263,16 +263,17 @@ class Util extends RobotPlayer{
         tryMove(dir);
     }
     
-    public static void tryBuildRobot(RobotType rt) throws GameActionException{
+    public static boolean tryBuildRobot(RobotType rt) throws GameActionException{
     	if (rc.getType().equals(RobotType.GARDENER)){
     		for (int i = 0; i < Constants.SixAngle.values().length; i++){
     			Direction tryBuildDir= new Direction(Constants.SixAngle.values()[i].getRadians());
     			if (rc.isBuildReady() && rc.canBuildRobot(rt, tryBuildDir)){
     				rc.buildRobot(rt, tryBuildDir);
-    				break;
+    				return true;
     			}
     		}
     	}
+    	return false;
     }
     
     public static void moveAwayFromMyTrees() throws GameActionException {

@@ -48,7 +48,7 @@ public class Gardener extends RobotPlayer
             		RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
             		int gardenerCount = 0;
             		for(int i=0;i<robots.length;i++){
-            			if(robots[i].type == RobotType.GARDENER)
+            			if(robots[i].type == RobotType.GARDENER || robots[i].type == RobotType.ARCHON)
             			{
             				gardenerCount+=1;
             				break;
@@ -96,8 +96,8 @@ public class Gardener extends RobotPlayer
             	}
             	if(stat== status.midgame)//status == "gardening")
             	{
-            		ratioGame();
             		Util.waterLowestHealthTreeWithoutMoving(rc, myTeam);
+            		ratioGame();
             	}
             	
                 Clock.yield();
@@ -141,41 +141,48 @@ public class Gardener extends RobotPlayer
 			safeBulletBank = Constants.SAFEMINIMUMBANK;
 		}
 		
-		broadcastPrint(rc, 900, rc.readBroadcast(501));
+		/*broadcastPrint(rc, 900, rc.readBroadcast(501));
 		broadcastPrint(rc, 901, (int)combatBulletCount);
+		broadcastPrint(rc, 902, (int)farmingBulletCount);*/
 		
-		if(farmingBulletCount == 0){
+		if(farmingBulletCount < 0.01f){
 			//build tree
 			buildTree(safeBulletBank);
+			//broadcastPrint(rc, 903, 1);
 		}
-		else if(combatBulletCount == 0)
+		else if(combatBulletCount < 0.01f)
 		{
 			buildRobot(safeBulletBank);
+			//broadcastPrint(rc, 903, 2);
 		}
 		else if(farmingBulletCount/combatBulletCount < farmingToCombatRatio)
 		{
 			//build tree
+			//broadcastPrint(rc, 903, 1);
 			buildTree(safeBulletBank);
 		}
 		else
 		{
 			//build combat unit
 			buildRobot(safeBulletBank);
+			//broadcastPrint(rc, 903, 2);
 		}
 		
 		//Util.tryBuildRobot(rtToBuild);
 	}
 	
 	public static void buildTree(float safeBulletBank) throws GameActionException{
-		
-		if(currentlyPlanted < dirNum - 1)
+		//broadcastPrint(rc, 904, dirNum-1 - currentlyPlanted);
+		if(currentlyPlanted < dirNum - 2)
 		{
 		
 			boolean hasPlanted = plantCircleTrees();
 			if(hasPlanted){
 				currentlyPlanted+=1;
+				//Clock.yield();
 				return;
 			}
+			broadcastPrint(rc,905,999);
 		}
 		
 		if(rc.getTeamBullets() > safeBulletBank)
@@ -213,11 +220,14 @@ public class Gardener extends RobotPlayer
 				}
 			}
 			
-			
-			if(maxIndex==0) Util.tryBuildRobot(RobotType.SOLDIER);
-			if(maxIndex==1) Util.tryBuildRobot(RobotType.SCOUT);
-			if(maxIndex==2) Util.tryBuildRobot(RobotType.TANK);
-			if(maxIndex==3) Util.tryBuildRobot(RobotType.LUMBERJACK);
+			boolean flag = false;
+			if(maxIndex==0) flag = Util.tryBuildRobot(RobotType.SOLDIER);
+			if(maxIndex==1) flag = Util.tryBuildRobot(RobotType.SCOUT);
+			if(maxIndex==2) flag = Util.tryBuildRobot(RobotType.TANK);
+			if(maxIndex==3) flag = Util.tryBuildRobot(RobotType.LUMBERJACK);
+			/*if(flag){
+				Clock.yield();
+			}*/
 		}
 	}
 //	public static RobotType needMore(int soldierCount, tankCount, scoutCount, lumberjackCount){
@@ -278,11 +288,11 @@ public class Gardener extends RobotPlayer
 				if (earlyGameIndex >= earlyGameQueue.length) {
 					rc.broadcast(500, 1);
 					// status = "gardenCheck";
-					stat = status.gardenCheck;
+					stat = status.looking;
 				}
 			}
 		}else{
-			stat= status.ratiogame;
+			stat= status.looking;
 		}
 	}
 	private static void earlyGameInit() throws GameActionException{

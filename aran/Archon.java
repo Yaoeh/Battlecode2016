@@ -100,7 +100,7 @@ public class Archon extends RobotPlayer {
     public static void earlyGame(RobotController rc) throws GameActionException{
     	int isEarlyGame = rc.readBroadcast(500);
     	if(isEarlyGame == 1){
-    		status = "midGame";
+    		status = "midgame";
     	}
     	
     	if(gardenerHired){
@@ -123,14 +123,29 @@ public class Archon extends RobotPlayer {
     	int gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
     	if(gardenerCount == 0)
     	{
-    		Util.tryBuildRobot(RobotType.GARDENER);
+    		Direction dir = new Direction(0.0f);
+        	for(int i=0;i<12;i++){
+        		if(rc.canHireGardener(dir)){
+        			rc.hireGardener(dir);
+        			break;
+        		}
+        		dir = dir.rotateLeftDegrees(30.0f);
+        	}
     	}
     	else
     	{
+
 	    	float bulletToGardener = rc.getTeamBullets() / ((float)gardenerCount);
-	    	
-	    	if(bulletToGardener > 20){
-	    		Util.tryBuildRobot(RobotType.GARDENER);
+    		broadcastPrint(rc, 910, (int)bulletToGardener, "bulletToGardener");	    	
+	    	if(bulletToGardener > 50.0f){
+	    		Direction dir = new Direction(0.0f);
+	        	for(int i=0;i<12;i++){
+	        		if(rc.canHireGardener(dir)){
+	        			rc.hireGardener(dir);
+	        			break;
+	        		}
+	        		dir = dir.rotateLeftDegrees(30.0f);
+	        	}
 	    	}
     	}
     	
