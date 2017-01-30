@@ -161,7 +161,7 @@ public class Gardener extends RobotPlayer
 			safeBulletBank = Constants.SAFEMINIMUMBANK;
 		}
 		
-		
+		broadcastPrint(rc, 940, (int)safeBulletBank, "bulletbank");
 		
 		if(farmingBulletCount < 0.01f){
 			//build tree
@@ -186,6 +186,7 @@ public class Gardener extends RobotPlayer
 	}
 	
 	public static void buildTree(float safeBulletBank) throws GameActionException{
+		broadcastPrint(rc, 920, 0, "trytobuildtree");
 		if(currentlyPlanted < dirNum - 2)
 		{
 		
@@ -205,6 +206,7 @@ public class Gardener extends RobotPlayer
 		
 	}
 	public static void buildRobot(float safeBulletBank) throws GameActionException{
+		broadcastPrint(rc, 920, 0, "trytobuildrobot");
 		if(rc.getTeamBullets() > safeBulletBank)
 		{
 			float[] unitRatio = new float[4];
@@ -245,13 +247,22 @@ public class Gardener extends RobotPlayer
 			}
 			
 			boolean flag = false;
-			if(maxIndex==0) flag = Util.tryBuildRobot(RobotType.SOLDIER);
-			if(maxIndex==1) flag = Util.tryBuildRobot(RobotType.SCOUT);
-			if(maxIndex==2) flag = Util.tryBuildRobot(RobotType.TANK);
+			if(maxIndex==0){
+				flag = Util.tryBuildRobot(RobotType.SOLDIER);
+				broadcastPrint(rc, 930, 0, "soldier");
+			}
+			if(maxIndex==1){
+				flag = Util.tryBuildRobot(RobotType.SCOUT);
+				broadcastPrint(rc, 930, 0, "scout");
+			}
+			if(maxIndex==2){
+				flag = Util.tryBuildRobot(RobotType.TANK);
+				broadcastPrint(rc, 930, 0, "tank");
+			}
 			if(maxIndex==3)
 			{
 				flag = Util.tryBuildRobot(RobotType.LUMBERJACK);
-				System.out.println("lumberjack");
+				broadcastPrint(rc, 930, 0, "lumberjack");
 			}
 			/*if(flag){
 				Clock.yield();

@@ -90,7 +90,7 @@ public class Archon extends RobotPlayer {
     		//unit ratios
     		rc.broadcast(503, 3);
     		rc.broadcast(504, 1);
-    		rc.broadcast(505, 1);
+    		rc.broadcast(505, 0);
     		rc.broadcast(506, 1);
     		
     		rc.broadcast(600, 0);
