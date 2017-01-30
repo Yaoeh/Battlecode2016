@@ -119,11 +119,9 @@ public class Gardener extends RobotPlayer
 	private static void ratioGame() throws GameActionException { 
 		//spawn units based on the corresponding ratio
 		//3 soldier to 1 lumberjack to 1 tank to 1 scout
-		
 		//Gardener first checks whether or not the unit count is accurate, if it is not then presume 0
 		
 		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-		
 		
 		if (!archonDead){ //all info is accurate
 			soldierCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SOLDIER_COUNT));
@@ -138,6 +136,10 @@ public class Gardener extends RobotPlayer
 			lumberjackCount= getAccurateUnitCount(RobotType.LUMBERJACK);
 			gardenerCount = getAccurateUnitCount(RobotType.GARDENER);
 		}
+		
+//		System.out.println("soldier count in gardener: " + soldierCount);
+//		System.out.println("scout count in gardener: " + soldierCount);
+		
 		//tree cost is 50 bullets
 		broadcastPrint(rc, 910, soldierCount);
 		broadcastPrint(rc, 911, scoutCount);
