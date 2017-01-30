@@ -23,9 +23,10 @@ public class AndrewScout extends RobotPlayer
 		{
 			seekerScout = true;
 		}
+		incrementCountOnSpawn();
 		 while (true) {
 	            try {
-	            	infoUpdate();
+	            	//infoUpdate();
 	            	MapLocation myLoc = rc.getLocation();
 	            	if(mode == "seekinit")//initially go to archon spawn
 	            	{
@@ -199,6 +200,8 @@ public class AndrewScout extends RobotPlayer
 	                    {
 	                    	rc.move(dir);
 	                    }
+	                    
+	                    decrementCountOnLowHealth(5);
 	            		Clock.yield();
 	            	}
 	

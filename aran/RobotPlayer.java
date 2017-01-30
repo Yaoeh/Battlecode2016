@@ -146,12 +146,12 @@ public strictfp class RobotPlayer{
     	}
     }
     
-    public static void infoUpdate() throws GameActionException{
-		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
-			updateOwnInfo(); 
-			updateUnitCounts();
-		}
-    }
+//    public static void infoUpdate() throws GameActionException{
+//		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
+//			updateOwnInfo(); 
+//			updateUnitCounts();
+//		}
+//    }
     
 	public static void updateOwnInfo() throws GameActionException { //for special units
 		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());

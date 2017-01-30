@@ -36,7 +36,7 @@ public class Gardener extends RobotPlayer
         earlyGameInit();
         while (true) {
             try {
-            	infoUpdate();
+            	//infoUpdate();
             	
             	//move away from other gardeners
             	if(stat== status.earlygame)//(status == "earlygame")
@@ -125,19 +125,24 @@ public class Gardener extends RobotPlayer
 		
 		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
 		
-		if (!archonDead){ //all info is accurate
-			soldierCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SOLDIER_COUNT));
-			tankCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.TANK_COUNT));
-			scoutCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SCOUT_COUNT));
-			lumberjackCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.LUMBERJACK_COUNT));
-			gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
-		}else{ //need to check, if inaccurate then they all dead
-			soldierCount= getAccurateUnitCount(RobotType.SOLDIER);
-			tankCount= getAccurateUnitCount(RobotType.TANK);
-			scoutCount= getAccurateUnitCount(RobotType.SCOUT);
-			lumberjackCount= getAccurateUnitCount(RobotType.LUMBERJACK);
-			gardenerCount = getAccurateUnitCount(RobotType.GARDENER);
-		}
+//		if (!archonDead){ //all info is accurate
+//			soldierCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SOLDIER_COUNT));
+//			tankCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.TANK_COUNT));
+//			scoutCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SCOUT_COUNT));
+//			lumberjackCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.LUMBERJACK_COUNT));
+//			gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
+//		}else{ //need to check, if inaccurate then they all dead
+//			soldierCount= getAccurateUnitCount(RobotType.SOLDIER);
+//			tankCount= getAccurateUnitCount(RobotType.TANK);
+//			scoutCount= getAccurateUnitCount(RobotType.SCOUT);
+//			lumberjackCount= getAccurateUnitCount(RobotType.LUMBERJACK);
+//			gardenerCount = getAccurateUnitCount(RobotType.GARDENER);
+//		}
+		soldierCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SOLDIER_COUNT));
+		tankCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.TANK_COUNT));
+		scoutCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SCOUT_COUNT));
+		lumberjackCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.LUMBERJACK_COUNT));
+		gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
 		
 		System.out.println("soldier count in gardener: " + soldierCount);
 		System.out.println("scout count in gardener: " + soldierCount);
@@ -253,25 +258,25 @@ public class Gardener extends RobotPlayer
 //		
 //	}
 	
-	public static int getAccurateUnitCount(RobotType rt) throws GameActionException{ //this is only accurate if you call infoUpdate first
-		int answer= 0;
-		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
-
-		if (archonDead){
-				Info unitInfo= InfoNet.unitInfoMap.get(rt);
-				int firstOfUnitUpdateIndex= unitInfo.getStartIndex()+ unitInfo.getIndex(InfoEnum.UPDATE_TIME);
-				int lastUpdateTime= rc.readBroadcast(firstOfUnitUpdateIndex);
-				if (rc.getRoundNum() - lastUpdateTime > Constants.DEAD_TOLERANCE_ROUNDNUM){
-					int checkIndex= InfoNet.getFirstBehindRoundUpdateOtherRobotIndex(rc, rt);
-					if (checkIndex== Integer.MIN_VALUE){
-						answer= InfoNet.getNumTypeTracked(rt);
-					}else{
-						answer= (checkIndex - unitInfo.getStartIndex()) / unitInfo.reservedChannels.size();
-					}
-				}
-		}
-		return answer;
-	}
+//	public static int getAccurateUnitCount(RobotType rt) throws GameActionException{ //this is only accurate if you call infoUpdate first
+//		int answer= 0;
+//		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+//
+//		if (archonDead){
+//				Info unitInfo= InfoNet.unitInfoMap.get(rt);
+//				int firstOfUnitUpdateIndex= unitInfo.getStartIndex()+ unitInfo.getIndex(InfoEnum.UPDATE_TIME);
+//				int lastUpdateTime= rc.readBroadcast(firstOfUnitUpdateIndex);
+//				if (rc.getRoundNum() - lastUpdateTime > Constants.DEAD_TOLERANCE_ROUNDNUM){
+//					int checkIndex= InfoNet.getFirstBehindRoundUpdateOtherRobotIndex(rc, rt);
+//					if (checkIndex== Integer.MIN_VALUE){
+//						answer= InfoNet.getNumTypeTracked(rt);
+//					}else{
+//						answer= (checkIndex - unitInfo.getStartIndex()) / unitInfo.reservedChannels.size();
+//					}
+//				}
+//		}
+//		return answer;
+//	}
 
 	private static void earlyGame() throws GameActionException {
 		if (rc.getRoundNum()< 500) {
