@@ -11,6 +11,7 @@ public strictfp class RobotPlayer{
     static boolean firstOfType= false;
     static boolean archonDead= false;
     static int unitNum= -1;
+    static boolean decrementedCount= false;
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
@@ -124,6 +125,23 @@ public strictfp class RobotPlayer{
 		return cloestLoc;
 	}
     
+    public static void incrementCountOnSpawn() throws GameActionException{
+		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+		int index= unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoNet.getCountEnumTypeTracked(rc.getType()));
+		int count= rc.readBroadcast(index);
+		rc.broadcast(index, count++);
+    }
+    
+    public static void decrementCountOnLowHealth() throws GameActionException{
+    	if (!decrementedCount && rc.getHealth() <= Constants.LOW_HEALTH_DECREMENT_VALUE){ //uh... how to stop it from keeping on to decrement? self desruct?
+    		Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+    		int index= unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoNet.getCountEnumTypeTracked(rc.getType()));
+    		int count= rc.readBroadcast(index);
+    		rc.broadcast(index, count--);
+    		decrementedCount= true;
+    	}
+    }
+    
     public static void infoUpdate() throws GameActionException{
 		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
 			updateOwnInfo(); 
@@ -131,7 +149,7 @@ public strictfp class RobotPlayer{
 		}
     }
     
-	public static void updateOwnInfo() throws GameActionException {
+	public static void updateOwnInfo() throws GameActionException { //for special units
 		Info trackedInfo= InfoNet.unitInfoMap.get(rc.getType());
 		int indexOffset= InfoNet.getFirstBehindRoundUpdateRobotIndex(rc); //starting index of an not updated robot type
 				

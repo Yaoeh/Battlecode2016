@@ -32,6 +32,7 @@ public class Gardener extends RobotPlayer
         int lookingCount = 0;
         int lookingCountLimit = 7;
         Direction lookingDir = Util.randomDirection();
+        incrementCountOnSpawn();
         earlyGameInit();
         while (true) {
             try {
@@ -108,6 +109,7 @@ public class Gardener extends RobotPlayer
             		ratioGame();
             	}
             	
+            	decrementCountOnLowHealth();
                 Clock.yield();
             } catch (Exception e) {
                 System.out.println("Gardener Exception");

@@ -9,10 +9,11 @@ public class Lumberjack extends RobotPlayer
         MapLocation movegoal = rc.getLocation();
         Direction randomDir = Util.randomDirection();
         int seekrounds = 40;
-        Clock.yield();
+        incrementCountOnSpawn();
+        
         while (true) {
             try {
-            	infoUpdate();
+            	//infoUpdate();
             	
             	MapLocation myLoc = rc.getLocation();
                 RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
@@ -149,6 +150,8 @@ public class Lumberjack extends RobotPlayer
 			            		count+=1;
 			            	}
 		                    rc.move(dir);
+		                    
+		                    decrementCountOnLowHealth();
 		                    Clock.yield();
                     	}
                     	

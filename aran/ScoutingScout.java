@@ -16,9 +16,10 @@ import battlecode.common.TreeInfo;
 public class ScoutingScout extends RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         Info trackedInfo= InfoNet.unitInfoMap.get(RobotType.SCOUT);
+        incrementCountOnSpawn();
     	while (true) {
             try {
-            	infoUpdate();
+            	//infoUpdate();
             	
             	sensor.goalLoc= null;
             	sensor.senseBullets(rc);
@@ -73,6 +74,7 @@ public class ScoutingScout extends RobotPlayer {
             		Util.tryShoot();
             	}
             	
+            	decrementCountOnLowHealth();
                 Clock.yield();
             } catch (Exception e) {
                 e.printStackTrace();

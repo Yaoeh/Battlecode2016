@@ -64,19 +64,53 @@ public class InfoNet {
 	public final static int NUM_BLACKlIST_TRACKED= 50;
 	
 	public static int getNumTypeTracked(RobotType rt){
-		if (rt.equals(RobotType.ARCHON)){
-			return NUM_ARCHONS_TRACKED;
-		}else if (rt.equals(RobotType.GARDENER)){
-			return NUM_GARDENERS_TRACKED;
-		}else if (rt.equals(RobotType.SOLDIER)){
-			return NUM_SOLDIERS_TRACKED;
-		}else if (rt.equals(RobotType.SCOUT)){
-			return NUM_SCOUTS_TRACKED;
-		}else if (rt.equals(RobotType.TANK)){
-			return NUM_TANKS_TRACKED;
-		}else {
-			return NUM_LUMBERJACKS_TRACKED;
+		int answer= 0;
+		switch (rt){
+			case ARCHON:
+				answer= NUM_ARCHONS_TRACKED;
+				break;
+			case GARDENER:
+				answer= NUM_GARDENERS_TRACKED;
+				break;
+			case SOLDIER:
+				answer= NUM_SOLDIERS_TRACKED;
+				break;
+			case SCOUT:
+				answer= NUM_SCOUTS_TRACKED;
+				break;
+			case TANK:
+				answer= NUM_TANKS_TRACKED;
+				break;
+			case LUMBERJACK:
+				answer= NUM_LUMBERJACKS_TRACKED;
+				break;
 		}
+		return answer;
+	}
+	
+	public static InfoEnum getCountEnumTypeTracked(RobotType rt){
+		InfoEnum answer= null;
+		switch (rt){
+			case ARCHON:
+				answer= InfoEnum.ARCHON_COUNT;
+				break;
+			case GARDENER:
+				answer= InfoEnum.GARDENER_COUNT;
+				break;
+			case SOLDIER:
+				answer= InfoEnum.SOLDIER_COUNT;
+				break;
+			case SCOUT:
+				answer= InfoEnum.SCOUT_COUNT;
+				break;
+			case TANK:
+				answer= InfoEnum.TANK_COUNT;
+				break;
+			case LUMBERJACK:
+				answer= InfoEnum.LUMBERJACK_COUNT;
+				break;
+		}
+		return answer;
 	}
 	
 	

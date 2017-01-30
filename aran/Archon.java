@@ -15,12 +15,12 @@ public class Archon extends RobotPlayer {
 	static boolean gardenerHired = false;
     public static void run(RobotController rc) throws GameActionException {
     	figureOutClosestArchon(rc);
-    	
+    	incrementCountOnSpawn();
         while (true) {
             try {
         		if (rc.getRoundNum()%Constants.UNIT_COUNT_UPDATE_OFFSET== 0){
         			archonUpdateOwnInfo();
-        			archonUpdateUnitCounts(); 
+        			//archonUpdateUnitCounts(); 
         		}
         		
             	if(status == "earlygame")
@@ -32,8 +32,7 @@ public class Archon extends RobotPlayer {
             		midGame(rc);
             	}
             	
-            	
-            	
+            	decrementCountOnLowHealth();
                 Clock.yield();
             } catch (Exception e) {
             	System.out.println("Archon Error!");
