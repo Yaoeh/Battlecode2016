@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import aran.Constants.AddInfo;
 import aran.Constants.InfoEnum;
+import aran_v2.Value;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -22,7 +23,7 @@ public class ScoutingScout extends RobotPlayer {
 	static ArrayList<MapLocation> remainingCheck= null;
 	static enum status {gather, assault, checkEdge, cleanup, scout};
 	static status stat= status.gather;
-	
+	//static int cleanUpIndex= 0;
     public static void run(RobotController rc) throws GameActionException {
         Info trackedInfo= InfoNet.unitInfoMap.get(RobotType.SCOUT);
         incrementCountOnSpawn();
@@ -63,14 +64,19 @@ public class ScoutingScout extends RobotPlayer {
     }
     
 	public static void createFinalSearchCoordinates() throws GameActionException{
-    	if (remainingCheck== null){
+    	if (remainingCheck== null && edgesFound){
 	    	remainingCheck=  new ArrayList<MapLocation>();
-	    	for (int y = edgesVals[0]; y < edgesVals[2]; y+= rc.getType().sensorRadius){
-	    		for (int x= edgesVals[1]; x< edgesVals[3]; x+= rc.getType().sensorRadius){
-	    			remainingCheck.add(new MapLocation(x,y));
-	    			rc.setIndicatorDot(new MapLocation(x,y), 255, 0, 0);
+	    	//int senseRad= (int) rc.getType().sensorRadius
+	    	for (int y = edgesVals[2] ; y < edgesVals[0]; y+= rc.getType().sensorRadius){ //highest value bottom left
+	    		for (int x= edgesVals[3]; x< edgesVals[1]; x+= rc.getType().sensorRadius){
+	    			if (x > edgesVals[3] && x < edgesVals[1] && y > edgesVals[2] && y< edgesVals[0] ){
+	    				remainingCheck.add(new MapLocation(x,y));
+	    				rc.setIndicatorDot(new MapLocation(x,y), 255, 0, 0);
+	    			}
 	    		}
 	    	}
+	    	System.out.println("\tEdges: "+ edgesVals[0] +","+ edgesVals[1] +","+ edgesVals[2] +","+ edgesVals[3]);
+	    	System.out.println("\tFinal search coordinate size: " + remainingCheck.size());
     	}
     }
     
@@ -91,13 +97,17 @@ public class ScoutingScout extends RobotPlayer {
     public static boolean noGoalAfterCheckCleanupMission() throws GameActionException{ //look for the remaining trees, returns false on nothing else to look
     	boolean answer= true;
     	if (edgesFound){
-    		if (remainingCheck== null)
+    		System.out.println("\tEdges found");
+    		if (remainingCheck== null){
     			createFinalSearchCoordinates();
+    		}
     		if (remainingCheck.size()> 0){
-    			sensor.goalLoc= Value.getClosestLoc(remainingCheck, rc.getLocation(), remainingCheck.size()); 
+    			sensor.goalLoc= Value.getClosestLoc(remainingCheck, rc.getLocation(), remainingCheck.size());
     			stat= status.cleanup;
     			answer= false;
     		}
+    	}else{
+    		System.out.println("\tEdges not found yet");
     	}
     	return answer;
     }
@@ -117,6 +127,7 @@ public class ScoutingScout extends RobotPlayer {
     		noGoal= checkEdges();
     	}
     	if (noGoal){
+    		checkEdgesFound();
     		noGoal= noGoalAfterCheckCleanupMission();
     	}
     	if (noGoal){
@@ -128,15 +139,18 @@ public class ScoutingScout extends RobotPlayer {
     		case gather:
     			sensor.tryShakeTree(rc);    	    	
     			carelessMove();
+    			break;
     		case checkEdge:
     			checkOnMap();
     			carelessMove();
+    			break;
     		case cleanup:
     			carelessMove();
-    			removeCleanUpDotOnClose(rc.getType().sensorRadius);
-//    		case assault:
-//    			carelessMove();
-//    			Util.tryShoot();
+    			removeCleanUpDotOnClose(rc.getType().sensorRadius/2);
+    			break;
+    		case assault:
+    			carelessMove();
+    			Util.tryShoot();
     	}
     }
     
@@ -187,14 +201,34 @@ public class ScoutingScout extends RobotPlayer {
 		    		answer= false;
 		    		stat= status.checkEdge;
 		    		System.out.println("setting new Goal loc: " + sensor.goalLoc);
-		    	}else{
-		    		edgesFound= true;
-		    		rc.setIndicatorDot(rc.getLocation(), 255, 255, 255);
 		    	}
+//		    	else if (edgeGoalLocs.length == 0){
+//		    		edgesFound= true;
+//		    		//System.out.println("\tEdges found in check: "+ edgesVals[0] +","+ edgesVals[1] +","+ edgesVals[2] +","+ edgesVals[3]);
+//		    		rc.setIndicatorDot(rc.getLocation(), 255, 255, 255);
+//		    	}
     		}
     	}
     	
     	return answer;
+    }
+    
+    public static void checkEdgesFound() throws GameActionException{
+    	//edgesFound= getNextMissionInt()== -1;
+    	if (!edgesFound){
+	    	boolean answer= true;
+	    	for (int i = 0 ; i <  edgesVals.length; i++){
+	    		if (edgesVals[i]== Integer.MIN_VALUE){
+	    			answer= false;
+	    			break;
+	    		}
+	    	}
+	    	
+	    	edgesFound= answer;
+	    	
+	    	if (edgesFound)
+	    		System.out.println("\tEdges found in check: "+ edgesVals[0] +","+ edgesVals[1] +","+ edgesVals[2] +","+ edgesVals[3]);
+    	}
     }
         
     public static void trySetMapEdge(Direction d, MapLocation loc) throws GameActionException{
@@ -277,6 +311,23 @@ public class ScoutingScout extends RobotPlayer {
 		int checkLoc= rc.readBroadcast(infoIndex);
 		if (checkLoc!= 0){
 			answer= true;
+			
+			switch (ie){
+				case MIN_Y:
+					edgesVals[0]= checkLoc;
+					break;
+				case MAX_X:
+					edgesVals[1]= checkLoc;
+					break;
+				case MAX_Y:
+					edgesVals[2]= checkLoc;
+					break;
+				case MIN_X:
+					edgesVals[3]= checkLoc;
+					break;
+			}
+			
+			
 		}
     	return answer;
     }

@@ -1,5 +1,7 @@
 package aran_v2;
 
+import java.util.ArrayList;
+
 import battlecode.common.BodyInfo;
 import battlecode.common.BulletInfo;
 import battlecode.common.GameActionException;
@@ -27,6 +29,24 @@ public class Value {
 		}
 		return cloestLoc;
 	}
+
+	public static MapLocation getClosestLoc(ArrayList<MapLocation> locs, MapLocation ref, int maxConsidered){
+		MapLocation cloestLoc= null;
+		if (locs!= null){
+			if (locs.size()> 0){
+				cloestLoc= locs.get(0);
+				float shortestLength= ref.distanceTo(cloestLoc);
+				for (int i = 1; i< clamp(locs.size(),0,maxConsidered); i++){
+					float candidateDis= ref.distanceTo(locs.get(i));
+					if (candidateDis < shortestLength){
+						shortestLength= candidateDis;
+						cloestLoc= locs.get(i);
+					}
+				}
+			}
+		}
+		return cloestLoc;
+	}	
 	
 	public static BodyInfo getClosestBody(BodyInfo[] bodies, MapLocation ref, int maxConsidered){
 		BodyInfo closestBody= null;

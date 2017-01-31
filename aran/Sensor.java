@@ -416,8 +416,8 @@ public class Sensor {
 		return new MapLocation((float) vec.x, (float) vec.y);
 	}
 	
-	public MapLocation clampMapLoc(MapLocation loc){//clamp it between the map constraints
-		return new MapLocation(Value.clamp(loc.x, GameConstants.MAP_MIN_WIDTH, GameConstants.MAP_MAX_WIDTH), Value.clamp(loc.y, GameConstants.MAP_MIN_HEIGHT, GameConstants.MAP_MAX_HEIGHT));
+	public MapLocation clampMapLoc(MapLocation loc, int minY, int maxX, int maxY, int minX){//clamp it between the map constraints
+		return new MapLocation(Value.clamp(loc.x, minX, maxX), Value.clamp(loc.y,minY, maxY));
 	}
 	
 	public boolean withinMap(MapLocation loc){
