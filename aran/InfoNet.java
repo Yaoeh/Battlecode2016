@@ -172,6 +172,15 @@ public class InfoNet {
 						InfoEnum.MIN_X
 					)
 			);
+
+	public static ArrayList<InfoEnum> SCOUTED_INFO = 	    					
+			new ArrayList<InfoEnum>(
+				Arrays.asList(
+						InfoEnum.NUM_TREES_SPIED,
+						InfoEnum.NUM_GARDENERS_SPIED,
+						InfoEnum.NUM_DAMAGE_SPIED
+					)
+			);
 	
 	public static ArrayList<InfoEnum> ANDYKEY_ITERATOR = 	    					
 			new ArrayList<InfoEnum>(
@@ -250,10 +259,16 @@ public class InfoNet {
 							MAP_EDGE_INFO
 	    					,1) //should only count units once
 				);
+    			put(AddInfo.SCOUTED_INFO, 
+    					new Info(
+							SCOUTED_INFO
+	    					,1) //should only count units once
+				);
+    			
 			}};
 	public static int UNIT_COUNT_START_INDEX= addInfoMap.get(AddInfo.UNITCOUNT).setStartIndex(addInfoMap.get(AddInfo.BLACKLIST).getNextInfoStartIndex());
 	public static int MAP_EDGE_START_INDEX= addInfoMap.get(AddInfo.MAP_EDGE).setStartIndex(addInfoMap.get(AddInfo.UNITCOUNT).getNextInfoStartIndex());
-
+	public static int SCOUTED_INFO_START_INDEX= addInfoMap.get(AddInfo.SCOUTED_INFO).setStartIndex(addInfoMap.get(AddInfo.MAP_EDGE).getNextInfoStartIndex());
 	
 	
 	public static int countUnits(RobotController rc, RobotType rt) throws GameActionException{

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import aran.Constants.AddInfo;
 import aran.Constants.InfoEnum;
-import aran_v2.Value;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -21,7 +20,7 @@ public class ScoutingScout extends RobotPlayer {
 	static int[] edgesVals= {Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
 	//static InfoEnum[] coordinatedEdges=  {InfoEnum.MIN_Y, InfoEnum.MAX_X, InfoEnum.MAX_Y, InfoEnum.MIN_X};
 	static ArrayList<MapLocation> remainingCheck= null;
-	static enum status {gather, assault, checkEdge, cleanup, scout};
+	static enum status {gather, assault, checkEdge, cleanup};
 	static status stat= status.gather;
 	//static int cleanUpIndex= 0;
     public static void run(RobotController rc) throws GameActionException {
@@ -37,7 +36,11 @@ public class ScoutingScout extends RobotPlayer {
 //            		stat= status.lategame;
 //            	}
             	
-            	resourceFindingMission();
+            	if (unitNum== 2){
+            		SurveyingScout.virtual_run(rc);
+            	}else{
+            		resourceFindingMission();
+            	}
             	decrementCountOnLowHealth(5);
                 Clock.yield();
             } catch (Exception e) {
