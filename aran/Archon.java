@@ -31,6 +31,12 @@ public class Archon extends RobotPlayer {
             	{
             		midGame(rc);
             	}
+            	else if(status == "idk")
+            	{
+            		if(rc.getRoundNum() > 200){
+            			status = "midgame";
+            		}
+            	}
             	
             	decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
                 Clock.yield();
@@ -98,6 +104,10 @@ public class Archon extends RobotPlayer {
     		rc.broadcast(602, 0);
     		rc.broadcast(603, 0);
     		rc.broadcast(604, 0);
+    		rc.broadcast(2, 0);
+    		for(int i=100;i<120;i++){
+    			rc.broadcast(i, -1);
+    		}
     	}
     	else
     	{

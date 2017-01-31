@@ -14,6 +14,15 @@ public class Soldier extends RobotPlayer
         int bulletwait = 0;
         int seekRounds = 25;
         
+        int soldierN = rc.readBroadcast(2);
+        rc.broadcast(2, soldierN+1);
+        if(soldierN % 5 == 0)
+        {
+        	//scouting soldier
+        	if(soldierN % 20 == 0){
+        		//first seek location is enemy archon location.
+        	}
+        }
         
     	incrementCountOnSpawn(); 
         while (true) {
