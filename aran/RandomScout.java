@@ -13,7 +13,7 @@ public class RandomScout extends RobotPlayer
 	
 	public static Direction seekDir;
 	public static int randomRoundCount = 0;
-	public static int randomRoundCountLimit = 20;
+	public static int randomRoundCountLimit = 50;
 	public static RobotInfo[] robots;
 
 			

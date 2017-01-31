@@ -166,7 +166,7 @@ public class ScoutingScout extends RobotPlayer {
     	if (noGoal){
     		stat= status.assault;
     		//sensor.goalLoc= Value.getClosestLoc(rc.getInitialArchonLocations(rc.getTeam().opponent()), rc.getLocation(), Integer.MAX_VALUE);
-    		AndrewScout.run(rc);
+    		RandomScout.run(rc);
     	}
     	
     	switch (stat){
