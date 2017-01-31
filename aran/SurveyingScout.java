@@ -16,7 +16,9 @@ import battlecode.common.TreeInfo;
 
 public class SurveyingScout extends RobotPlayer {
 	public static boolean missionComplete= false;
+	public static boolean neutralTreeBarrierScouted= false;
     public static ArrayList<MapLocation> enemArchonLocs;
+    public static ArrayList<MapLocation> neutralLocs;
     public static void setupEnemArchonLocs(){
     	if (enemArchonLocs== null){
     		enemArchonLocs= new ArrayList<MapLocation>(Arrays.asList(rc.getInitialArchonLocations(rc.getTeam().opponent())));	
@@ -25,11 +27,45 @@ public class SurveyingScout extends RobotPlayer {
     	
     }
     
-    public static void setupGoal(){
-    	if (enemArchonLocs.size()> 0){
-    		sensor.goalLoc= enemArchonLocs.get(0);
+    public static void setUpBarrierScoutPoints(){
+    	if (neutralLocs== null){
+    		neutralLocs= new ArrayList<MapLocation>();
+	    	for (int i = (int) (rc.getType().sensorRadius*2); i < rc.getLocation().distanceTo(enemArchonLocs.get(0)); i+= rc.getType().sensorRadius*2){
+	    		neutralLocs.add(rc.getLocation().add(rc.getLocation().directionTo(enemArchonLocs.get(0)), i));
+	    	}
     	}
     }
+    
+    public static void setupGoal(){
+    	if (neutralTreeBarrierScouted){    	
+			if (enemArchonLocs.size()> 0){
+				sensor.goalLoc= enemArchonLocs.get(0);
+			}
+    	}else{
+			if (neutralLocs.size()> 0){
+				sensor.goalLoc= neutralLocs.get(0);
+			}
+    	}
+    }
+    
+    
+	public static void removeTreeBarrierOnClose(float radius) throws GameActionException {
+		if (sensor.goalLoc != null && neutralLocs != null) {
+			if (rc.getLocation().distanceTo(sensor.goalLoc) <= radius) {
+				neutralLocs.remove(sensor.goalLoc);
+				if (neutralLocs.size() <= 0) {
+					neutralTreeBarrierScouted = true;
+				}
+			}
+			
+			Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.SCOUTED_INFO);
+			int treeCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.NUM_NEUTRAL_TREE_SPIED);
+			int treeCount= rc.readBroadcast(treeCountIndex);
+			//rc.broadcast(gardenerCountIndex, currentGarCount+ gardenerCount);
+				broadcastPrint(rc,treeCountIndex, treeCount+ sensor.nearbyNeutralTrees.length, "neutral tree count count by spy");
+
+		}
+	}
     
     public static void removeCleanUpDotOnClose(float radius) throws GameActionException{
     	if (sensor.goalLoc!= null && enemArchonLocs!= null){
@@ -102,6 +138,10 @@ public class SurveyingScout extends RobotPlayer {
 			if (enemArchonLocs == null) {
 				setupEnemArchonLocs();
 			}
+			
+			if (neutralLocs== null){
+				setUpBarrierScoutPoints();
+			}
 
 			if (enemArchonLocs.size() > 0) {
 				setupGoal();
@@ -110,7 +150,12 @@ public class SurveyingScout extends RobotPlayer {
 				sensor.senseTrees(rc);
 	
 				carelessMove();
-				removeCleanUpDotOnClose(rc.getType().sensorRadius / 3);
+				
+				if (!neutralTreeBarrierScouted){
+					removeTreeBarrierOnClose(rc.getType().sensorRadius / 3);
+				}else{
+					removeCleanUpDotOnClose(rc.getType().sensorRadius / 3);
+				}
 			}else{
 				missionComplete= true;
 			}
