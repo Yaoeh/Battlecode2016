@@ -30,6 +30,10 @@ public class Archon extends RobotPlayer {
             	else if(status == "midgame")
             	{
             		midGame(rc);
+            		if(rc.getTreeCount() > 8)
+            		{
+            			rc.broadcast(502, 15);
+            		}
             	}
             	else if(status == "idk")
             	{
@@ -91,7 +95,7 @@ public class Archon extends RobotPlayer {
     		rc.broadcast(501, broadcastRatio);
     		
     		//gardener/unit ratio
-    		rc.broadcast(502, 10); // divide it by 100
+    		rc.broadcast(502, 3); // divide it by 100
     		
     		//unit ratios
     		rc.broadcast(503, 3);
@@ -139,6 +143,12 @@ public class Archon extends RobotPlayer {
     	
     	int gardenerCount = rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT));
     	
+    	float treeCount = (float) rc.getTreeCount();
+    	float idealBulletToGardenerRatio = 200.0f - 40.0f*treeCount;
+    	if(idealBulletToGardenerRatio < 51.0f){
+    		idealBulletToGardenerRatio = 51.0f;
+    	}
+    	
     	if(gardenerCount == 0)
     	{
     		Direction dir = new Direction(0.0f);
@@ -155,7 +165,7 @@ public class Archon extends RobotPlayer {
 
 	    	float bulletToGardener = rc.getTeamBullets() / ((float)gardenerCount);
     		broadcastPrint(rc, 910, (int)bulletToGardener, "bulletToGardener");	    	
-	    	if(bulletToGardener > 50.0f && gardenerCount < 25){
+	    	if(bulletToGardener > idealBulletToGardenerRatio && gardenerCount < 25){
 	    		Direction dir = new Direction(0.0f);
 	        	for(int i=0;i<12;i++){
 	        		if(rc.canHireGardener(dir)){

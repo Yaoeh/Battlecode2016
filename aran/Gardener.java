@@ -5,7 +5,7 @@ import aran.Constants.SixAngle;
 import battlecode.common.*;
 public class Gardener extends RobotPlayer
 {
-	
+	public static Team enemy;
 	static int queue = 0;//first plants a tree, then a scout, then 3 soldiers, and repeats
     static int treesPlanted = 0;
     static double chance = 0.20;
@@ -24,14 +24,16 @@ public class Gardener extends RobotPlayer
     static int scoutCount= 0;
     static int lumberjackCount= 0;
     static int gardenerCount = 0;
+    static float myHealth = 0;
     
 	public static void run(RobotController rc) throws GameActionException {
-        
+		enemy = rc.getTeam().opponent();
         myTeam = rc.getTeam();
         
         int lookingCount = 0;
         int lookingCountLimit = 7;
         Direction lookingDir = Util.randomDirection();
+        myHealth = rc.getHealth();
         incrementCountOnSpawn();
         earlyGameInit();
         while (true) {
@@ -62,24 +64,32 @@ public class Gardener extends RobotPlayer
             		}
             		else
             		{
-	            		boolean moved = Util.tryMove(lookingDir, 30.0f, 3);
-	            		if(moved)
-	            		{
-	            			lookingCount += 1;
-	            		}
-	            		else
-	            		{
-	            			//cannot move, use perpendicular direction
-	            			lookingDir = lookingDir.rotateLeftDegrees(90.0f);
-	            			lookingCount = 0;
-	            		}
-	            		
-	            		if(lookingCount > lookingCountLimit)
-	            		{
-	            			//find new direction
-	            			lookingDir = Util.randomDirection();
-	            			lookingCount = 0;
-	            		}
+            			if(rc.getHealth() < myHealth)
+            			{
+            				myHealth = rc.getHealth();
+            				Util.tryBuildRobot(RobotType.SOLDIER);
+            			}
+            			else
+            			{
+		            		boolean moved = Util.tryMove(lookingDir, 30.0f, 3);
+		            		if(moved)
+		            		{
+		            			lookingCount += 1;
+		            		}
+		            		else
+		            		{
+		            			//cannot move, use perpendicular direction
+		            			lookingDir = lookingDir.rotateLeftDegrees(90.0f);
+		            			lookingCount = 0;
+		            		}
+		            		
+		            		if(lookingCount > lookingCountLimit)
+		            		{
+		            			//find new direction
+		            			lookingDir = Util.randomDirection();
+		            			lookingCount = 0;
+		            		}
+            			}
             		}
             		
             	}
@@ -106,7 +116,11 @@ public class Gardener extends RobotPlayer
             	if(stat== status.midgame)//status == "gardening")
             	{
             		Util.waterLowestHealthTreeWithoutMoving(rc, myTeam);
-            		ratioGame();
+            		//check for enemyRobots
+            		if(!checkForEnemyRobots())
+            		{
+            			ratioGame();
+            		}
             	}
             	
             	decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
@@ -117,8 +131,48 @@ public class Gardener extends RobotPlayer
             }
         }
     }
-
+	private static boolean checkForEnemyRobots() throws GameActionException
+	{
+		RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+		if (robots.length > 0) {
+            // And we have enough bullets, and haven't attacked yet this turn...
+			
+        	RobotInfo bestRobot = robots[0];
+        	//broadcast enemy location
+        	
+    		int lowestRoundCount = rc.getRoundLimit() + 10;
+    		int channelToUse = 119;
+    		int currentRound = rc.getRoundNum();
+    		for(int i=100;i<120;i++){
+    			int readRound = rc.readBroadcast(i);
+    			if(readRound == -1 || currentRound - readRound > Constants.MessageValidTime)
+    			{
+    				channelToUse = i;
+    				break;
+    			}
+    			if(readRound < lowestRoundCount)
+    			{
+    				lowestRoundCount = readRound;
+    				channelToUse = i;
+    			}
+    		}
+    		rc.broadcast(channelToUse, currentRound);
+    		rc.broadcast(channelToUse+20, (int)bestRobot.location.x);
+    		rc.broadcast(channelToUse+40, (int)bestRobot.location.y);
+    		return true;
+    	}
+		return false;
+	}
 	private static void ratioGame() throws GameActionException { 
+		//try to spawn soldier if i am losing health
+		if(rc.getHealth() < myHealth)
+		{
+			myHealth = rc.getHealth();
+			Util.tryBuildRobot(RobotType.SOLDIER);
+			return;
+		}
+		
+		
 		//spawn units based on the corresponding ratio
 		//3 soldier to 1 lumberjack to 1 tank to 1 scout
 		//Gardener first checks whether or not the unit count is accurate, if it is not then presume 0
@@ -148,8 +202,8 @@ public class Gardener extends RobotPlayer
 		System.out.println("scout count in gardener: " + scoutCount);
 		
 		//tree cost is 50 bullets
-		broadcastPrint(rc, 910, soldierCount);
-		broadcastPrint(rc, 911, scoutCount);
+		//broadcastPrint(rc, 910, soldierCount);
+		//broadcastPrint(rc, 911, scoutCount);
 		
 		int totalUnitCount = soldierCount + tankCount + scoutCount;
 		float farmingBulletCount = (float)(gardenerCount * RobotType.GARDENER.bulletCost +rc.getTreeCount() *50); 
@@ -186,7 +240,7 @@ public class Gardener extends RobotPlayer
 	}
 	
 	public static void buildTree(float safeBulletBank) throws GameActionException{
-		broadcastPrint(rc, 920, 0, "trytobuildtree");
+		//broadcastPrint(rc, 920, 0, "trytobuildtree");
 		if(currentlyPlanted < dirNum - 2)
 		{
 		
@@ -206,7 +260,7 @@ public class Gardener extends RobotPlayer
 		
 	}
 	public static void buildRobot(float safeBulletBank) throws GameActionException{
-		broadcastPrint(rc, 920, 0, "trytobuildrobot");
+		//broadcastPrint(rc, 920, 0, "trytobuildrobot");
 		if(rc.getTeamBullets() > safeBulletBank)
 		{
 			float[] unitRatio = new float[4];
@@ -228,13 +282,13 @@ public class Gardener extends RobotPlayer
 			unitRatio[2] = unitRatio[2] - ((float)tankCount)/unitTotalCount ;
 			unitRatio[3] = unitRatio[3] - ((float)lumberjackCount)/unitTotalCount ;
 			
-			broadcastPrint(rc, 900, soldierCount);
-			broadcastPrint(rc, 901, scoutCount);
+			//broadcastPrint(rc, 900, soldierCount);
+			//broadcastPrint(rc, 901, scoutCount);
 			
-			for(int i=0;i<4;i++)
+			/*for(int i=0;i<4;i++)
 			{
 				broadcastPrint(rc, 900+i, (int)(unitRatio[i]*100.0f));
-			}
+			}*/
 			
 			float maxIndex = 0;
 			float max = unitRatio[0];
@@ -249,20 +303,20 @@ public class Gardener extends RobotPlayer
 			boolean flag = false;
 			if(maxIndex==0){
 				flag = Util.tryBuildRobot(RobotType.SOLDIER);
-				broadcastPrint(rc, 930, 0, "soldier");
+				//broadcastPrint(rc, 930, 0, "soldier");
 			}
 			if(maxIndex==1){
 				flag = Util.tryBuildRobot(RobotType.SCOUT);
-				broadcastPrint(rc, 930, 0, "scout");
+				//broadcastPrint(rc, 930, 0, "scout");
 			}
 			if(maxIndex==2){
 				flag = Util.tryBuildRobot(RobotType.TANK);
-				broadcastPrint(rc, 930, 0, "tank");
+				//broadcastPrint(rc, 930, 0, "tank");
 			}
 			if(maxIndex==3)
 			{
 				flag = Util.tryBuildRobot(RobotType.LUMBERJACK);
-				broadcastPrint(rc, 930, 0, "lumberjack");
+				//broadcastPrint(rc, 930, 0, "lumberjack");
 			}
 			/*if(flag){
 				Clock.yield();
