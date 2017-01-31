@@ -1,6 +1,7 @@
 package aran;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import aran.Constants.AddInfo;
 import aran.Constants.InfoEnum;
@@ -49,6 +50,28 @@ public class ScoutingScout extends RobotPlayer {
         }
     }
 
+    
+    private static void assaultMove(float goalForce) throws GameActionException{
+    	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
+    	//   rc, int maxConsidered, float consideredDivison, float multiplier, HashSet<RobotType> ignoreType) 
+        
+    	Vector2D targetEnemyVec= sensor.moveTowardsEnemyVector(rc, 3, 1, 1, Constants.ignoreAllExceptGardener);
+    	Vector2D dangerEnemyVec= sensor.moveTowardsEnemyVector(rc, 10, 1.5f, -2, Constants.ignoreArchonGardenerScout);
+    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
+
+    	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
+    		dangerVec,
+    		targetEnemyVec,
+    		dangerEnemyVec,
+    		goalVec,
+    	});
+    	
+    	Direction moveDir= rc.getLocation().directionTo(moveVec.getMapLoc());
+    	if (moveDir != null){
+    		Util.tryMove(moveDir);
+    	}
+    }
+    
     private static void carelessMove(float goalForce) throws GameActionException{
     	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
     	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreArchonGardener);
@@ -117,21 +140,19 @@ public class ScoutingScout extends RobotPlayer {
     	sensor.goalLoc= null;
     	sensor.senseBullets(rc);
     	sensor.senseEnemies(rc);
-    	//sensor.senseFriends(rc);
+    	sensor.senseFriends(rc);
     	sensor.senseTrees(rc);
     	boolean noGoal= true;
     	
     	noGoal= noGoalAfterlookForTastyTrees();
 
     	if (noGoal){
-    		noGoal= noGoalAfterCheckingToKillEarlyGardener();
-    	}
-    	if (noGoal){
     		noGoal= checkEdges();
     	}
     	if (noGoal){
     		checkEdgesFound();
-    		noGoal= noGoalAfterCheckCleanupMission();
+    		if (unitNum== 1)
+    			noGoal= noGoalAfterCheckCleanupMission();
     	}
     	if (noGoal){
     		stat= status.assault;
@@ -152,8 +173,8 @@ public class ScoutingScout extends RobotPlayer {
     			removeCleanUpDotOnClose(rc.getType().sensorRadius/2);
     			break;
     		case assault:
-    			carelessMove(0.5f);
-    			Util.tryShoot();
+    			assaultMove(0.1f);
+    			Util.tryShootInFace(Constants.BULLET_TREE_RADIUS);
     	}
     }
     

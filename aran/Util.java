@@ -216,6 +216,14 @@ class Util extends RobotPlayer{
     	}
     }
     
+    static void tryShootInFace(float bulletTreeRadius) throws GameActionException{
+    	if(rc.getType().canAttack() && sensor.nearbyEnemies.length > 0 && !rc.hasAttacked() ) {        	
+        	RobotInfo highPRobotInfo= (RobotInfo) Value.getHighestPriorityBody(rc, rc.senseNearbyRobots(rc.getType().bodyRadius+bulletTreeRadius, rc.getTeam().opponent()),rc.getLocation(), Integer.MAX_VALUE);
+    		//sensor.tryfireSingleShot(rc, highPRobotInfo.getLocation());
+    		rc.fireSingleShot(rc.getLocation().directionTo(highPRobotInfo.location));
+    	}
+    }
+    
     static void dodge() throws GameActionException {
         BulletInfo[] bullets = rc.senseNearbyBullets();
         for (BulletInfo bi : bullets) {

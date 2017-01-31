@@ -33,6 +33,7 @@ public class Constants implements GameConstants{
 	static final HashSet<RobotType> ignoreArchonGardener= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER));
 	static final HashSet<RobotType> ignoreArchonGardenerScout= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.GARDENER, RobotType.SCOUT));
 	static final HashSet<RobotType> ignoreAllExceptArchon= new HashSet<RobotType>(Arrays.asList(RobotType.GARDENER, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
+	static final HashSet<RobotType> ignoreAllExceptGardener= new HashSet<RobotType>(Arrays.asList(RobotType.ARCHON, RobotType.LUMBERJACK, RobotType.SCOUT, RobotType.SOLDIER, RobotType.TANK));
 	static final HashSet<RobotType> ignoreDamaging= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT, RobotType.TANK, RobotType.SOLDIER, RobotType.LUMBERJACK));
     
 	//scout:0, tree: 1, soldier: 2, lumberjack: 3
