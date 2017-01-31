@@ -105,7 +105,7 @@ public class Archon extends RobotPlayer {
     		rc.broadcast(603, 0);
     		rc.broadcast(604, 0);
     		rc.broadcast(2, 0);
-    		for(int i=100;i<120;i++){
+    		for(int i=100;i<160;i++){
     			rc.broadcast(i, -1);
     		}
     	}

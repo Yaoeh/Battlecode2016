@@ -43,6 +43,8 @@ public class Constants implements GameConstants{
 	static final int SAFEBULLETBANK = 200;
 	static final int SAFEMINIMUMBANK = 49;
 	
+	static final int MessageValidTime = 150;
+	
 	static final Direction[] COORDINALDIRS= {
 			Direction.getNorth(),
 			Direction.getEast(),
