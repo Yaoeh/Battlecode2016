@@ -76,10 +76,10 @@ public class ScoutingScout extends RobotPlayer {
     
     public static void removeCleanUpDotOnClose(float radius) throws GameActionException{
     	if (sensor.goalLoc!= null && remainingCheck!= null){
-        	for (int i = 0; i< remainingCheck.size(); i++){
-        		rc.setIndicatorDot(remainingCheck.get(i), 150, 150, 150);
-        	}
-        	
+//        	for (int i = 0; i< remainingCheck.size(); i++){
+//        		rc.setIndicatorDot(remainingCheck.get(i), 150, 150, 150);
+//        	}
+//        	
     		
     		if (rc.getLocation().distanceTo(sensor.goalLoc) <= radius){
     			remainingCheck.remove(sensor.goalLoc);

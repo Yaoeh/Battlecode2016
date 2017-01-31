@@ -157,7 +157,8 @@ public class Soldier extends RobotPlayer
             		dir = dir.rotateLeftDegrees(rotateamount);
             		count+=1;
             	}
-                rc.move(dir);
+                //rc.move(dir);
+            	Util.tryMove(dir);
             }
         }
 	}
