@@ -266,8 +266,8 @@ class Util extends RobotPlayer{
     
     public static boolean tryBuildRobot(RobotType rt) throws GameActionException{
     	if (rc.getType().equals(RobotType.GARDENER)){
-    		for (int i = 0; i < Constants.SixAngle.values().length; i++){
-    			Direction tryBuildDir= new Direction(Constants.SixAngle.values()[i].getRadians());
+    		for (int i = 0; i < Constants.SixteenAngles.values().length; i++){
+    			Direction tryBuildDir= new Direction(Constants.SixteenAngles.values()[i].getRadians());
     			if (rc.isBuildReady() && rc.canBuildRobot(rt, tryBuildDir)){
     				rc.buildRobot(rt, tryBuildDir);
     				return true;
