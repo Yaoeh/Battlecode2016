@@ -90,6 +90,30 @@ public class Soldier extends RobotPlayer
 	
 	public static void doDestroy() throws GameActionException
 	{
+		float rotateamount = 15.0f;
+        if(rc.getRoundNum()%180<90){
+        	rotateamount = -15.0f;
+        }
+        if(!Util.dodgeBullets(rc, rc.getLocation()))
+        {
+        	broadcastPrint(rc, 960, 1, "didnt dodge");
+        	if(bulletwait < 1) ///change back to 0
+            {
+            	Direction dir = myLoc.directionTo(goal);
+            	int count = 0;
+            	while(!rc.canMove(dir) && count<24){
+            		dir = dir.rotateLeftDegrees(rotateamount);
+            		count+=1;
+            	}
+            	if(count <24)
+            	{
+            		rc.move(dir);
+            	}
+            }
+        }
+        else{
+        	broadcastPrint(rc, 960, 1, "AM dodging");
+        }
 		bulletwait--;
 		boolean firedFlag = false;
         if (robots.length > 0) {
@@ -112,7 +136,7 @@ public class Soldier extends RobotPlayer
         	else if (rc.canFireSingleShot()) {
                 rc.fireSingleShot(rc.getLocation().directionTo(bestRobot.location));
             }
-        	bulletwait = 2;
+        	bulletwait = 0;
         	
         	//broadcast enemy location
         	broadcastRoundCount -= 1;
@@ -154,26 +178,7 @@ public class Soldier extends RobotPlayer
             	return;
             }
         }
-        float rotateamount = 15.0f;
-        if(rc.getRoundNum()%180<90){
-        	rotateamount = -15.0f;
-        }
-        if(!Util.dodgeBullets(rc, rc.getLocation()))
-        {
-        	if(bulletwait < 0)
-            {
-            	Direction dir = myLoc.directionTo(goal);
-            	int count = 0;
-            	while(!rc.canMove(dir) && count<24){
-            		dir = dir.rotateLeftDegrees(rotateamount);
-            		count+=1;
-            	}
-            	if(count <24)
-            	{
-            		rc.move(dir);
-            	}
-            }
-        }
+        
 	}
 	
 	public static void doSeek() throws GameActionException
@@ -302,4 +307,40 @@ public class Soldier extends RobotPlayer
     	}
     	return robots[bestrobot];
 	}
+	
+	static boolean willShootTeammateOrNeutralTree(MapLocation bulletLocation, Direction dir) throws GameActionException
+	{
+		bulletLocation = myLoc;
+		RobotInfo[] nearbyFriends= rc.senseNearbyRobots(-1, rc.getTeam());
+		TreeInfo[] nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
+		
+		/*for(int i=0;i<nearbyFriends.length;i++){
+			if(willCollideWithBody(myLoc, dir, ))
+		}*/
+		
+		return true;
+	}
+	
+	static boolean willCollideWithBody(MapLocation bulletLocation, Direction propagationDirection,  BodyInfo bi) throws GameActionException 
+	{
+        MapLocation myLocation = bi.getLocation();
+
+        // Calculate bullet relations to this robot
+        Direction directionToRobot = bulletLocation.directionTo(myLocation);
+        float distToRobot = bulletLocation.distanceTo(myLocation);
+        float theta = propagationDirection.radiansBetween(directionToRobot);
+
+        // If theta > 90 degrees, then the bullet is traveling away from us and we can break early
+        if (Math.abs(theta) > Math.PI/2) {
+            return false;
+        }
+
+        // distToRobot is our hypotenuse, theta is our angle, and we want to know this length of the opposite leg.
+        // This is the distance of a line that goes from myLocation and intersects perpendicularly with propagationDirection.
+        // This corresponds to the smallest radius circle centered at our location that would intersect with the
+        // line that is the path of the bullet.
+        float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
+
+        return (perpendicularDist <= bi.getRadius());
+    }
 }
