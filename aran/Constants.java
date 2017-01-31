@@ -100,6 +100,35 @@ public class Constants implements GameConstants{
         }
     }
     
+    public enum SixteenAngles {
+        ONE(0),
+        TWO((float) (2*Math.PI / 16)),
+        THREE((float) (3*2*Math.PI / 16)),
+        FOUR((float) (4*2*Math.PI / 16)),
+        FIVE((float) (5*2*Math.PI / 16)),
+        SIX((float) (6*2*Math.PI / 16)),
+    	SEVEN((float) (7*2*Math.PI / 16)),
+    	EIGHT((float) (8*2*Math.PI / 16)),
+    	NINE((float) (9*2*Math.PI / 16)),
+    	TEN((float) (10*2*Math.PI / 16)),
+    	ELEVEN((float) (11*2*Math.PI / 16)),
+    	TWELVE((float) (12*2*Math.PI / 16)),
+    	THIRTEEN((float) (13*2*Math.PI / 16)),
+    	FOURTEEN((float) (14*2*Math.PI / 16)),
+    	FIFTEEN((float) (15*2*Math.PI / 16));
+
+        
+        private final float radians;
+        
+        private SixteenAngles(float radians){
+            this.radians = radians;
+        }
+        
+        public float getRadians() {
+            return radians;
+        }
+    }
+    
     
     //static final int[] ARCH_PROFIL= {0,0,0,0};
     

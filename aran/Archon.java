@@ -239,21 +239,24 @@ public class Archon extends RobotPlayer {
     }
     
     public static void spawn(RobotController rc) throws GameActionException{
-    	Direction dir = Util.randomDirection();
+    	//Direction dir = Util.randomDirection();
     	Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
     	int gardenerCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.GARDENER_COUNT);
     	
     	if (rc.readBroadcast(gardenerCountIndex) < InfoNet.NUM_GARDENERS_TRACKED){
-            if (rc.canHireGardener(dir) && rc.getTeamBullets() > RobotType.GARDENER.bulletCost) {
-                rc.hireGardener(dir);
-            }
+//            if (rc.canHireGardener(dir) && rc.getTeamBullets() > RobotType.GARDENER.bulletCost) {
+//                rc.hireGardener(dir);
+//            }
+    		
+    		Util.tryBuildRobot(RobotType.GARDENER);
+    		
     	}
     }
     
     public static void move(RobotController rc) throws GameActionException{
     	if (!rc.hasMoved()){
             Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc,2, Integer.MAX_VALUE, 10);
-            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, 2, 0.1f, Constants.ignoreArchonGardener);
+            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, -2, 2, Constants.ignoreNone);
             Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,2, -3, Constants.ignoreNone);    
             Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 2, Constants.ignoreArchonGardener); 
             //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier		
