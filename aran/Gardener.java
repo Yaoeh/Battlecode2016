@@ -354,11 +354,16 @@ public class Gardener extends RobotPlayer
 			for (int i = 0; i < 12; i++) {
 				if (i >= 0 && i < earlyGameQueue.length) { //added check because I found Array Index out of bound error
 					if (earlyGameQueue[earlyGameIndex] == 0) {
-						if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
-							rc.buildRobot(RobotType.SCOUT, dir);
-							flag = true;
+//						if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
+//							rc.buildRobot(RobotType.SCOUT, dir);
+//							flag = true;
+//							break;
+//						}
+						
+						flag= Util.tryBuildRobot(RobotType.SCOUT);
+						if (flag)
 							break;
-						}
+						
 					} else if (earlyGameQueue[earlyGameIndex] == 1) {
 						if (rc.canPlantTree(dir)) {
 							rc.plantTree(dir);
@@ -366,11 +371,14 @@ public class Gardener extends RobotPlayer
 							break;
 						}
 					} else if (earlyGameQueue[earlyGameIndex] == 2) {
-						if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-							rc.buildRobot(RobotType.SOLDIER, dir);
-							flag = true;
+//						if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+//							rc.buildRobot(RobotType.SOLDIER, dir);
+//							flag = true;
+//							break;
+//						}
+						flag= Util.tryBuildRobot(RobotType.SCOUT);
+						if (flag)
 							break;
-						}
 					}
 					dir = dir.rotateLeftDegrees(30.0f);
 				}

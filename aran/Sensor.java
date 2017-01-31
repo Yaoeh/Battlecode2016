@@ -297,14 +297,20 @@ public class Sensor {
 					scale= (rc.getLocation().distanceTo(ri.location)- (ri.getRadius()+rc.getType().bodyRadius)/ rc.getType().sensorRadius) / GameConstants.MAP_MAX_WIDTH;
 
 					
-					//if you're too close to your friend
-					if (ri.getLocation().distanceTo(rc.getLocation()) - bodyRadiusMultiplier*(rc.getType().bodyRadius+ri.getType().bodyRadius) <= 0){ 
-						scale*= -1;
-						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 255);
+//					//if you're too close to your friend
+//					if (ri.getLocation().distanceTo(rc.getLocation()) - bodyRadiusMultiplier*(rc.getType().bodyRadius+ri.getType().bodyRadius) <= 0){ 
+//						scale*= -1;
+//						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 255);
+//					}else{
+//						rc.setIndicatorLine(rcLoc, ri.location, 0, 0, 255);
+//					}
+					
+					if (charisma*scale*multiplier > 0){
+						rc.setIndicatorLine(rcLoc, ri.location, 0, 255, 0);
 					}else{
-						rc.setIndicatorLine(rcLoc, ri.location, 0, 0, 255);
+						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
 					}
-	
+					
 					neutralVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
 
 				}
