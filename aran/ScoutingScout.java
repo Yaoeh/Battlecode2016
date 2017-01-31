@@ -160,7 +160,7 @@ public class ScoutingScout extends RobotPlayer {
     private static boolean noGoalAfterCheckingToKillEarlyGardener() {
     	boolean answer= true;
     	
-    	if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length> 0 && rc.getRoundNum()< 400){
+    	if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length> 0 && rc.getRoundNum()< 250){
     		for (int i = 0; i < sensor.nearbyEnemies.length; i++){
     			if (sensor.nearbyEnemies[i].getType()== RobotType.GARDENER){
     				answer= false;
