@@ -255,25 +255,30 @@ public class Archon extends RobotPlayer {
     
     public static void move(RobotController rc) throws GameActionException{
     	if (!rc.hasMoved()){
-            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc,2, Integer.MAX_VALUE, 10);
-            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, -3, 3, Constants.ignoreArchon);
-            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,2, -3, Constants.ignoreNone);    
-            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 2, Constants.ignoreArchonGardener); 
-            //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier		
-            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, Integer.MAX_VALUE, -5);
-            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);
-
-            Vector2D tryMoveVec= null;
-            if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
-            	//System.out.println("Danger vector: " + dangerVec.length());
-            	tryMoveVec= new Vector2D(rc.getLocation()).add(treeVec).add(dangerVec); 
-            }else{
-            	tryMoveVec= new Vector2D(rc.getLocation()).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
-            }
-
-        	if (rc.getLocation().directionTo(tryMoveVec.getMapLoc())!= null){
-        		Util.tryMove(rc.getLocation().directionTo(tryMoveVec.getMapLoc()));
-        	}
+    		if (rc.getRoundNum() % Constants.STEPSUNTILJIGGLE == 0){
+    			Util.tryMove(Util.randomDirection());
+    		}else{
+    		
+	            Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc,2, Integer.MAX_VALUE, 10);
+	            Vector2D friendVec= sensor.moveTowardsFriendVector(rc, Integer.MAX_VALUE, -3, 3, Constants.ignoreArchon);
+	            Vector2D enemyVecStrong= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,2, -3, Constants.ignoreNone);    
+	            Vector2D enemyVecWeak= sensor.moveTowardsEnemyVector(rc, Integer.MAX_VALUE,1, 2, Constants.ignoreArchonGardener); 
+	            //RobotController rc, MapLocation rcLoc, int maxConsidered, float multiplier		
+	            Vector2D treeVec= sensor.moveTowardsTreeVectorDisregardTastiness(rc, Integer.MAX_VALUE, -5);
+	            Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 10);
+	
+	            Vector2D tryMoveVec= null;
+	            if (dangerVec.length()> Constants.PERCENTAGE_UNTIL_DANGER_OVERRIDE){
+	            	//System.out.println("Danger vector: " + dangerVec.length());
+	            	tryMoveVec= new Vector2D(rc.getLocation()).add(treeVec).add(dangerVec); 
+	            }else{
+	            	tryMoveVec= new Vector2D(rc.getLocation()).add(goalVec).add(enemyVecStrong).add(enemyVecWeak).add(friendVec).add(treeVec).add(dangerVec);
+	            }
+	
+	        	if (rc.getLocation().directionTo(tryMoveVec.getMapLoc())!= null){
+	        		Util.tryMove(rc.getLocation().directionTo(tryMoveVec.getMapLoc()));
+	        	}
+    		}
     	}
     }
     
