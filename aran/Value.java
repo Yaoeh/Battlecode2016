@@ -1,6 +1,7 @@
 package aran;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import battlecode.common.BodyInfo;
 import battlecode.common.BulletInfo;
@@ -8,6 +9,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 import battlecode.common.TreeInfo;
 
 public class Value {
@@ -86,6 +88,29 @@ public class Value {
 		return priorityBody;
 	}
 	
+	public static BodyInfo getHighestPriorityBody(RobotController rc, RobotInfo[] bodies, MapLocation ref, int maxConsidered, HashSet<RobotType> ignoreType){
+		RobotInfo priorityBody= null;
+		float largestPriority= 0;
+		if (bodies!= null){
+			if (bodies.length> 0){
+				priorityBody= bodies[0];
+				largestPriority= getDamagePriority(priorityBody);
+				for (int i = 1; i< clamp(bodies.length,0 , maxConsidered); i++){
+					float candidatePriority = getDamagePriority(bodies[i]) *getHitChance(rc, bodies[i]);
+					if (candidatePriority > largestPriority){
+						largestPriority= candidatePriority;
+						priorityBody= bodies[i];
+					}
+				}
+			}
+		}
+		if (largestPriority!= 0){
+			return priorityBody;
+		}else{
+			return null;
+		}
+	}
+	
 	public static TreeInfo getTastiestBody(RobotController rc, TreeInfo[] bodies, MapLocation ref, int maxConsidered) throws GameActionException{
 		TreeInfo priorityBody= null;
 		float largestPriority= 0;
@@ -126,6 +151,17 @@ public class Value {
 		//Greater the attack power, greater the priority
 		
 		return (float) (ri.getType().bulletCost- ri.getHealth()+ ri.getType().attackPower);
+	}
+	
+	public static float getDamagePriority(RobotInfo ri, HashSet<RobotType> ignoreType){ //higher number, greater the priority
+		//Greater the cost more valuable the damage
+		//Greater the health, lower the priority
+		//Greater the attack power, greater the priority
+		if (ignoreType.contains(ri.getType())){
+			return 0;
+		}else{
+			return (float) (ri.getType().bulletCost- ri.getHealth()+ ri.getType().attackPower);
+		}
 	}
 	
 	public static float getHitChance(RobotController rc, RobotInfo ri){

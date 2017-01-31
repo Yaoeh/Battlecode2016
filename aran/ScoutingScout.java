@@ -151,12 +151,11 @@ public class ScoutingScout extends RobotPlayer {
     	}
     	if (noGoal){
     		checkEdgesFound();
-    		if (unitNum== 1)
-    			noGoal= noGoalAfterCheckCleanupMission();
+    		noGoal= noGoalAfterCheckCleanupMission();
     	}
     	if (noGoal){
     		stat= status.assault;
-    		sensor.goalLoc= Value.getClosestLoc(rc.getInitialArchonLocations(rc.getTeam().opponent()), rc.getLocation(), Integer.MAX_VALUE);
+    		//sensor.goalLoc= Value.getClosestLoc(rc.getInitialArchonLocations(rc.getTeam().opponent()), rc.getLocation(), Integer.MAX_VALUE);
     	}
     	
     	switch (stat){
@@ -174,25 +173,26 @@ public class ScoutingScout extends RobotPlayer {
     			break;
     		case assault:
     			assaultMove(0.1f);
-    			Util.tryShootInFace(Constants.BULLET_TREE_RADIUS);
+    			Util.tryShootInFace(Constants.BULLET_TREE_RADIUS, Constants.ignoreArchon);
     	}
     }
     
-    private static boolean noGoalAfterCheckingToKillEarlyGardener() {
-    	boolean answer= true;
-    	
-    	if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length> 0 && rc.getRoundNum()< 250){
-    		for (int i = 0; i < sensor.nearbyEnemies.length; i++){
-    			if (sensor.nearbyEnemies[i].getType()== RobotType.GARDENER){
-    				answer= false;
-    				stat= status.assault;
-    				break;
-    			}
-    		}
-    	}
-    	
-		return false;
-	}
+//    private static boolean noGoalAfterCheckingToKillEarlyGardener() {
+//    	boolean answer= true;
+//    	
+//    	if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length> 0 && rc.getRoundNum()< 250){
+//    		for (int i = 0; i < sensor.nearbyEnemies.length; i++){
+//    			if (sensor.nearbyEnemies[i].getType()== RobotType.GARDENER){
+//    				answer= false;
+//    				stat= status.assault;
+//    				sensor.goalLoc= sensor.nearbyEnemies[i].location;
+//    				break;
+//    			}
+//    		}
+//    	}
+//    	
+//		return false;
+//	}
 
 	public static boolean noGoalAfterlookForTastyTrees() throws GameActionException{
     	boolean answer= true;
