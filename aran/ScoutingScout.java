@@ -49,10 +49,10 @@ public class ScoutingScout extends RobotPlayer {
         }
     }
 
-    private static void carelessMove() throws GameActionException{
+    private static void carelessMove(float goalForce) throws GameActionException{
     	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
-    	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreArchonGardener);
-    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, 1000);
+    	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreNone);
+    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
 
     	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
     		dangerVec,
@@ -141,18 +141,18 @@ public class ScoutingScout extends RobotPlayer {
     	switch (stat){
     		case gather:
     			sensor.tryShakeTree(rc);    	    	
-    			carelessMove();
+    			carelessMove(100);
     			break;
     		case checkEdge:
     			checkOnMap();
-    			carelessMove();
+    			carelessMove(0.5f);
     			break;
     		case cleanup:
-    			carelessMove();
+    			carelessMove(0.5f);
     			removeCleanUpDotOnClose(rc.getType().sensorRadius/2);
     			break;
     		case assault:
-    			carelessMove();
+    			carelessMove(0.5f);
     			Util.tryShoot();
     	}
     }

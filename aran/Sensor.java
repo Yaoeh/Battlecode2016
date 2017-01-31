@@ -327,6 +327,11 @@ public class Sensor {
 						scale= rc.getLocation().distanceTo(ri.location)/ GameConstants.MAP_MAX_HEIGHT;
 						neutralVec.add(new Vector2D(rcLoc.directionTo(ri.location).radians).scale(charisma*scale*multiplier));
 						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
+					}else{
+						charisma= Value.getCharisma(ri);
+						scale= rc.getLocation().distanceTo(ri.location)/ GameConstants.MAP_MAX_HEIGHT;
+						neutralVec.add(new Vector2D(rcLoc.directionTo(ri.location).rotateLeftDegrees(90).radians).scale(charisma*scale*multiplier));
+						rc.setIndicatorLine(rcLoc, ri.location, 255, 0, 0);
 					}
 				}
 			}
