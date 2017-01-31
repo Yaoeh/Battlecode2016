@@ -69,13 +69,11 @@ public class ScoutingScout extends RobotPlayer {
 	public static void createFinalSearchCoordinates() throws GameActionException{
     	if (remainingCheck== null && edgesFound){
 	    	remainingCheck=  new ArrayList<MapLocation>();
-	    	int senseRad= (int) rc.getType().sensorRadius;
+	    	int senseRad= (int) rc.getType().sensorRadius/2;
 	    	for (int y = edgesVals[2]+ senseRad ; y < edgesVals[0]- senseRad; y+= rc.getType().sensorRadius){ //highest value bottom left
 	    		for (int x= edgesVals[3]+ senseRad; x< edgesVals[1]- senseRad; x+= rc.getType().sensorRadius){
-	    			if (rc.onTheMap(new MapLocation(x,y))){
-	    				remainingCheck.add(new MapLocation(x,y));
-	    				rc.setIndicatorDot(new MapLocation(x,y), 255, 0, 0);
-	    			}
+    				remainingCheck.add(new MapLocation(x,y));
+    				rc.setIndicatorDot(new MapLocation(x,y), 255, 0, 0);
 	    		}
 	    	}
 	    	System.out.println("\tEdges: "+ edgesVals[0] +","+ edgesVals[1] +","+ edgesVals[2] +","+ edgesVals[3]);
