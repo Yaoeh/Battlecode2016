@@ -248,27 +248,27 @@ public class Gardener extends RobotPlayer
 		
 		if(farmingBulletCount < 0.01f){
 			//build tree
-			buildTree(safeBulletBank);
+			buildTree(safeBulletBank, totalUnitCount);
 		}
 		else if(combatBulletCount < 0.01f)
 		{
-			buildRobot(safeBulletBank);
+			buildRobot(safeBulletBank, totalUnitCount);
 		}
 		else if(farmingBulletCount/combatBulletCount < farmingToCombatRatio && rc.getTreeCount() < 35)
 		{
 			//build tree
-			buildTree(safeBulletBank);
+			buildTree(safeBulletBank, totalUnitCount);
 		}
 		else
 		{
 			//build combat unit
-			buildRobot(safeBulletBank);
+			buildRobot(safeBulletBank, totalUnitCount);
 		}
 		
 		//Util.tryBuildRobot(rtToBuild);
 	}
 	
-	public static void buildTree(float safeBulletBank) throws GameActionException{
+	public static void buildTree(float safeBulletBank, int totalUnitCount) throws GameActionException{
 		//broadcastPrint(rc, 920, 0, "trytobuildtree");
 		if(currentlyPlanted < dirNum - 2)
 		{
@@ -284,14 +284,20 @@ public class Gardener extends RobotPlayer
 		
 		if(rc.getTeamBullets() > safeBulletBank)
 		{
-			buildRobot(safeBulletBank);
+			buildRobot(safeBulletBank, totalUnitCount);
 		}
 		
 	}
-	public static void buildRobot(float safeBulletBank) throws GameActionException{
+	public static void buildRobot(float safeBulletBank, int totalUnitCount) throws GameActionException{
 		//broadcastPrint(rc, 920, 0, "trytobuildrobot");
+		
 		if(rc.getTeamBullets() > safeBulletBank)
 		{
+			if(totalUnitCount > Constants.MINTANKUNITCOUNT)
+			{
+				Util.tryBuildRobot(RobotType.TANK);
+				return;
+			}
 			float[] unitRatio = new float[4];
 			float totalRatioN = 0.0f;
 			for(int i=0;i<4;i++){

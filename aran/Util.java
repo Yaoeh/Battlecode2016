@@ -157,7 +157,17 @@ class Util extends RobotPlayer{
 		}
 		else
 		{
-			return Util.getSafeCircle(rc, bulletInfo);
+			boolean flag = false;
+			for(int i=0;i<bulletInfo.length;i++){
+				if(willCollideWithMe(rc, myLocation, bulletInfo[i])){
+					flag = true;
+					break;
+				}
+			}
+			if(flag)
+			{
+				return Util.getSafeCircle(rc, bulletInfo);
+			}
 		}
     	return false;
 	}
