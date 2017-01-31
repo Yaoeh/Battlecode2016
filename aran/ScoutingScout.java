@@ -52,40 +52,46 @@ public class ScoutingScout extends RobotPlayer {
 
     
     private static void assaultMove(float goalForce) throws GameActionException{
-    	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
-    	//   rc, int maxConsidered, float consideredDivison, float multiplier, HashSet<RobotType> ignoreType) 
-        
-    	Vector2D targetEnemyVec= sensor.moveTowardsEnemyVector(rc, 3, 1, 1, Constants.ignoreAllExceptGardener);
-    	Vector2D dangerEnemyVec= sensor.moveTowardsEnemyVector(rc, 10, 1.5f, -2, Constants.ignoreArchonGardenerScout);
-    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
-
-    	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
-    		dangerVec,
-    		targetEnemyVec,
-    		dangerEnemyVec,
-    		goalVec,
-    	});
-    	
-    	Direction moveDir= rc.getLocation().directionTo(moveVec.getMapLoc());
-    	if (moveDir != null){
-    		Util.tryMove(moveDir);
+    	boolean dodged= Util.dodgeBullets(rc, rc.getLocation());
+    	if (!dodged){
+	    	//Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
+	    	//   rc, int maxConsidered, float consideredDivison, float multiplier, HashSet<RobotType> ignoreType) 
+	        
+	    	Vector2D targetEnemyVec= sensor.moveTowardsEnemyVector(rc, 3, 1, 1, Constants.ignoreAllExceptGardener);
+	    	Vector2D dangerEnemyVec= sensor.moveTowardsEnemyVector(rc, 10, 1.5f, -3, Constants.ignoreArchonGardenerScout);
+	    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
+	
+	    	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
+	    		//dangerVec,
+	    		targetEnemyVec,
+	    		dangerEnemyVec,
+	    		goalVec,
+	    	});
+	    	
+	    	Direction moveDir= rc.getLocation().directionTo(moveVec.getMapLoc());
+	    	if (moveDir != null){
+	    		Util.tryMove(moveDir);
+	    	}
     	}
     }
     
     private static void carelessMove(float goalForce) throws GameActionException{
-    	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
-    	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreArchonGardener);
-    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
-
-    	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
-    		dangerVec,
-    		enemyVec,
-    		goalVec,
-    	});
-    	
-    	Direction moveDir= rc.getLocation().directionTo(moveVec.getMapLoc());
-    	if (moveDir != null){
-    		Util.tryMove(moveDir);
+    	boolean dodged= Util.dodgeBullets(rc, rc.getLocation());
+    	if (!dodged){
+	    	//Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
+	    	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreArchonGardener);
+	    	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
+	
+	    	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
+	    		//dangerVec,
+	    		enemyVec,
+	    		goalVec,
+	    	});
+	    	
+	    	Direction moveDir= rc.getLocation().directionTo(moveVec.getMapLoc());
+	    	if (moveDir != null){
+	    		Util.tryMove(moveDir);
+	    	}
     	}
     }
     
@@ -159,7 +165,8 @@ public class ScoutingScout extends RobotPlayer {
     	}
     	if (noGoal){
     		stat= status.assault;
-    		sensor.goalLoc= Value.getClosestLoc(rc.getInitialArchonLocations(rc.getTeam().opponent()), rc.getLocation(), Integer.MAX_VALUE);
+    		//sensor.goalLoc= Value.getClosestLoc(rc.getInitialArchonLocations(rc.getTeam().opponent()), rc.getLocation(), Integer.MAX_VALUE);
+    		AndrewScout.run(rc);
     	}
     	
     	switch (stat){
