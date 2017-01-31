@@ -156,7 +156,7 @@ public class Archon extends RobotPlayer {
     	if(idealBulletToGardenerRatio < 71.0f){
     		idealBulletToGardenerRatio = 71.0f;
     	}
-    	
+    	int soldierCount= rc.readBroadcast(unitCountInfo.getStartIndex()+ unitCountInfo.getIndex(InfoEnum.SOLDIER_COUNT));
     	if(gardenerCount == 0)
     	{
     		Direction dir = new Direction(0.0f);
@@ -172,8 +172,8 @@ public class Archon extends RobotPlayer {
     	{
 
 	    	float bulletToGardener = rc.getTeamBullets() / ((float)gardenerCount);
-    		broadcastPrint(rc, 910, (int)bulletToGardener, "bulletToGardener");	    	
-	    	if(bulletToGardener > idealBulletToGardenerRatio && gardenerCount < 25){
+    		//broadcastPrint(rc, 910, (int)bulletToGardener, "bulletToGardener");	    	
+	    	if((bulletToGardener > idealBulletToGardenerRatio || soldierCount/gardenerCount > 2) && gardenerCount < 25){
 	    		Direction dir = new Direction(0.0f);
 	        	for(int i=0;i<12;i++){
 	        		if(rc.canHireGardener(dir)){

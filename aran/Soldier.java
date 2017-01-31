@@ -96,7 +96,6 @@ public class Soldier extends RobotPlayer
         }
         if(!Util.dodgeBullets(rc, rc.getLocation()))
         {
-        	broadcastPrint(rc, 960, 1, "didnt dodge");
         	if(bulletwait < 1) ///change back to 0
             {
             	Direction dir = myLoc.directionTo(goal);
@@ -111,9 +110,7 @@ public class Soldier extends RobotPlayer
             	}
             }
         }
-        else{
-        	broadcastPrint(rc, 960, 1, "AM dodging");
-        }
+        
 		bulletwait--;
 		boolean firedFlag = false;
         if (robots.length > 0) {
@@ -121,20 +118,21 @@ public class Soldier extends RobotPlayer
         	RobotInfo bestRobot = getBestRobot();
         	firedFlag = true;
         	goal = bestRobot.location;
-        	if(bestRobot.type == RobotType.GARDENER && rc.canFirePentadShot())
+        	Direction tdir = rc.getLocation().directionTo(bestRobot.location);
+        	if(bestRobot.type == RobotType.GARDENER && rc.canFirePentadShot() && willShootTeammateOrNeutralTree(myLoc, tdir, "pentad"))
         	{
-        		rc.firePentadShot(rc.getLocation().directionTo(bestRobot.location));
+        		rc.firePentadShot(tdir);
         	}
-        	else if(robots.length > 2 && rc.canFirePentadShot())
+        	else if(robots.length > 2 && rc.canFirePentadShot() && willShootTeammateOrNeutralTree(myLoc, tdir, "pentad"))
         	{
-        		rc.firePentadShot(rc.getLocation().directionTo(bestRobot.location));
+        		rc.firePentadShot(tdir);
         	}
-        	else if(robots.length > 1 && rc.canFireTriadShot())
+        	else if(robots.length > 1 && rc.canFireTriadShot() && willShootTeammateOrNeutralTree(myLoc, tdir, "triad"))
         	{
-        		rc.fireTriadShot(rc.getLocation().directionTo(bestRobot.location));
+        		rc.fireTriadShot(tdir);
         	}
-        	else if (rc.canFireSingleShot()) {
-                rc.fireSingleShot(rc.getLocation().directionTo(bestRobot.location));
+        	else if (rc.canFireSingleShot() && willShootTeammateOrNeutralTree(myLoc, tdir, "single")) {
+                rc.fireSingleShot(tdir);
             }
         	bulletwait = 0;
         	
@@ -308,15 +306,38 @@ public class Soldier extends RobotPlayer
     	return robots[bestrobot];
 	}
 	
-	static boolean willShootTeammateOrNeutralTree(MapLocation bulletLocation, Direction dir) throws GameActionException
+	static boolean willShootTeammateOrNeutralTree(MapLocation bulletLocation, Direction dir, String shotType) throws GameActionException
 	{
 		bulletLocation = myLoc;
 		RobotInfo[] nearbyFriends= rc.senseNearbyRobots(-1, rc.getTeam());
 		TreeInfo[] nearbyNeutralTrees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-		
-		/*for(int i=0;i<nearbyFriends.length;i++){
-			if(willCollideWithBody(myLoc, dir, ))
-		}*/
+		float[] rotateAngles = new float[]{0.0f};
+		if(shotType == "pentad")
+		{
+			rotateAngles = new float[]{-30.0f, -15.0f, 0.0f, 15.0f, 30.0f};
+		}
+		else if(shotType == "triad")
+		{
+			rotateAngles = new float[]{-20.0f, 0.0f, 20.0f};
+		}
+		for(int i=0;i<nearbyFriends.length;i++){
+			for(int j=0;j<rotateAngles.length;j++){
+				Direction tdir = dir.rotateLeftDegrees(rotateAngles[j]);
+				if(willCollideWithBody(myLoc, tdir, nearbyFriends[i]))
+				{
+					return false;
+				}
+			}
+		}
+		for(int i=0;i<nearbyNeutralTrees.length;i++){
+			for(int j=0;j<rotateAngles.length;j++){
+				Direction tdir = dir.rotateLeftDegrees(rotateAngles[j]);
+				if(willCollideWithBody(myLoc, tdir, nearbyNeutralTrees[i]))
+				{
+					return false;
+				}
+			}
+		}
 		
 		return true;
 	}

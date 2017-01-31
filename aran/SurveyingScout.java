@@ -116,19 +116,19 @@ public class SurveyingScout extends RobotPlayer {
     			
     			if(finaltreeCount > 1){
     				rc.broadcast(501, 20000);
-    				broadcastPrint(rc, 960, 22000, "treecombatratio");
+    				broadcastPrint(rc, 960, 25000, "treecombatratio");
     			}
     			else if(finaltreeCount > 0){
     				rc.broadcast(501, 14000);
-    				broadcastPrint(rc, 960, 16000, "treecombatratio");
+    				broadcastPrint(rc, 960, 20000, "treecombatratio");
     			}
     			else if(finaldamagingCount > 1){
     				rc.broadcast(501, 5000);
-    				broadcastPrint(rc, 960, 6000, "treecombatratio");
+    				broadcastPrint(rc, 960, 10000, "treecombatratio");
     			}
     			else{
     				rc.broadcast(501, 10000);
-    				broadcastPrint(rc, 960, 11000, "treecombatratio");
+    				broadcastPrint(rc, 960, 15000, "treecombatratio");
     			}
 			}
     	}

@@ -26,7 +26,7 @@ public class Gardener extends RobotPlayer
     static int gardenerCount = 0;
     static float myHealth = 0;
     static int lookingCountTotal = 0;
-    static int lookingCountTotalLimit = 100;
+    static int lookingCountTotalLimit = 150;
     
 	public static void run(RobotController rc) throws GameActionException {
 		enemy = rc.getTeam().opponent();
