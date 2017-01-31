@@ -151,8 +151,11 @@ public class ScoutingScout extends RobotPlayer {
     	}
     	if (noGoal){
     		checkEdgesFound();
-    		if (unitNum== 1)
-    			noGoal= noGoalAfterCheckCleanupMission();
+    		noGoal= noGoalAfterCheckCleanupMission();
+    	}
+    	if (noGoal){
+    		noGoal= noGoalAfterCheckingToKillEarlyGardener();
+    		
     	}
     	if (noGoal){
     		stat= status.assault;
@@ -174,7 +177,7 @@ public class ScoutingScout extends RobotPlayer {
     			break;
     		case assault:
     			assaultMove(0.1f);
-    			Util.tryShootInFace(Constants.BULLET_TREE_RADIUS);
+    			Util.tryShootInFace(Constants.BULLET_TREE_RADIUS, Constants.ignoreArchon);
     	}
     }
     
@@ -186,12 +189,13 @@ public class ScoutingScout extends RobotPlayer {
     			if (sensor.nearbyEnemies[i].getType()== RobotType.GARDENER){
     				answer= false;
     				stat= status.assault;
+    				sensor.goalLoc= sensor.nearbyEnemies[i].location;
     				break;
     			}
     		}
     	}
     	
-		return false;
+		return answer;
 	}
 
 	public static boolean noGoalAfterlookForTastyTrees() throws GameActionException{
