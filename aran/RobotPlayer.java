@@ -131,6 +131,7 @@ public strictfp class RobotPlayer{
 		int count= rc.readBroadcast(index);
 		//rc.broadcast(index, count++);
 		count+= 1;
+		unitNum= count;
 		broadcastPrint(rc, index, count, rc.getType().name()+ ": count increment");
     }
     
