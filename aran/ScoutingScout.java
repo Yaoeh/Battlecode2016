@@ -51,7 +51,7 @@ public class ScoutingScout extends RobotPlayer {
 
     private static void carelessMove(float goalForce) throws GameActionException{
     	Vector2D dangerVec= sensor.moveAwayFromBulletsVector(rc, 2, 10, 10);
-    	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreNone);
+    	Vector2D enemyVec= sensor.moveTowardsEnemyVector(rc, 10, 2, -5, Constants.ignoreArchonGardener);
     	Vector2D goalVec= sensor.moveVecTowardsGoal(rc, goalForce);
 
     	Vector2D moveVec= Util.getMoveVec(rc,new Vector2D[] {
