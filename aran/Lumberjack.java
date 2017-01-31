@@ -40,6 +40,10 @@ public class Lumberjack extends RobotPlayer
                 		//move to goal
                 		Direction dir = myLoc.directionTo(goal);
                 		Util.tryMove(dir, 30.0f, 4);
+                		if(myLoc.distanceTo(goal)<3.0f)
+                		{
+                			getGoal();
+                		}
                 	}
                 	else
                 	{

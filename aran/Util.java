@@ -140,20 +140,64 @@ class Util extends RobotPlayer{
     
 	public static boolean dodgeBullets(RobotController rc, MapLocation myLocation) throws GameActionException{
 		BulletInfo[] bulletInfo = rc.senseNearbyBullets();
-    	for(int i=0;i<bulletInfo.length;i++){
-    		if(willCollideWithMe(rc, myLocation, bulletInfo[i])){
-    			Direction tdir = dodgeOneBullet(bulletInfo[i], myLocation);
-    			if(rc.canMove(tdir))
-    			{
-    				rc.move(tdir);
-    				return true;
-    			}
-    			
-    		}
-    	}
+		if(bulletInfo.length < 3)
+		{
+	    	for(int i=0;i<bulletInfo.length;i++){
+	    		if(willCollideWithMe(rc, myLocation, bulletInfo[i])){
+	    			Direction tdir = dodgeOneBullet(bulletInfo[i], myLocation);
+	    			if(rc.canMove(tdir))
+	    			{
+	    				rc.move(tdir);
+	    				return true;
+	    			}
+	    			
+	    		}
+	    	}
+		}
+		else
+		{
+			return Util.getSafeCircle(rc, bulletInfo);
+		}
     	return false;
 	}
-    
+	static boolean getSafeCircle(RobotController rc, BulletInfo[] bulletinfo) throws GameActionException{
+    	
+    	float x = rc.getLocation().x;
+    	float y = rc.getLocation().y;
+    	
+    	float mindist = 9999.0f;
+    	int bulletinfoIndex=-1;
+    	for(int i=0;i<bulletinfo.length;i++){
+    		float dist = getDistanceFromPointToBullet(x, y, bulletinfo[i] );
+			if (dist < mindist){
+				mindist = dist;
+				bulletinfoIndex = i;
+			}
+    	}
+    	Direction dir = bulletinfo[bulletinfoIndex].dir.rotateRightDegrees(90.0f);
+    	return Util.tryMove(dir, 20.0f, 3);
+    }
+	static float getDist(float a, float  b, float c, float  d){
+    	return (float)Math.sqrt((a-c)*(a-c) + (b-d)*(b-d));
+    }
+    static float[] getClosestPoint(float px, float py, BulletInfo bulletinfo)
+    {
+    	float[] ans = new float[2];
+    	float dx = bulletinfo.dir.getDeltaX(1.0f);
+    	float dy = bulletinfo.dir.getDeltaY(1.0f);
+    	float c = -dx*(bulletinfo.location.x - px) +
+    			dy*(bulletinfo.location.y - py);
+    	ans[0] = - dx * c;
+    	ans[1] = - dy * c;
+    	return ans;
+    }
+    static float getDistanceFromPointToBullet(float px, float py, BulletInfo bulletinfo)
+    {
+    	float dx = bulletinfo.location.x - px;
+    	float dy = bulletinfo.location.y - py;
+    	return Math.abs(-bulletinfo.dir.getDeltaX(1.0f)*(dx) +
+    			bulletinfo.dir.getDeltaY(1.0f)*(dy)) / ((float)Math.sqrt(((double)dx*dx + dy*dy)));
+    }
     static void tryShoot() throws GameActionException{
     	if(rc.getType().canAttack() && sensor.nearbyEnemies.length > 0 && !rc.hasAttacked() ) {        	
         	RobotInfo highPRobotInfo= (RobotInfo) Value.getHighestPriorityBody(rc, sensor.nearbyEnemies,rc.getLocation(), Integer.MAX_VALUE);
