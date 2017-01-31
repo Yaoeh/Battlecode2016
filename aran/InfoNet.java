@@ -176,9 +176,10 @@ public class InfoNet {
 	public static ArrayList<InfoEnum> SCOUTED_INFO = 	    					
 			new ArrayList<InfoEnum>(
 				Arrays.asList(
-						InfoEnum.NUM_TREES_SPIED,
+						InfoEnum.NUM_ENEMY_TREES_SPIED,
 						InfoEnum.NUM_GARDENERS_SPIED,
-						InfoEnum.NUM_DAMAGE_SPIED
+						InfoEnum.NUM_DAMAGE_SPIED,
+						InfoEnum.NUM_NEUTRAL_TREE_SPIED
 					)
 			);
 	

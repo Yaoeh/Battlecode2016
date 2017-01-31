@@ -68,7 +68,7 @@ public class SurveyingScout extends RobotPlayer {
     			
     			if (sensor.nearbyEnemyTrees!= null && sensor.nearbyEnemyTrees.length> 0){
       				int enemyTreeCount= sensor.nearbyEnemyTrees.length;
-      				int treeCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.NUM_TREES_SPIED);
+      				int treeCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.NUM_ENEMY_TREES_SPIED);
       				int originalTreeCount= rc.readBroadcast(treeCountIndex);
       				//rc.broadcast(treeCountIndex, originalTreeCount+ enemyTreeCount);
       				broadcastPrint(rc,treeCountIndex, originalTreeCount+ enemyTreeCount, "tree count by spy");
