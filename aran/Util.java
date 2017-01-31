@@ -99,6 +99,7 @@ class Util extends RobotPlayer{
         return false;
     }
     
+    
 	public static Direction dodgeOneBullet(BulletInfo bulletinfo, MapLocation loc){
 		Direction dir1 = new Direction(bulletinfo.location.x - loc.x, bulletinfo.location.y - loc.y);
 		dir1 = dir1.rotateRightDegrees(90.0f);
@@ -154,7 +155,7 @@ class Util extends RobotPlayer{
 	}
     
     static void tryShoot() throws GameActionException{
-    	if(rc.getType().canAttack() && sensor.nearbyEnemies.length > 0 && !rc.hasAttacked()) {        	
+    	if(rc.getType().canAttack() && sensor.nearbyEnemies.length > 0 && !rc.hasAttacked() ) {        	
         	RobotInfo highPRobotInfo= (RobotInfo) Value.getHighestPriorityBody(rc, sensor.nearbyEnemies,rc.getLocation(), Integer.MAX_VALUE);
     		sensor.tryfireSingleShot(rc, highPRobotInfo.getLocation());
     	}

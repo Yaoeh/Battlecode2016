@@ -104,9 +104,9 @@ public class Value {
 						if (candidatePriority < largestPriority){
 							largestPriority= candidatePriority;
 							priorityBody= bodies[i];
-//							if (largestPriority < rc.getType().bodyRadius){
-//								break;
-//							}
+							if (largestPriority < rc.getType().bodyRadius){
+								break;
+							}
 						}
 					}
 				}

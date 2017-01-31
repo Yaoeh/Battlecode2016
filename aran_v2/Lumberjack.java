@@ -125,7 +125,8 @@ public class Lumberjack extends RobotPlayer
     			            		dir = dir.rotateLeftDegrees(rotateamount);
     			            		count+=1;
     			            	}
-    		                    rc.move(dir);
+    			            	Util.tryMove(dir);
+    			            	//rc.move(dir);
     		                    Clock.yield();
                     		}
                     	}
