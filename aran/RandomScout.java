@@ -7,8 +7,8 @@ import battlecode.common.*;
 public class RandomScout extends RobotPlayer
 {
 	public static Team enemy;
-	public static String mode = "getgoal";
-	public static MapLocation goal;
+	
+	
 	public static MapLocation myLoc;
 	
 	public static Direction seekDir;
@@ -22,22 +22,14 @@ public class RandomScout extends RobotPlayer
 		seekDir = Util.randomDirection();
 		while (true) {
             try {
-            	randomRoundCount += 1;
-            	if(randomRoundCount > randomRoundCountLimit){
-            		randomRoundCount = 0;
-            		seekDir = Util.randomDirection();
-            	}
-            	if(!Util.dodgeBullets(rc, rc.getLocation()))
-                {
-            		Util.tryMove(seekDir, 22.5f, 6);
-                }
+            	
             	
                 robots = rc.senseNearbyRobots(-1, enemy);
                 if(robots.length>0)
                 {
                 	//go in different direction once robot is found
-                	randomRoundCount = 0;
-            		seekDir = Util.randomDirection();
+                	randomRoundCount = 35;
+            		seekDir = robots[0].location.directionTo(rc.getLocation());
             		RobotInfo bestRobot = robots[0];
             		int lowestRoundCount = rc.getRoundLimit() + 10;
             		int channelToUse = 119;
@@ -55,11 +47,34 @@ public class RandomScout extends RobotPlayer
             				channelToUse = i;
             			}
             		}
-            		rc.broadcast(channelToUse, currentRound);
+            		/*rc.broadcast(channelToUse, currentRound);
             		rc.broadcast(channelToUse+20, (int)bestRobot.location.x);
-            		rc.broadcast(channelToUse+40, (int)bestRobot.location.y);
+            		rc.broadcast(channelToUse+40, (int)bestRobot.location.y);*/
                 }
-            	
+                
+            	if(!Util.oldDodgeBullets(rc, rc.getLocation()))
+                {
+            		//Util.tryMove(seekDir, 22.5f, 4);
+            		float rotateamount = 15.0f;
+                    if(rc.getRoundNum()%180<90){
+                    	rotateamount = -15.0f;
+                    }
+                    Direction dir = seekDir;
+                    int count = 0;
+                	while(!rc.canMove(dir) && count<24){
+                		dir = dir.rotateLeftDegrees(rotateamount);
+                		count+=1;
+                	}
+                	if(count <24)
+                	{
+                		rc.move(dir);
+                		randomRoundCount += 1;
+                    	if(randomRoundCount > randomRoundCountLimit){
+                    		randomRoundCount = 0;
+                    		seekDir = Util.randomDirection();
+                    	}
+                	}
+                }
             	decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
                 Clock.yield();
             } catch (Exception e) {

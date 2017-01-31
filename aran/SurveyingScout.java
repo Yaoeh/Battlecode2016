@@ -55,6 +55,14 @@ public class SurveyingScout extends RobotPlayer {
 				neutralLocs.remove(sensor.goalLoc);
 				if (neutralLocs.size() <= 0) {
 					neutralTreeBarrierScouted = true;
+					Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.SCOUTED_INFO);
+					int treeCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.NUM_NEUTRAL_TREE_SPIED);
+					int treeCount= rc.readBroadcast(treeCountIndex);
+					
+					if(treeCount > 10)
+					{
+						rc.broadcast(506, 4);
+					}
 				}
 			}
 			
@@ -63,7 +71,7 @@ public class SurveyingScout extends RobotPlayer {
 			int treeCount= rc.readBroadcast(treeCountIndex);
 			//rc.broadcast(gardenerCountIndex, currentGarCount+ gardenerCount);
 				broadcastPrint(rc,treeCountIndex, treeCount+ sensor.nearbyNeutralTrees.length, "neutral tree count count by spy");
-
+			
 		}
 	}
     

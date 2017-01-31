@@ -2,6 +2,9 @@ package aran;
 import aran.InfoNet;
 import aran.Constants.AddInfo;
 import aran.Constants.InfoEnum;
+
+import java.util.Random;
+
 import aran.Info;
 import battlecode.common.*;
 public class Soldier extends RobotPlayer
@@ -10,8 +13,8 @@ public class Soldier extends RobotPlayer
 	public static String mode = "getgoal";
 	public static MapLocation goal;
 	public static MapLocation myLoc;
-	public static int seekRoundCount = 21;
-	public static int seekRoundCountLimit = 20;
+	public static int seekRoundCount = 41;
+	public static int seekRoundCountLimit = 40;
 	public static Direction seekDir;
 	public static String soldierType = "fighter";
 	public static int randomRoundCount = 0;
@@ -20,7 +23,9 @@ public class Soldier extends RobotPlayer
 	public static RobotInfo[] robots;
 	public static int broadcastRoundCount = 0;
 	public static int broadcastRoundCountLimit = 10;
-			
+	public static int lastIndexSave = 0;
+	public static int destroyRoundCount = 0;
+	public static int destroyRoundCountLimit = 20;
 	public static void run(RobotController rc) throws GameActionException {
         enemy = rc.getTeam().opponent();
         goal = rc.getLocation();
@@ -33,7 +38,7 @@ public class Soldier extends RobotPlayer
         rc.broadcast(2, soldierN+1);
         
         seekDir = Util.randomDirection();
-        if(soldierN % 7 == 0)
+        if(soldierN % 6 < 4)
         {
         	soldierType = "seeker";
         	mode = "seek";
@@ -43,6 +48,7 @@ public class Soldier extends RobotPlayer
         		//seekDir = rc.getLocation().directionTo(closestEnemyArchon);
         		goal = closestEnemyArchon;
         		mode = "destroy";
+        		destroyRoundCount = 0;
         	}
         	
         }
@@ -165,6 +171,7 @@ public class Soldier extends RobotPlayer
         }
         else{
             if(myLoc.distanceTo(goal) < 5.0f){
+            	//rc.broadcast(lastIndexSave, -9999);
             	if(soldierType == "fighter")
             	{
             		mode = "getgoal";
@@ -175,6 +182,20 @@ public class Soldier extends RobotPlayer
             	
             	return;
             }
+            else
+            {
+            	destroyRoundCount += 1;
+            	if(destroyRoundCount > destroyRoundCountLimit)
+            	{
+            		if(soldierType == "fighter")
+                	{
+                		mode = "getgoal";
+                	}
+                	else{
+                		mode = "seek";
+                	}
+            	}
+            }
         }
         
 	}
@@ -183,6 +204,7 @@ public class Soldier extends RobotPlayer
 	{
         if (robots.length > 0) {
             mode = "destroy";
+            destroyRoundCount = 0;
             broadcastRoundCount = 0;
         }
         else{
@@ -208,6 +230,7 @@ public class Soldier extends RobotPlayer
         if (robots.length > 0) {
             mode = "destroy";
             broadcastRoundCount = 0;
+            destroyRoundCount = 0;
         }
         else{
         	randomRoundCount += 1;
@@ -219,21 +242,22 @@ public class Soldier extends RobotPlayer
         //dodge any bullets
         if(!Util.dodgeBullets(rc, rc.getLocation()))
         {
-        	Util.tryMove(Util.randomDirection());
+        	//Util.tryMove(Util.randomDirection());
         }
 	}
 	public static void getGoal() throws GameActionException{
-    	int[] recent = new int[3];
+    	int[] recent = new int[4];
     	recent[0] = -9999;
     	recent[1] = -9999;
     	recent[2] = -9999;
-		int[] indexSave = new int[3];
+    	recent[3] = -9999;
+		int[] indexSave = new int[4];
 		int currentRound = rc.getRoundNum();
 		for(int i=100;i<120;i++){
         	int round = rc.readBroadcast(i);
         	if(round != -1)
         	{
-        		for(int j=0;j<3;j++){
+        		for(int j=0;j<4;j++){
         			if(round>recent[j] && currentRound - round < Constants.MessageValidTime)
         			{
         				recent[j] = round;
@@ -249,20 +273,30 @@ public class Soldier extends RobotPlayer
 		//calculate shortest distance
     	float shortestDistance = 99999.0f;
     	
-    	if(recent[0] != -9999)
+    	if(recent[0] > 0)
     	{
-	    	for(int i=0;i<3;i++){
-	    		if(recent[i] != -9999)
+    		int recentCount = 0;
+	    	for(int i=0;i<4;i++){
+	    		if(recent[i] > 0)
 	    		{
+	    			recentCount+=1;
 		    		MapLocation loc = new MapLocation(rc.readBroadcast(20+indexSave[i]), rc.readBroadcast(40+indexSave[i]));
 		    		if(myLoc.distanceTo(loc) < shortestDistance){
 		    			shortestDistance = myLoc.distanceTo(loc);
 		    			goal = loc;
+		    			lastIndexSave = indexSave[i];
 		    		}
 	    		}
 	    	}
+	    	if(Math.random() < 0.3)
+	    	{
+	    		Random a = new Random();
+	    		int randomNum = a.nextInt(recentCount);
+	    		goal = new MapLocation(rc.readBroadcast(20+indexSave[randomNum]), rc.readBroadcast(40+indexSave[randomNum]));
+	    	}
 	    	mode = "destroy";
 	    	broadcastRoundCount = 0;
+	    	destroyRoundCount = 0;
     	}
     	else
     	{

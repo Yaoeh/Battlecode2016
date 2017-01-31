@@ -20,7 +20,7 @@ public class Constants implements GameConstants{
 //    static final int TANK_MAX = 20;
 //    static final int SCOUT_MAX = 5;
     
-	static final int LOW_HEALTH_DECREMENT_VALUE= 12;
+	static final int LOW_HEALTH_DECREMENT_VALUE= 13;
 	
     static final int UNIT_COUNT_UPDATE_OFFSET= 20;
     static final int DEAD_TOLERANCE_ROUNDNUM= 25; //20, by decree of the andykat
@@ -37,16 +37,16 @@ public class Constants implements GameConstants{
 	static final HashSet<RobotType> ignoreDamaging= new HashSet<RobotType>(Arrays.asList(RobotType.SCOUT, RobotType.TANK, RobotType.SOLDIER, RobotType.LUMBERJACK));
     
 	//scout:0, tree: 1, soldier: 2, lumberjack: 3
-	static final int[] EARLYGAME_SCOUTFIRST_SPAWNORDER = {0, 2, 0};
+	static final int[] EARLYGAME_SCOUTFIRST_SPAWNORDER = {0, 0};
 	static final int[] EARLYGAME_TREEFIRST_SPAWNORDER = {0, 0};
 	static final int[] EARLYGAME_SOLDIERFIRST_SPAWNORDER = {2, 0, 0}; 
 	
 	static final int SAFEBULLETBANK = 200;
 	static final int SAFEMINIMUMBANK = 49;
 	
-	static final int MINTANKUNITCOUNT = 20;
+	static final int MINTANKUNITCOUNT = 16;
 	
-	static final int MessageValidTime = 150;
+	static final int MessageValidTime = 70;
 	
 	static final Direction[] COORDINALDIRS= {
 			Direction.getNorth(),

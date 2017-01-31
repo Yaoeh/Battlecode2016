@@ -138,7 +138,21 @@ class Util extends RobotPlayer{
 
         return (perpendicularDist <= rc.getType().bodyRadius);
     }
-    
+    public static boolean oldDodgeBullets(RobotController rc, MapLocation myLocation) throws GameActionException{
+    	BulletInfo[] bulletInfo = rc.senseNearbyBullets();
+    	for(int i=0;i<bulletInfo.length;i++){
+    		if(willCollideWithMe(rc, myLocation, bulletInfo[i])){
+    			Direction tdir = dodgeOneBullet(bulletInfo[i], myLocation);
+    			if(rc.canMove(tdir))
+    			{
+    				rc.move(tdir);
+    				return true;
+    			}
+    			
+    		}
+    	}
+    	return false;
+    }
 	public static boolean dodgeBullets(RobotController rc, MapLocation myLocation) throws GameActionException{
 		BulletInfo[] bulletInfo = rc.senseNearbyBullets();
 		if(bulletInfo.length < 3)

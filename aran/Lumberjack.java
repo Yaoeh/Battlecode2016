@@ -7,6 +7,8 @@ public class Lumberjack extends RobotPlayer
 	public static Team enemy;
 	public static MapLocation goal;
 	public static String mode = "seek";
+	public static int broadcastRoundCount = 0;
+	public static int broadcastRoundCountLimit = 15;
 	public static void run(RobotController rc) throws GameActionException {
         enemy = rc.getTeam().opponent();
 
@@ -33,6 +35,7 @@ public class Lumberjack extends RobotPlayer
                     killRobot();
                 } 
                 else {
+                	broadcastRoundCount = 0;
                 	TreeInfo[] enemyTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
                 	TreeInfo[] neutralTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS, Team.NEUTRAL);
                 	if(enemyTrees.length == 0 && neutralTrees.length == 0)
@@ -61,6 +64,7 @@ public class Lumberjack extends RobotPlayer
                 		}
                 	}
                 }
+                decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
                 Clock.yield();
 
             } catch (Exception e) {
@@ -127,6 +131,32 @@ public class Lumberjack extends RobotPlayer
 				robotIndex = i;
 			}
 		}
+		broadcastRoundCount -= 1;
+    	if(broadcastRoundCount < 0)
+    	{
+    		broadcastRoundCount = broadcastRoundCountLimit;
+    		int lowestRoundCount = rc.getRoundLimit() + 10;
+    		int channelToUse = 119;
+    		int currentRound = rc.getRoundNum();
+    		for(int i=100;i<120;i++){
+    			int readRound = rc.readBroadcast(i);
+    			if(readRound == -1 || currentRound - readRound > Constants.MessageValidTime)
+    			{
+    				channelToUse = i;
+    				break;
+    			}
+    			if(readRound < lowestRoundCount)
+    			{
+    				lowestRoundCount = readRound;
+    				channelToUse = i;
+    			}
+    		}
+    		rc.broadcast(channelToUse, currentRound);
+    		rc.broadcast(channelToUse+20, (int)robots[robotIndex].location.x);
+    		rc.broadcast(channelToUse+40, (int)robots[robotIndex].location.y);
+    		
+    	}
+    	
 		if(minDistance < RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS)
 		{
 			if(!rc.hasAttacked())
