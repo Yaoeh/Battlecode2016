@@ -108,10 +108,18 @@ public class Archon extends RobotPlayer {
     		rc.broadcast(602, 0);
     		rc.broadcast(603, 0);
     		rc.broadcast(604, 0);
+    		
+    		//soldier count
     		rc.broadcast(2, 0);
+    		
+    		//enemy locations
     		for(int i=100;i<160;i++){
     			rc.broadcast(i, -1);
     		}
+    		
+    		//lumberjackcount
+    		rc.broadcast(4, 0);
+    		
     	}
     	else
     	{
