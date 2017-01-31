@@ -123,7 +123,9 @@ public class ScoutingScout extends RobotPlayer {
     	
     	noGoal= noGoalAfterlookForTastyTrees();
 
-    	
+    	if (noGoal){
+    		noGoal= noGoalAfterCheckingToKillEarlyGardener();
+    	}
     	if (noGoal){
     		noGoal= checkEdges();
     	}
@@ -155,7 +157,23 @@ public class ScoutingScout extends RobotPlayer {
     	}
     }
     
-    public static boolean noGoalAfterlookForTastyTrees() throws GameActionException{
+    private static boolean noGoalAfterCheckingToKillEarlyGardener() {
+    	boolean answer= true;
+    	
+    	if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length> 0 && rc.getRoundNum()< 250){
+    		for (int i = 0; i < sensor.nearbyEnemies.length; i++){
+    			if (sensor.nearbyEnemies[i].getType()== RobotType.GARDENER){
+    				answer= false;
+    				stat= status.assault;
+    				break;
+    			}
+    		}
+    	}
+    	
+		return false;
+	}
+
+	public static boolean noGoalAfterlookForTastyTrees() throws GameActionException{
     	boolean answer= true;
     	if (sensor.nearbyNeutralTrees!= null && sensor.nearbyNeutralTrees.length> 0){
     		TreeInfo bestTree= Value.getTastiestBody(rc, sensor.nearbyNeutralTrees, rc.getLocation(), Integer.MAX_VALUE);
