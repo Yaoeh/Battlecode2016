@@ -7,7 +7,6 @@ import battlecode.common.*;
 public class Soldier extends RobotPlayer
 {
 	public static Team enemy;
-	public static int scoutLength = 20;
 	public static String mode = "getgoal";
 	public static MapLocation goal;
 	public static MapLocation myLoc;
@@ -157,8 +156,10 @@ public class Soldier extends RobotPlayer
             		dir = dir.rotateLeftDegrees(rotateamount);
             		count+=1;
             	}
-                //rc.move(dir);
-            	Util.tryMove(dir);
+            	if(count <24)
+            	{
+            		rc.move(dir);
+            	}
             }
         }
 	}
@@ -207,7 +208,6 @@ public class Soldier extends RobotPlayer
         }
 	}
 	public static void getGoal() throws GameActionException{
-		scoutLength = rc.readBroadcast(0);
     	int[] recent = new int[3];
     	recent[0] = -9999;
     	recent[1] = -9999;

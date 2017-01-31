@@ -2,162 +2,60 @@ package aran;
 import battlecode.common.*;
 public class Lumberjack extends RobotPlayer
 {
+	public static RobotInfo[] robots;
+	public static MapLocation myLoc;
+	public static Team enemy;
+	public static MapLocation goal;
+	public static String mode = "seek";
 	public static void run(RobotController rc) throws GameActionException {
-        Team enemy = rc.getTeam().opponent();
-        String mode = "seek";
-        MapLocation goalTreeLoc = rc.getLocation();
-        MapLocation movegoal = rc.getLocation();
-        Direction randomDir = Util.randomDirection();
-        int seekrounds = 40;
+        enemy = rc.getTeam().opponent();
+
+        MapLocation[] enemyArchonLocs = rc.getInitialArchonLocations(rc.getTeam().opponent());
+    	goal = getClosestLoc(enemyArchonLocs, rc.getLocation());
+        
+    	int lNum = rc.readBroadcast(4);
+    	rc.broadcast(4, lNum+1);
+    	
+        if(lNum % 2 == 1 && rc.getRoundNum() > 200)
+        {
+        	myLoc = rc.getLocation();
+        	mode = "getgoal";
+        	getGoal();
+        }
         incrementCountOnSpawn();
         
         while (true) {
-            try {
-            	//infoUpdate();
-            	
-            	MapLocation myLoc = rc.getLocation();
-                RobotInfo[] robots = rc.senseNearbyRobots(RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
-                if(robots.length > 0 && !rc.hasAttacked()) {
-                    rc.strike();
-                } else {
-                    // No close robots, so search for robots within sight radius
-                    robots = rc.senseNearbyRobots(-1,enemy);
+            try {            	
+            	myLoc = rc.getLocation();
+            	robots = rc.senseNearbyRobots(-1,enemy);
 
-                    // If there is a robot, move towards it
-                    if(robots.length > 0) {
-                        MapLocation myLocation = rc.getLocation();
-                        MapLocation enemyLocation = robots[0].getLocation();
-                        Direction toEnemy = myLocation.directionTo(enemyLocation);
-
-                        Util.tryMove(toEnemy);
-                        Clock.yield();
-                    } 
-                    else {
-                    	if(mode == "seek")
-                    	{
-                    		
-	                        // look for trees
-	                    	TreeInfo[] trees = rc.senseNearbyTrees(-1, Team.NEUTRAL);
-	                    	if(trees.length > 0)
-	                    	{
-	                    		//choose closest tree
-	                    		float minDistance = 99999.0f;
-	                    		for(int i=0;i<trees.length;i++){
-	                    			if(myLoc.distanceTo(trees[i].location) < minDistance)
-	                    			{
-	                    				minDistance = myLoc.distanceTo(trees[i].location);
-	                    				goalTreeLoc = trees[i].location;
-	                    			}
-	                    		}
-	                    		mode = "chopper";
-	                    		Clock.yield();
-	                    	}
-	                    	else
-	                    	{
-	                    		//move toward signals
-	                    		int scoutLength = rc.readBroadcast(0);
-	                        	int[] recent = new int[3];
-	                        	recent[0] = -9999;
-	                        	recent[1] = -9999;
-	                        	recent[2] = -9999;
-	                    		float[][] locations = new float[3][2];
-	                    		for(int i=1;i<scoutLength+1;i++){
-	                            	int msg = rc.readBroadcast(i);
-	                            	if(msg != 0)
-	                            	{
-	                            		int[] m = fastUnHash(msg);
-	                            		for(int j=0;j<3;j++){
-	                            			if(m[0]>recent[j])
-	                            			{
-	                            				recent[j] = m[0];
-	                            				locations[j][0] = (float)m[1];
-	                            				locations[j][1] = (float)m[2];
-	                            				break;
-	                            			}
-	                            				
-	                            		}
-	                            		
-	                            	}
-	                            	
-	                            }
-	                    		//calculate shortest distance
-	                        	float shortestDistance = 99999.0f;
-	                        	int index = -1;
-	                        	//goal = new MapLocation((float)locations[0][0],(float)locations[0][1]);
-	                        	for(int i=1;i<3;i++){
-	                        		if(myLoc.distanceTo(new MapLocation(locations[i][0], locations[i][1])) < shortestDistance && rc.getRoundNum() - recent[i] < 60){
-	                        			shortestDistance = myLoc.distanceTo(new MapLocation(locations[i][0], locations[i][1]));
-	                        			index = i;
-	                        			//goal = new MapLocation((float)locations[i][0],(float)locations[i][1]);
-	                        		}
-	                        	}
-	                        	if(index != -1)
-	                        	{
-	                        		movegoal = new MapLocation((float)locations[index][0],(float)locations[index][1]);
-	                        		mode = "moveseek";
-	                        		seekrounds = 40;
-	                        	}
-	                        	else{
-	                        		while(!rc.canMove(randomDir))
-	        	            		{
-	        	            			randomDir = Util.randomDirection();
-	        	            		}
-	        	            		rc.move(randomDir);
-	                        	}
-	                    	}
-	                    	Clock.yield();
-                    	}
-                    	else if(mode == "chopper"){
-                    		if(rc.canChop(goalTreeLoc)) //chop tree
-                    		{
-                    			rc.chop(goalTreeLoc);
-                    			if(rc.senseTreeAtLocation(goalTreeLoc) == null)
-                    			{
-                    				mode = "seek";
-                    			}
-                    		}
-                    		else{
-                    			//move toward tree
-                    			Direction dir = myLoc.directionTo(goalTreeLoc);
-                    			int count = 0;
-                    			float rotateamount = 15.0f;
-                                if(rc.getRoundNum()%100<50){
-                                	rotateamount = -15.0f;
-                                }
-    			            	while(!rc.canMove(dir) && count<24){
-    			            		dir = dir.rotateLeftDegrees(rotateamount);
-    			            		count+=1;
-    			            	}
-    		                    rc.move(dir);
-    		                    Clock.yield();
-                    		}
-                    	}
-                    	else if(mode == "moveseek")
-                    	{
-                    		seekrounds --;
-                    		//rc.setIndicatorDot(myLoc, 100, 100, 100);
-                    		if(myLoc.distanceTo(movegoal) < 5.0f || seekrounds < 0){
-                    			mode = "seek";
-                    		}
-                    		Direction dir = myLoc.directionTo(movegoal);
-                			int count = 0;
-                			float rotateamount = 15.0f;
-                            if(rc.getRoundNum()%100<50){
-                            	rotateamount = -15.0f;
-                            }
-			            	while(!rc.canMove(dir) && count<24){
-			            		dir = dir.rotateLeftDegrees(rotateamount);
-			            		count+=1;
-			            	}
-		                    rc.move(dir);
-		                    
-		                    decrementCountOnLowHealth(12);
-		                    Clock.yield();
-                    	}
-                    	
-                        
-                    }
-                    
+                if(robots.length > 0) {
+                    killRobot();
+                } 
+                else {
+                	TreeInfo[] enemyTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
+                	TreeInfo[] neutralTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS, Team.NEUTRAL);
+                	if(enemyTrees.length == 0 && neutralTrees.length == 0)
+                	{
+                		//move to goal
+                		Direction dir = myLoc.directionTo(goal);
+                		Util.tryMove(dir, 30.0f, 4);
+                	}
+                	else
+                	{
+                		if(enemyTrees.length > 0){
+                			if(rc.canChop(enemyTrees[0].location))
+                			{
+                				rc.chop(enemyTrees[0].location);
+                			}
+                		}
+                		else if(neutralTrees.length > 0){
+                			if(rc.canChop(neutralTrees[0].location))
+                			{
+                				rc.chop(neutralTrees[0].location);
+                			}
+                		}
+                	}
                 }
                 Clock.yield();
 
@@ -167,4 +65,72 @@ public class Lumberjack extends RobotPlayer
             }
         }
     }
+	
+	public static void getGoal() throws GameActionException
+	{
+		int[] recent = new int[3];
+    	recent[0] = -9999;
+    	recent[1] = -9999;
+    	recent[2] = -9999;
+		int[] indexSave = new int[3];
+		int currentRound = rc.getRoundNum();
+		for(int i=100;i<120;i++){
+        	int round = rc.readBroadcast(i);
+        	if(round != -1)
+        	{
+        		for(int j=0;j<3;j++){
+        			if(round>recent[j] && currentRound - round < Constants.MessageValidTime)
+        			{
+        				recent[j] = round;
+        				indexSave[j] = i;
+        				break;
+        			}
+        				
+        		}
+        		
+        	}
+        	
+        }
+		//calculate shortest distance
+    	float shortestDistance = 99999.0f;
+    	if(recent[0] != -9999)
+    	{
+	    	for(int i=0;i<3;i++){
+	    		if(recent[i] != -9999)
+	    		{
+		    		MapLocation loc = new MapLocation(rc.readBroadcast(20+indexSave[i]), rc.readBroadcast(40+indexSave[i]));
+		    		if(myLoc.distanceTo(loc) < shortestDistance){
+		    			shortestDistance = myLoc.distanceTo(loc);
+		    			goal = loc;
+		    		}
+	    		}
+	    	}
+	    	mode = "seek";
+    	}
+	}
+	
+	
+	
+	public static void killRobot() throws GameActionException
+	{
+		float minDistance = 9999.0f;
+		int robotIndex = -1;
+		for(int i=0;i<robots.length;i++)
+		{
+			if(myLoc.distanceTo(robots[i].location) < minDistance)
+			{
+				minDistance = myLoc.distanceTo(robots[i].location);
+				robotIndex = i;
+			}
+		}
+		if(minDistance < RobotType.LUMBERJACK.bodyRadius+GameConstants.LUMBERJACK_STRIKE_RADIUS)
+		{
+			if(!rc.hasAttacked())
+			{
+                rc.strike();
+			}
+		}
+
+        Util.tryMove(myLoc.directionTo(robots[robotIndex].location));
+	}
 }
