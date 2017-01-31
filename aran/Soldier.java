@@ -51,12 +51,14 @@ public class Soldier extends RobotPlayer
         while (true) {
             try {
             	//infoUpdate();
-
+            	
                 myLoc = rc.getLocation();
                 robots = rc.senseNearbyRobots(-1, enemy);
+                boolean wasGetGoal = false;
                 if(mode == "getgoal")
                 {
                 	getGoal();
+                	wasGetGoal = true;
                 }
                 else if(mode == "random")
                 {
@@ -70,6 +72,12 @@ public class Soldier extends RobotPlayer
                 if(mode=="destroy")
                 {
                 	doDestroy();
+                	if(mode == "getgoal" && wasGetGoal)
+                	{
+                		mode = "random";
+                		randomRoundCount = 0;
+                		
+                	}
 		        }
                 decrementCountOnLowHealth(Constants.LOW_HEALTH_DECREMENT_VALUE);
                 Clock.yield();
@@ -89,7 +97,11 @@ public class Soldier extends RobotPlayer
         	RobotInfo bestRobot = getBestRobot();
         	firedFlag = true;
         	goal = bestRobot.location;
-        	if(robots.length > 2 && rc.canFirePentadShot())
+        	if(bestRobot.type == RobotType.GARDENER && rc.canFirePentadShot())
+        	{
+        		rc.firePentadShot(rc.getLocation().directionTo(bestRobot.location));
+        	}
+        	else if(robots.length > 2 && rc.canFirePentadShot())
         	{
         		rc.firePentadShot(rc.getLocation().directionTo(bestRobot.location));
         	}
@@ -233,6 +245,7 @@ public class Soldier extends RobotPlayer
         }
 		//calculate shortest distance
     	float shortestDistance = 99999.0f;
+    	
     	if(recent[0] != -9999)
     	{
 	    	for(int i=0;i<3;i++){

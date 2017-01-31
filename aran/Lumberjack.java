@@ -134,7 +134,26 @@ public class Lumberjack extends RobotPlayer
                 rc.strike();
 			}
 		}
+		
+        boolean flag = Util.tryMove(myLoc.directionTo(robots[robotIndex].location), 20.0f, 3);
+        if(!flag)
+        {
+        	//chop tree if cant move
+        	TreeInfo[] enemyTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS, enemy);
+        	TreeInfo[] neutralTrees = rc.senseNearbyTrees(GameConstants.LUMBERJACK_STRIKE_RADIUS, Team.NEUTRAL);
 
-        Util.tryMove(myLoc.directionTo(robots[robotIndex].location));
+    		if(enemyTrees.length > 0){
+    			if(rc.canChop(enemyTrees[0].location))
+    			{
+    				rc.chop(enemyTrees[0].location);
+    			}
+    		}
+    		else if(neutralTrees.length > 0){
+    			if(rc.canChop(neutralTrees[0].location))
+    			{
+    				rc.chop(neutralTrees[0].location);
+    			}
+    		}
+        }
 	}
 }

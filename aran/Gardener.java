@@ -25,6 +25,8 @@ public class Gardener extends RobotPlayer
     static int lumberjackCount= 0;
     static int gardenerCount = 0;
     static float myHealth = 0;
+    static int lookingCountTotal = 0;
+    static int lookingCountTotalLimit = 100;
     
 	public static void run(RobotController rc) throws GameActionException {
 		enemy = rc.getTeam().opponent();
@@ -45,21 +47,28 @@ public class Gardener extends RobotPlayer
             	{
             		earlyGame();
             	}
-            	if(stat== status.looking)//status == "looking")
+            	if(stat== status.looking)
             	{
-            		//MapLocation myLocation = rc.getLocation();
+            		lookingCountTotal += 1;
             		RobotInfo[] robots = rc.senseNearbyRobots(-1, myTeam);
             		int gardenerCount = 0;
             		for(int i=0;i<robots.length;i++){
             			if(robots[i].type == RobotType.GARDENER || robots[i].type == RobotType.ARCHON)
             			{
             				gardenerCount+=1;
+            				if(robots[i].type == RobotType.ARCHON)
+            				{
+            					Info unitCountInfo= InfoNet.addInfoMap.get(AddInfo.UNITCOUNT);
+            					if(rc.getLocation().distanceTo(robots[i].location) > 3.0f || rc.readBroadcast(unitCountInfo.getStartIndex() + unitCountInfo.getIndex(InfoEnum.GARDENER_COUNT)) == 0)
+            					{
+            						gardenerCount -= 1;
+            					}
+            				}
             				break;
             			}
             		}
-            		if(gardenerCount == 0)
+            		if(gardenerCount == 0 || lookingCountTotal > lookingCountTotalLimit)
             		{
-            			//status = "gardenCheck";
             			stat= status.gardenCheck;
             		}
             		else
@@ -120,6 +129,26 @@ public class Gardener extends RobotPlayer
             		if(!checkForEnemyRobots())
             		{
             			ratioGame();
+            		}
+            		if(rc.getRoundNum() %100 == 50)
+            		{
+            			//update plantable regions
+            			int tdirNum = 0;
+                		for (SixAngle ra : Constants.SixAngle.values()) {
+                            Direction d = new Direction(ra.getRadians());
+                            if(rc.getTeamBullets() >= 50.0f){
+                            	if (rc.canPlantTree(d)) {
+                            		tdirNum+=1;
+                            	}
+                            }
+                            else
+                            {
+                            	if (rc.canMove(d)) {
+                            		tdirNum+=1;
+                            	}
+                            }
+                        }
+                		dirNum = tdirNum + currentlyPlanted;
             		}
             	}
             	
@@ -225,7 +254,7 @@ public class Gardener extends RobotPlayer
 		{
 			buildRobot(safeBulletBank);
 		}
-		else if(farmingBulletCount/combatBulletCount < farmingToCombatRatio)
+		else if(farmingBulletCount/combatBulletCount < farmingToCombatRatio && rc.getTreeCount() < 35)
 		{
 			//build tree
 			buildTree(safeBulletBank);
@@ -274,6 +303,10 @@ public class Gardener extends RobotPlayer
 			}
 			float unitTotalCount = (float)(soldierCount + tankCount + scoutCount + lumberjackCount);
 			if(unitTotalCount < 0.01f){
+				Util.tryBuildRobot(RobotType.LUMBERJACK);
+				return;
+			}
+			else if(unitTotalCount > 0.0f && unitTotalCount < 1.01f){
 				Util.tryBuildRobot(RobotType.SOLDIER);
 				return;
 			}

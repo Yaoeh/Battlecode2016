@@ -42,7 +42,9 @@ public class SurveyingScout extends RobotPlayer {
     			
     			//senses here
     			Info trackedInfo= InfoNet.addInfoMap.get(AddInfo.SCOUTED_INFO);
-    			
+    			int finalgardenerCount = 0;
+    			int finaldamagingCount = 0;
+    			int finaltreeCount = 0;
     			if (sensor.nearbyEnemies!= null && sensor.nearbyEnemies.length> 0){
     				int gardenerCount= 0;
     				int damagingUnitCount= 0;
@@ -59,11 +61,12 @@ public class SurveyingScout extends RobotPlayer {
 	    			int currentGarCount= rc.readBroadcast(gardenerCountIndex);
 	    			//rc.broadcast(gardenerCountIndex, currentGarCount+ gardenerCount);
       				broadcastPrint(rc,gardenerCountIndex, currentGarCount+ gardenerCount, "gardener count by spy");
-	    			
+	    			finalgardenerCount = currentGarCount+ gardenerCount;
 	    			int damagingCountIndex= trackedInfo.getStartIndex()+ trackedInfo.getIndex(InfoEnum.NUM_DAMAGE_SPIED);
 	    			int currentDamageCount= rc.readBroadcast(damagingUnitCount);
 	    			//rc.broadcast(damagingCountIndex, currentDamageCount+ damagingUnitCount);
 	    			broadcastPrint(rc,damagingCountIndex,  currentDamageCount+ damagingUnitCount, "damaging unit count by spy");
+	    			finaldamagingCount = currentDamageCount+ damagingUnitCount;
     			}
     			
     			if (sensor.nearbyEnemyTrees!= null && sensor.nearbyEnemyTrees.length> 0){
@@ -72,6 +75,24 @@ public class SurveyingScout extends RobotPlayer {
       				int originalTreeCount= rc.readBroadcast(treeCountIndex);
       				//rc.broadcast(treeCountIndex, originalTreeCount+ enemyTreeCount);
       				broadcastPrint(rc,treeCountIndex, originalTreeCount+ enemyTreeCount, "tree count by spy");
+      				finaltreeCount = originalTreeCount+ enemyTreeCount;
+    			}
+    			
+    			if(finaltreeCount > 1){
+    				rc.broadcast(501, 20000);
+    				broadcastPrint(rc, 960, 22000, "treecombatratio");
+    			}
+    			else if(finaltreeCount > 0){
+    				rc.broadcast(501, 14000);
+    				broadcastPrint(rc, 960, 16000, "treecombatratio");
+    			}
+    			else if(finaldamagingCount > 1){
+    				rc.broadcast(501, 5000);
+    				broadcastPrint(rc, 960, 6000, "treecombatratio");
+    			}
+    			else{
+    				rc.broadcast(501, 10000);
+    				broadcastPrint(rc, 960, 11000, "treecombatratio");
     			}
 			}
     	}

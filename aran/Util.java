@@ -101,9 +101,10 @@ class Util extends RobotPlayer{
     
     
 	public static Direction dodgeOneBullet(BulletInfo bulletinfo, MapLocation loc){
-		Direction dir1 = new Direction(bulletinfo.location.x - loc.x, bulletinfo.location.y - loc.y);
-		dir1 = dir1.rotateRightDegrees(90.0f);
-		return dir1;
+		//Direction dir1 = new Direction(bulletinfo.location.x - loc.x, bulletinfo.location.y - loc.y);
+		//dir1 = dir1.rotateRightDegrees(90.0f);
+		
+		return bulletinfo.dir.rotateRightDegrees(90.0f);
     }
 	/**
      * A slightly more complicated example function, this returns true if the given bullet is on a collision

@@ -153,8 +153,8 @@ public class Archon extends RobotPlayer {
     	
     	float treeCount = (float) rc.getTreeCount();
     	float idealBulletToGardenerRatio = 200.0f - 40.0f*treeCount;
-    	if(idealBulletToGardenerRatio < 51.0f){
-    		idealBulletToGardenerRatio = 51.0f;
+    	if(idealBulletToGardenerRatio < 71.0f){
+    		idealBulletToGardenerRatio = 71.0f;
     	}
     	
     	if(gardenerCount == 0)
